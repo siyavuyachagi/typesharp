@@ -1,0 +1,208 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import { CSharpClass, CSharpProperty, TypeSharpConfig, NamingConvention } from '../types';
+
+/**
+ * Generate TypeScript files from parsed C# classes
+ */
+export function generateTypeScriptFiles(
+  classes: CSharpClass[],
+  config: TypeSharpConfig
+): void {
+  const outputPath = config.outputPath;
+  
+  // Ensure output directory exists
+  if (!fs.existsSync(outputPath)) {
+    fs.mkdirSync(outputPath, { recursive: true });
+  }
+  
+  if (config.singleOutputFile) {
+    generateSingleFile(classes, outputPath, config);
+  } else {
+    generateMultipleFiles(classes, outputPath, config);
+  }
+}
+
+/**
+ * Generate a single file with all types
+ */
+function generateSingleFile(
+  classes: CSharpClass[],
+  outputPath: string,
+  config: TypeSharpConfig
+): void {
+  const content = classes
+    .map(cls => generateTypeScriptClass(cls, config))
+    .join('\n\n');
+  
+  const header = generateFileHeader();
+  const fullContent = `${header}\n${content}\n`;
+  
+  const fileName = 'types.ts';
+  const filePath = path.join(outputPath, fileName);
+  
+  fs.writeFileSync(filePath, fullContent, 'utf-8');
+  console.log(`✓ Generated: ${filePath}`);
+}
+
+/**
+ * Generate multiple files, one per class
+ */
+function generateMultipleFiles(
+  classes: CSharpClass[],
+  outputPath: string,
+  config: TypeSharpConfig
+): void {
+  for (const cls of classes) {
+    const content = generateTypeScriptClass(cls, config);
+    const header = generateFileHeader();
+    const fullContent = `${header}\n${content}\n`;
+    
+    const fileName = convertFileName(cls.name, config.fileNamingConvention || 'kebab');
+    const filePath = path.join(outputPath, `${fileName}.ts`);
+    
+    fs.writeFileSync(filePath, fullContent, 'utf-8');
+    console.log(`✓ Generated: ${filePath}`);
+  }
+}
+
+/**
+ * Generate TypeScript interface or enum from C# class
+ */
+function generateTypeScriptClass(cls: CSharpClass, config: TypeSharpConfig): string {
+  if (cls.isEnum) {
+    return generateEnum(cls);
+  }
+  
+  return generateInterface(cls, config);
+}
+
+/**
+ * Generate TypeScript enum
+ */
+function generateEnum(cls: CSharpClass): string {
+  const values = cls.enumValues || [];
+  const enumValues = values
+    .map(v => `  ${v} = '${v}'`)
+    .join(',\n');
+  
+  return `export enum ${cls.name} {\n${enumValues}\n}`;
+}
+
+/**
+ * Generate TypeScript interface
+ */
+function generateInterface(cls: CSharpClass, config: TypeSharpConfig): string {
+  const properties = cls.properties
+    .map(prop => generateProperty(prop, config.namingConvention || 'camel'))
+    .join('\n');
+  
+  const extendsClause = cls.inheritsFrom ? ` extends ${cls.inheritsFrom}` : '';
+  
+  return `export interface ${cls.name}${extendsClause} {\n${properties}\n}`;
+}
+
+/**
+ * Generate a single property
+ */
+function generateProperty(prop: CSharpProperty, convention: NamingConvention): string {
+  const propertyName = convertPropertyName(prop.name, convention);
+  let type = prop.type;
+  
+  // Handle arrays
+  if (prop.isArray) {
+    type = `${type}[]`;
+  }
+  
+  // Handle nullable
+  if (prop.isNullable) {
+    type = `${type} | null`;
+  }
+  
+  return `  ${propertyName}: ${type};`;
+}
+
+/**
+ * Convert property name to specified convention
+ */
+function convertPropertyName(name: string, convention: NamingConvention): string {
+  switch (convention) {
+    case 'camel':
+      return toCamelCase(name);
+    case 'pascal':
+      return toPascalCase(name);
+    case 'snake':
+      return toSnakeCase(name);
+    case 'kebab':
+      return toKebabCase(name);
+    default:
+      return name;
+  }
+}
+
+/**
+ * Convert file name to specified convention
+ */
+function convertFileName(name: string, convention: NamingConvention): string {
+  switch (convention) {
+    case 'kebab':
+      return toKebabCase(name);
+    case 'snake':
+      return toSnakeCase(name);
+    case 'camel':
+      return toCamelCase(name);
+    case 'pascal':
+      return toPascalCase(name);
+    default:
+      return name;
+  }
+}
+
+/**
+ * Convert string to camelCase
+ */
+function toCamelCase(str: string): string {
+  const pascal = toPascalCase(str);
+  return pascal.charAt(0).toLowerCase() + pascal.slice(1);
+}
+
+/**
+ * Convert string to PascalCase
+ */
+function toPascalCase(str: string): string {
+  return str
+    .replace(/[_-](.)/g, (_, char) => char.toUpperCase())
+    .replace(/^(.)/, (_, char) => char.toUpperCase());
+}
+
+/**
+ * Convert string to snake_case
+ */
+function toSnakeCase(str: string): string {
+  return str
+    .replace(/([A-Z])/g, '_$1')
+    .toLowerCase()
+    .replace(/^_/, '');
+}
+
+/**
+ * Convert string to kebab-case
+ */
+function toKebabCase(str: string): string {
+  return str
+    .replace(/([A-Z])/g, '-$1')
+    .toLowerCase()
+    .replace(/^-/, '');
+}
+
+/**
+ * Generate file header comment
+ */
+function generateFileHeader(): string {
+  const timestamp = new Date().toISOString();
+  return `/**
+ * Auto-generated by TypeSharp
+ * Generated at: ${timestamp}
+ * Do not edit this file manually
+ */`;
+}

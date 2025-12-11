@@ -1,8 +1,12 @@
 {
   "name": "typesharp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Generate TypeScript types from C# models with TypeSharp attribute",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "typesharp": "./bin/typesharp.js"
+  },
   "license": "MIT",
   "type": "commonjs",
   "author": "Siyavuya Chagi <syavuya08@gmail.com>",
@@ -13,6 +17,9 @@
     "types"
   ],
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
