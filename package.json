@@ -1,0 +1,27 @@
+{
+  "name": "typesharp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "commonjs",
+  "author": "Siyavuya Chagi <syavuya08@gmail.com>",
+  "keywords": [
+    "typescript",
+    "csharp",
+    "code-generation",
+    "types"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
+    "glob": "^13.0.0"
+  }
+}
