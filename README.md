@@ -101,7 +101,7 @@ export interface User {
 | `targetAnnotation` | `string` | `'TypeSharp'` | C# attribute name to look for |
 | `singleOutputFile` | `boolean` | `false` | Generate one file or multiple files |
 | `fileNamingConvention` | `string` | `'kebab'` | File naming: `kebab`, `camel`, `pascal`, `snake` |
-| `namingConvention` | `string` | `'camel'` | Interfafce / Property naming: `camel`, `pascal`, `snake` |
+| `namingConvention` | `string` | `'camel'` | Property naming: `camel`, `pascal`, `snake` |
 | `fileNameSuffix` | `string` | `optional` | Suffix for file names: `user-dto.ts`, `product.test.ts`, `transaction_util.ts` |
 
 ### Configuration File Formats

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { CSharpClass, CSharpProperty, TypeSharpConfig, NamingConvention } from '../types';
-
+import { CSharpClass, CSharpProperty, NamingConvention } from '../types';
+import type { TypeSharpConfig } from '../types';
 /**
  * Generate TypeScript files from parsed C# classes
  */
@@ -10,12 +10,12 @@ export function generateTypeScriptFiles(
   config: TypeSharpConfig
 ): void {
   const outputPath = config.outputPath;
-  
+
   // Ensure output directory exists
   if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath, { recursive: true });
   }
-  
+
   if (config.singleOutputFile) {
     generateSingleFile(classes, outputPath, config);
   } else {
@@ -34,13 +34,13 @@ function generateSingleFile(
   const content = classes
     .map(cls => generateTypeScriptClass(cls, config))
     .join('\n\n');
-  
+
   const header = generateFileHeader();
   const fullContent = `${header}\n${content}\n`;
-  
+
   const fileName = 'types.ts';
   const filePath = path.join(outputPath, fileName);
-  
+
   fs.writeFileSync(filePath, fullContent, 'utf-8');
   console.log(`✓ Generated: ${filePath}`);
 }
@@ -57,10 +57,10 @@ function generateMultipleFiles(
     const content = generateTypeScriptClass(cls, config);
     const header = generateFileHeader();
     const fullContent = `${header}\n${content}\n`;
-    
+
     const fileName = convertFileName(cls.name, config.fileNamingConvention || 'kebab');
     const filePath = path.join(outputPath, `${fileName}.ts`);
-    
+
     fs.writeFileSync(filePath, fullContent, 'utf-8');
     console.log(`✓ Generated: ${filePath}`);
   }
@@ -73,7 +73,7 @@ function generateTypeScriptClass(cls: CSharpClass, config: TypeSharpConfig): str
   if (cls.isEnum) {
     return generateEnum(cls);
   }
-  
+
   return generateInterface(cls, config);
 }
 
@@ -85,7 +85,7 @@ function generateEnum(cls: CSharpClass): string {
   const enumValues = values
     .map(v => `  ${v} = '${v}'`)
     .join(',\n');
-  
+
   return `export enum ${cls.name} {\n${enumValues}\n}`;
 }
 
@@ -96,9 +96,9 @@ function generateInterface(cls: CSharpClass, config: TypeSharpConfig): string {
   const properties = cls.properties
     .map(prop => generateProperty(prop, config.namingConvention || 'camel'))
     .join('\n');
-  
+
   const extendsClause = cls.inheritsFrom ? ` extends ${cls.inheritsFrom}` : '';
-  
+
   return `export interface ${cls.name}${extendsClause} {\n${properties}\n}`;
 }
 
@@ -108,17 +108,17 @@ function generateInterface(cls: CSharpClass, config: TypeSharpConfig): string {
 function generateProperty(prop: CSharpProperty, convention: NamingConvention): string {
   const propertyName = convertPropertyName(prop.name, convention);
   let type = prop.type;
-  
+
   // Handle arrays
   if (prop.isArray) {
     type = `${type}[]`;
   }
-  
+
   // Handle nullable
   if (prop.isNullable) {
     type = `${type} | null`;
   }
-  
+
   return `  ${propertyName}: ${type};`;
 }
 
