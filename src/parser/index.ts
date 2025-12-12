@@ -1,17 +1,18 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
-import { CSharpClass, CSharpProperty, ParseResult } from '../types';
+import { CSharpClass, CSharpProperty, ParseResult, TypeSharpConfig } from '../types';
+
 
 /**
- * Parse C# files in the target directory
+ * Parse C# files in the target project
  */
-export async function parseCSharpFiles(
-  targetPath: string,
-  targetAnnotation: string = 'TypeSharp'
-): Promise<ParseResult[]> {
+export async function parseCSharpFiles(config: TypeSharpConfig): Promise<ParseResult[]> {
+  const projectDir = path.dirname(config.projectFile); // get folder containing the .csproj
+  const targetAnnotation = config.targetAnnotation ?? 'TypeSharp';
+
   const csFiles = await glob('**/*.cs', {
-    cwd: targetPath,
+    cwd: projectDir,
     absolute: true,
     ignore: ['**/bin/**', '**/obj/**', '**/node_modules/**']
   });
@@ -21,14 +22,17 @@ export async function parseCSharpFiles(
   for (const filePath of csFiles) {
     const content = fs.readFileSync(filePath, 'utf-8');
     const classes = parseClassesFromFile(content, targetAnnotation);
-    
+
     if (classes.length > 0) {
-      results.push({ classes, filePath });
+      // store relative path for preserving folder structure later
+      const relativePath = path.relative(projectDir, filePath);
+      results.push({ classes, filePath, relativePath });
     }
   }
 
   return results;
 }
+
 
 /**
  * Parse classes from a C# file content

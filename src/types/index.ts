@@ -90,6 +90,7 @@ export interface CSharpClass {
 export interface ParseResult {
   classes: CSharpClass[];
   filePath: string;
+  relativePath: string;
 }
 
 /**

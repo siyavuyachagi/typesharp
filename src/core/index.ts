@@ -15,32 +15,6 @@ const DEFAULT_CONFIG: Partial<TypeSharpConfig> = {
 };
 
 /**
- * Load configuration from file or use provided config
- */
-export function loadConfig(configPath?: string): TypeSharpConfig {
-  if (configPath && fs.existsSync(configPath)) {
-    return loadConfigFromFile(configPath);
-  }
-
-  // Look for default config files
-  const defaultPaths = [
-    'typesharp.config.ts',
-    'typesharp.config.js',
-    'typesharp.config.json'
-  ];
-
-  for (const defaultPath of defaultPaths) {
-    if (fs.existsSync(defaultPath)) {
-      return loadConfigFromFile(defaultPath);
-    }
-  }
-
-  throw new Error(
-    'No configuration file found. Please create typesharp.config.ts, typesharp.config.js, or typesharp.config.json'
-  );
-}
-
-/**
  * Load configuration from a file
  */
 function loadConfigFromFile(filePath: string): TypeSharpConfig {
@@ -81,19 +55,7 @@ function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
   } as TypeSharpConfig;
 }
 
-/**
- * Validate configuration
- */
-function validateConfig(config: TypeSharpConfig): void {
-  if (!fs.existsSync(config.projectFile)) {
-    throw new Error(`Target path does not exist: ${config.projectFile}`);
-  }
 
-  const stats = fs.statSync(config.projectFile);
-  if (!stats.isDirectory()) {
-    throw new Error(`Target path is not a directory: ${config.projectFile}`);
-  }
-}
 
 /**
  * Main function to run TypeSharp generation
@@ -103,14 +65,14 @@ export async function generate(configPath?: string): Promise<void> {
     console.log('🚀 TypeSharp - Starting generation...\n');
 
 
-
     // Load configuration
     const config = loadConfig(configPath);
     console.log('✓ Configuration loaded');
-    console.log(`  Target: ${config.projectFile}`);
-    console.log(`  Output: ${config.outputPath}`);
-    console.log(`  Annotation: [${config.targetAnnotation}]`);
-    console.log(`  Single file: ${config.singleOutputFile}\n`);
+    console.log(`->  Target: ${config.projectFile}`);
+    console.log(`->  Output: ${config.outputPath}`);
+    console.log(`->  Annotation: [${config.targetAnnotation}]`);
+    console.log(`->  Single file: ${config.singleOutputFile}\n`);
+    if (config.typeSuffix) console.log(`-> Type suffix: ${config.typeSuffix}\n`);
 
 
 
@@ -169,6 +131,52 @@ export async function generate(configPath?: string): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * Load configuration from file or use provided config
+ */
+export function loadConfig(configPath?: string): TypeSharpConfig {
+  if (configPath && fs.existsSync(configPath)) {
+    return loadConfigFromFile(configPath);
+  }
+
+  // Look for default config files
+  const defaultPaths = [
+    'typesharp.config.ts',
+    'typesharp.config.js',
+    'typesharp.config.json'
+  ];
+
+  for (const defaultPath of defaultPaths) {
+    if (fs.existsSync(defaultPath)) {
+      return loadConfigFromFile(defaultPath);
+    }
+  }
+
+  throw new Error(
+    'No configuration file found. Please create typesharp.config.ts, typesharp.config.js, or typesharp.config.json'
+  );
+}
+
+
+/**
+ * Validate configuration
+ */
+function validateConfig(config: TypeSharpConfig): void {
+  if (!fs.existsSync(config.projectFile)) {
+    throw new Error(`Project file does not exist: ${config.projectFile}`);
+  }
+
+  const stats = fs.statSync(config.projectFile);
+  if (!stats.isFile()) {
+    throw new Error(`Target path is not a file: ${config.projectFile}`);
+  }
+
+  if (!config.projectFile.endsWith('.csproj')) {
+    throw new Error(`Target file is not a .csproj: ${config.projectFile}`);
+  }
+}
+
 
 /**
  * Create a sample configuration file
