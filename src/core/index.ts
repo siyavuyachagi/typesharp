@@ -117,7 +117,7 @@ export async function generate(configPath?: string): Promise<void> {
     generateTypeScriptFiles(config, parseResults);
 
 
-    
+
     console.log('\n✅ Generation completed successfully!');
   } catch (error) {
     if (error instanceof Error) {
@@ -171,6 +171,21 @@ function validateConfig(config: TypeSharpConfig): void {
 
   if (!config.projectFile.endsWith('.csproj')) {
     throw new Error(`Target file is not a .csproj: ${config.projectFile}`);
+  }
+
+  /**
+   * Optional fields sanitization
+   */
+  if (config.targetAnnotation) {
+    const original = config.targetAnnotation;
+    // Remove spaces, [ and ]
+    config.targetAnnotation = config.targetAnnotation.replace(/[ \[\]]/g, '');
+
+    if (config.targetAnnotation !== original) {
+      console.warn(
+        `Warning: targetAnnotation had invalid characters (space, [ or ]). They have been removed.`
+      );
+    }
   }
 }
 

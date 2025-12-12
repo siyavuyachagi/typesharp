@@ -49,7 +49,7 @@ namespace YourProject.Attributes
 }
 ```
 
-### Step 2: Decorate Your Models
+### Step 2: Decorate Your Models / Data Transfere Objects
 
 ```csharp
 using YourProject.Attributes;
@@ -131,7 +131,7 @@ Or relative:
 
 **`targetAnnotation`** (string, default: `'TypeSharp'`)
 - The C# attribute name to look for
-- Don't include brackets `[]`
+- Don't include brackets `[]` or '`spaces`'
 
 ```json
 {
@@ -1073,7 +1073,7 @@ watch(projectDir, { recursive: true }, async (eventType, filename) => {
 ```json
 {
   "scripts": {
-    "watch-types": "ts-node scripts/watch-types.ts"
+    "watch-typesharp": "ts-node scripts/watch-types.ts"
   }
 }
 ```
