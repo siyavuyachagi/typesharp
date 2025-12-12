@@ -180,8 +180,8 @@ function validateConfig(config: TypeSharpConfig): void {
  */
 export function createSampleConfig(format: 'ts' | 'js' | 'json' = 'ts'): void {
   const sampleConfig: TypeSharpConfig = {
-    projectFile: './Backend',
-    outputPath: './src/types',
+    projectFile: 'C:\\Users\\User\\Desktop\\MyApp\\Api\\Api.csproj',
+    outputPath: './app/src/types',
     targetAnnotation: 'TypeSharp',
     singleOutputFile: false,
     fileNamingConvention: 'kebab',
