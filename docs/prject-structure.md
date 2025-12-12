@@ -2,6 +2,7 @@
 
 ```
 typesharp/
+├── docs/                  ✅ Documentation
 ├── src/
 │   ├── index.ts           ✅ Main exports
 │   ├── cli/index.ts       ✅ CLI interface
@@ -11,6 +12,7 @@ typesharp/
 │   └── types/index.ts     ✅ Type definitions
 ├── bin/
 │   └── typesharp.js       ✅ CLI executable
+├── tests/                 ✅ Tests
 ├── package.json           ✅ Package config
 ├── tsconfig.json          ✅ TypeScript config
 ├── .gitignore             ✅ Git ignore
