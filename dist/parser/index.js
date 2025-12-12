@@ -81,11 +81,12 @@ function parseClassesFromFile(content, targetAnnotation) {
                 classes.push(enumClass);
             continue;
         }
-        // Otherwise parse as class
-        const classMatch = afterAnnotation.match(/\[[\w]+\]\s*public\s+class\s+(\w+)(?:\s*:\s*(\w+))?/);
+        // Parse as class - Updated regex to handle generics
+        // Matches: public class ClassName<T> : BaseClass<T>
+        const classMatch = afterAnnotation.match(/\[[\w]+\]\s*public\s+class\s+(\w+)(?:<[^>]+>)?(?:\s*:\s*(\w+)(?:<[^>]+>)?)?/);
         if (classMatch) {
-            const className = classMatch[1];
-            const inheritsFrom = classMatch[2];
+            const className = classMatch[1]; // Just the class name without <T>
+            const inheritsFrom = classMatch[2]; // Just the base class name without <T>
             const classBody = extractClassBody(afterAnnotation);
             if (classBody) {
                 const properties = parseProperties(classBody);
@@ -146,7 +147,7 @@ function extractClassBody(content) {
  */
 function parseProperties(classBody) {
     const properties = [];
-    // Match property declarations
+    // Match property declarations with get/set
     const propertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*get;\s*set;\s*\}/g;
     let match;
     while ((match = propertyRegex.exec(classBody)) !== null) {
@@ -154,6 +155,18 @@ function parseProperties(classBody) {
         const name = match[2];
         properties.push(parsePropertyType(name, type));
     }
+    // Also match computed/expression-bodied properties (with =>)
+    // These are read-only, so we'll skip them for now since they don't have set;
+    // If you want to include them, uncomment below:
+    /*
+    const computedPropertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*=>/g;
+    while ((match = computedPropertyRegex.exec(classBody)) !== null) {
+      const type = match[1]!;
+      const name = match[2]!;
+      
+      properties.push(parsePropertyType(name, type));
+    }
+    */
     return properties;
 }
 /**
