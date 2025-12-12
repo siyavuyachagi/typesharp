@@ -56,14 +56,14 @@ function generateMultipleFiles(
   config: TypeSharpConfig,
   parseResults: ParseResult[]
 ): void {
+  // Build a map of class names to their file paths for import resolution
+  const classToFileMap = buildClassToFileMap(parseResults, config, outputPath);
+
   for (const result of parseResults) {
     // Generate content for all classes in this C# file
     const content = result.classes
       .map(cls => generateTypeScriptClass(cls, config))
       .join('\n\n');
-
-    const header = generateFileHeader();
-    const fullContent = `${header}\n\n${content}\n`;
 
     // Preserve folder structure
     const relativeDir = path.dirname(result.relativePath);
@@ -89,9 +89,139 @@ function generateMultipleFiles(
     const fileName = convertFileName(baseName, config.fileNamingConvention || 'kebab');
     const filePath = path.join(targetDir, `${fileName}.ts`);
 
+    // Generate imports for this file
+    const currentClassNames = result.classes.map(c => c.name);
+    const imports = generateImports(result.classes, classToFileMap, filePath, currentClassNames);
+
+    const header = generateFileHeader();
+    const fullContent = imports 
+      ? `${header}\n\n${imports}\n\n${content}\n`
+      : `${header}\n\n${content}\n`;
+
     fs.writeFileSync(filePath, fullContent, 'utf-8');
     console.log(`✓ Generated: ${filePath}`);
   }
+}
+
+/**
+ * Build a map of class names to their output file paths
+ */
+function buildClassToFileMap(
+  parseResults: ParseResult[],
+  config: TypeSharpConfig,
+  outputPath: string
+): Map<string, string> {
+  const map = new Map<string, string>();
+
+  for (const result of parseResults) {
+    const relativeDir = path.dirname(result.relativePath);
+    const targetDir = path.join(outputPath, relativeDir);
+    
+    const originalFileName = path.basename(result.relativePath, '.cs');
+    
+    let baseName = originalFileName;
+    if (config.fileSuffix) {
+      const convention = config.fileNamingConvention || 'kebab';
+      const suffix = convertFileName(config.fileSuffix, convention);
+      baseName = `${baseName}-${suffix}`;
+    }
+
+    const fileName = convertFileName(baseName, config.fileNamingConvention || 'kebab');
+    const filePath = path.join(targetDir, `${fileName}.ts`);
+
+    // Map all classes in this file to this file path
+    for (const cls of result.classes) {
+      map.set(cls.name, filePath);
+    }
+  }
+
+  return map;
+}
+
+/**
+ * Generate import statements for referenced types
+ */
+function generateImports(
+  classes: CSharpClass[],
+  classToFileMap: Map<string, string>,
+  currentFilePath: string,
+  currentClassNames: string[]
+): string {
+  const imports = new Map<string, Set<string>>(); // filePath -> Set of class names
+
+  for (const cls of classes) {
+    // Skip enums as they don't have properties
+    if (cls.isEnum) continue;
+
+    // Check inheritance
+    if (cls.inheritsFrom && !currentClassNames.includes(cls.inheritsFrom)) {
+      const referencedFilePath = classToFileMap.get(cls.inheritsFrom);
+      if (referencedFilePath && referencedFilePath !== currentFilePath) {
+        if (!imports.has(referencedFilePath)) {
+          imports.set(referencedFilePath, new Set());
+        }
+        imports.get(referencedFilePath)!.add(cls.inheritsFrom);
+      }
+    }
+
+    // Check property types
+    for (const prop of cls.properties) {
+      const referencedType = prop.type;
+      
+      // Skip primitive types
+      if (isPrimitiveType(referencedType)) continue;
+      
+      // Skip if it's in the same file
+      if (currentClassNames.includes(referencedType)) continue;
+
+      const referencedFilePath = classToFileMap.get(referencedType);
+      if (referencedFilePath && referencedFilePath !== currentFilePath) {
+        if (!imports.has(referencedFilePath)) {
+          imports.set(referencedFilePath, new Set());
+        }
+        imports.get(referencedFilePath)!.add(referencedType);
+      }
+    }
+  }
+
+  // Generate import statements
+  const importStatements: string[] = [];
+  for (const [filePath, classNames] of imports.entries()) {
+    const relativePath = getRelativeImportPath(currentFilePath, filePath);
+    const sortedNames = Array.from(classNames).sort();
+    importStatements.push(`import { ${sortedNames.join(', ')} } from '${relativePath}';`);
+  }
+
+  return importStatements.length > 0 ? importStatements.join('\n') : '';
+}
+
+/**
+ * Get relative import path from one file to another
+ */
+function getRelativeImportPath(fromFile: string, toFile: string): string {
+  const fromDir = path.dirname(fromFile);
+  let relativePath = path.relative(fromDir, toFile);
+  
+  // Remove .ts extension
+  relativePath = relativePath.replace(/\.ts$/, '');
+  
+  // Ensure it starts with ./ or ../
+  if (!relativePath.startsWith('.')) {
+    relativePath = './' + relativePath;
+  }
+  
+  // Convert Windows backslashes to forward slashes
+  relativePath = relativePath.replace(/\\/g, '/');
+  
+  return relativePath;
+}
+
+/**
+ * Check if a type is a primitive TypeScript type
+ */
+function isPrimitiveType(type: string): boolean {
+  const primitives = ['string', 'number', 'boolean', 'any', 'void', 'null', 'undefined'];
+  return primitives.includes(type);
 }
 
 /**
