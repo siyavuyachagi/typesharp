@@ -11,7 +11,8 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 🧬 **Inheritance** - Preserves class inheritance with `extends`  
 🎨 **Naming Conventions** - Convert property names (camel, pascal, snake, kebab)  
 📁 **Flexible Output** - Single file or multiple files  
-🔢 **Enum Support** - Converts C# enums to TypeScript string enums
+🔢 **Enum Support** - Converts C# enums to TypeScript string enums  
+🗂️ **File Grouping** - Preserves C# file organization (multiple classes per file stay together)
 
 ## Installation
 
@@ -55,7 +56,7 @@ This creates `typesharp.config.ts`:
 import { TypeSharpConfig } from 'typesharp';
 
 const config: TypeSharpConfig = {
-  targetPath: './Backend',
+  projectFile: './Backend/Backend.csproj',
   outputPath: './src/types',
   targetAnnotation: 'TypeSharp',
   singleOutputFile: false,
@@ -96,13 +97,40 @@ export interface User {
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `targetPath` | `string` | *required* | Path to your C# project folder |
+| `projectFile` | `string` | *required* | Full path to your C# .csproj file |
 | `outputPath` | `string` | *required* | Where to generate TypeScript files |
 | `targetAnnotation` | `string` | `'TypeSharp'` | C# attribute name to look for |
-| `singleOutputFile` | `boolean` | `false` | Generate one file or multiple files |
+| `singleOutputFile` | `boolean` | `false` | Generate one file or multiple files (see below) |
 | `fileNamingConvention` | `string` | `'kebab'` | File naming: `kebab`, `camel`, `pascal`, `snake` |
 | `namingConvention` | `string` | `'camel'` | Property naming: `camel`, `pascal`, `snake` |
-| `fileNameSuffix` | `string` | `optional` | Suffix for file names: `user-dto.ts`, `product.test.ts`, `transaction_util.ts` |
+| `fileSuffix` | `string` | `optional` | Suffix for file names: `user-dto.ts`, `product-dto.ts` |
+
+### Output File Behavior
+
+TypeSharp preserves your C# file organization. Here's how it works:
+
+| C# File Structure | `singleOutputFile: false` | `singleOutputFile: true` |
+|-------------------|---------------------------|--------------------------|
+| **One class per file**<br>`User.cs` → 1 class | `user.ts` (1 interface) | All classes in `types.ts` |
+| **Multiple classes per file**<br>`UserDtos.cs` → 3 classes | `user-dtos.ts` (3 interfaces) | All classes in `types.ts` |
+| **Mixed structure**<br>Various C# files | Each C# file → 1 TS file<br>(preserves grouping) | All classes in `types.ts` |
+
+**Example:**
+
+```
+C# Structure:                       TypeScript Output (singleOutputFile: false):
+Backend/                           src/types/
+├── DTOs/                         └── DTOs/
+│   ├── UserDtos.cs               │   ├── user-dtos.ts      ← All 3 classes together
+│   │   ├── UserCreateDto         │   └── product-dtos.ts   ← All 2 classes together
+│   │   ├── UserUpdateDto         
+│   │   └── UserResponseDto       
+│   └── ProductDtos.cs            
+│       ├── ProductDto            
+│       └── ProductCreateDto      
+```
+
+**This means if you organize related DTOs in one C# file, they'll stay together in the generated TypeScript file!** 🎯
 
 ### Configuration File Formats
 
@@ -113,7 +141,7 @@ TypeSharp supports multiple configuration formats:
 import { TypeSharpConfig } from 'typesharp';
 
 const config: TypeSharpConfig = {
-  targetPath: './Backend',
+  projectFile: './Backend/Backend.csproj',
   outputPath: './src/types'
 };
 
@@ -123,7 +151,7 @@ export default config;
 **JavaScript** (`typesharp.config.js`):
 ```javascript
 module.exports = {
-  targetPath: './Backend',
+  projectFile: './Backend/Backend.csproj',
   outputPath: './src/types'
 };
 ```
@@ -131,7 +159,7 @@ module.exports = {
 **JSON** (`typesharp.config.json`):
 ```json
 {
-  "targetPath": "./Backend",
+  "projectFile": "./Backend/Backend.csproj",
   "outputPath": "./src/types"
 }
 ```
@@ -214,7 +242,7 @@ export interface Product extends BaseEntity {
 **Config:**
 ```typescript
 const config: TypeSharpConfig = {
-  targetPath: './Backend',
+  projectFile: './Backend/Backend.csproj',
   outputPath: './src/types',
   singleOutputFile: true
 };
@@ -227,7 +255,7 @@ All types will be generated in `src/types/types.ts`
 **Config:**
 ```typescript
 const config: TypeSharpConfig = {
-  targetPath: './Backend',
+  projectFile: './Backend/Backend.csproj',
   outputPath: './src/types',
   fileNamingConvention: 'snake',    // user_model.ts
   namingConvention: 'pascal'         // UserName, not userName

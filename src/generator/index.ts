@@ -2,14 +2,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { CSharpClass, CSharpProperty, NamingConvention } from '../types';
 import type { ParseResult, TypeSharpConfig } from '../types';
+
 /**
  * Generate TypeScript files from parsed C# classes
  */
 export function generateTypeScriptFiles(
   config: TypeSharpConfig,
-  parseResults: ParseResult[],  // Change parameter
+  parseResults: ParseResult[],
 ): void {
-  const classes = parseResults.flatMap(r => r.classes);
   const outputPath = config.outputPath;
 
   if (!fs.existsSync(outputPath)) {
@@ -17,9 +17,11 @@ export function generateTypeScriptFiles(
   }
 
   if (config.singleOutputFile) {
-    generateSingleFile(classes, outputPath, config);
+    const allClasses = parseResults.flatMap(r => r.classes);
+    generateSingleFile(allClasses, outputPath, config);
   } else {
-    generateMultipleFiles(classes, outputPath, config, parseResults);
+    // Generate one TypeScript file per C# file (preserves grouping)
+    generateMultipleFiles(outputPath, config, parseResults);
   }
 }
 
@@ -36,7 +38,7 @@ function generateSingleFile(
     .join('\n\n');
 
   const header = generateFileHeader();
-  const fullContent = `${header}\n${content}\n`;
+  const fullContent = `${header}\n\n${content}\n`;
 
   const fileName = 'types.ts';
   const filePath = path.join(outputPath, fileName);
@@ -46,42 +48,49 @@ function generateSingleFile(
 }
 
 /**
- * Generate multiple files, one per class
+ * Generate multiple files - one TypeScript file per C# source file
+ * This preserves the original grouping of classes
  */
 function generateMultipleFiles(
-  classes: CSharpClass[],
   outputPath: string,
   config: TypeSharpConfig,
-  parseResults: ParseResult[]  // Add this parameter
+  parseResults: ParseResult[]
 ): void {
   for (const result of parseResults) {
-    for (const cls of result.classes) {
-      const content = generateTypeScriptClass(cls, config);
-      const header = generateFileHeader();
-      const fullContent = `${header}\n${content}\n}`;
+    // Generate content for all classes in this C# file
+    const content = result.classes
+      .map(cls => generateTypeScriptClass(cls, config))
+      .join('\n\n');
 
-      // Preserve folder structure
-      const relativeDir = path.dirname(result.relativePath);
-      const targetDir = path.join(outputPath, relativeDir);
-      
-      // Create directory if needed
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true });
-      }
+    const header = generateFileHeader();
+    const fullContent = `${header}\n\n${content}\n`;
 
-      let baseName = cls.name;
-      if (config.fileSuffix) {
-        const convention = config.fileNamingConvention || 'kebab';
-        const suffix = convertFileName(config.fileSuffix, convention);
-        baseName = `${baseName}-${suffix}`;
-      }
-
-      const fileName = convertFileName(baseName, config.fileNamingConvention || 'kebab');
-      const filePath = path.join(targetDir, `${fileName}.ts`);
-
-      fs.writeFileSync(filePath, fullContent, 'utf-8');
-      console.log(`✓ Generated: ${filePath}`);
+    // Preserve folder structure
+    const relativeDir = path.dirname(result.relativePath);
+    const targetDir = path.join(outputPath, relativeDir);
+    
+    // Create directory if needed
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
     }
+
+    // Get the original C# filename without extension
+    const originalFileName = path.basename(result.relativePath, '.cs');
+    
+    // Apply file suffix if configured
+    let baseName = originalFileName;
+    if (config.fileSuffix) {
+      const convention = config.fileNamingConvention || 'kebab';
+      const suffix = convertFileName(config.fileSuffix, convention);
+      baseName = `${baseName}-${suffix}`;
+    }
+
+    // Apply naming convention to the filename
+    const fileName = convertFileName(baseName, config.fileNamingConvention || 'kebab');
+    const filePath = path.join(targetDir, `${fileName}.ts`);
+
+    fs.writeFileSync(filePath, fullContent, 'utf-8');
+    console.log(`✓ Generated: ${filePath}`);
   }
 }
 
