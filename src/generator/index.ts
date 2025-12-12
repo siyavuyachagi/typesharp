@@ -189,7 +189,7 @@ function generateImports(
   for (const [filePath, classNames] of imports.entries()) {
     const relativePath = getRelativeImportPath(currentFilePath, filePath);
     const sortedNames = Array.from(classNames).sort();
-    importStatements.push(`import { ${sortedNames.join(', ')} } from '${relativePath}';`);
+    importStatements.push(`import type { ${sortedNames.join(', ')} } from '${relativePath}';`);
   }
 
   return importStatements.length > 0 ? importStatements.join('\n') : '';
