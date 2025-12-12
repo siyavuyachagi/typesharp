@@ -72,7 +72,7 @@ export async function generate(configPath?: string): Promise<void> {
     console.log(`->  Output: ${config.outputPath}`);
     console.log(`->  Annotation: [${config.targetAnnotation}]`);
     console.log(`->  Single file: ${config.singleOutputFile}\n`);
-    if (config.typeSuffix) console.log(`-> Type suffix: ${config.typeSuffix}\n`);
+    if (config.fileSuffix) console.log(`-> File suffix: ${config.fileSuffix}\n`);
 
 
 
@@ -85,10 +85,7 @@ export async function generate(configPath?: string): Promise<void> {
 
     // Parse C# files
     console.log('📖 Parsing C# files...');
-    const parseResults = await parseCSharpFiles(
-      config.projectFile,
-      config.targetAnnotation
-    );
+    const parseResults = await parseCSharpFiles(config);
 
 
 
@@ -117,7 +114,7 @@ export async function generate(configPath?: string): Promise<void> {
 
     // Generate TypeScript files
     console.log('✍️  Generating TypeScript files...');
-    generateTypeScriptFiles(allClasses, config);
+    generateTypeScriptFiles(config, parseResults);
 
 
     

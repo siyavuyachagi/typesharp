@@ -1,17 +1,17 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { CSharpClass, CSharpProperty, NamingConvention } from '../types';
-import type { TypeSharpConfig } from '../types';
+import type { ParseResult, TypeSharpConfig } from '../types';
 /**
  * Generate TypeScript files from parsed C# classes
  */
 export function generateTypeScriptFiles(
-  classes: CSharpClass[],
-  config: TypeSharpConfig
+  config: TypeSharpConfig,
+  parseResults: ParseResult[],  // Change parameter
 ): void {
+  const classes = parseResults.flatMap(r => r.classes);
   const outputPath = config.outputPath;
 
-  // Ensure output directory exists
   if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath, { recursive: true });
   }
@@ -19,7 +19,7 @@ export function generateTypeScriptFiles(
   if (config.singleOutputFile) {
     generateSingleFile(classes, outputPath, config);
   } else {
-    generateMultipleFiles(classes, outputPath, config);
+    generateMultipleFiles(classes, outputPath, config, parseResults);
   }
 }
 
@@ -51,18 +51,37 @@ function generateSingleFile(
 function generateMultipleFiles(
   classes: CSharpClass[],
   outputPath: string,
-  config: TypeSharpConfig
+  config: TypeSharpConfig,
+  parseResults: ParseResult[]  // Add this parameter
 ): void {
-  for (const cls of classes) {
-    const content = generateTypeScriptClass(cls, config);
-    const header = generateFileHeader();
-    const fullContent = `${header}\n${content}\n`;
+  for (const result of parseResults) {
+    for (const cls of result.classes) {
+      const content = generateTypeScriptClass(cls, config);
+      const header = generateFileHeader();
+      const fullContent = `${header}\n${content}\n}`;
 
-    const fileName = convertFileName(cls.name, config.fileNamingConvention || 'kebab');
-    const filePath = path.join(outputPath, `${fileName}.ts`);
+      // Preserve folder structure
+      const relativeDir = path.dirname(result.relativePath);
+      const targetDir = path.join(outputPath, relativeDir);
+      
+      // Create directory if needed
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
 
-    fs.writeFileSync(filePath, fullContent, 'utf-8');
-    console.log(`✓ Generated: ${filePath}`);
+      let baseName = cls.name;
+      if (config.fileSuffix) {
+        const convention = config.fileNamingConvention || 'kebab';
+        const suffix = convertFileName(config.fileSuffix, convention);
+        baseName = `${baseName}-${suffix}`;
+      }
+
+      const fileName = convertFileName(baseName, config.fileNamingConvention || 'kebab');
+      const filePath = path.join(targetDir, `${fileName}.ts`);
+
+      fs.writeFileSync(filePath, fullContent, 'utf-8');
+      console.log(`✓ Generated: ${filePath}`);
+    }
   }
 }
 

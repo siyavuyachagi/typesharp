@@ -57,7 +57,7 @@ export interface TypeSharpConfig {
    *   kebab : User -> user-dto
    * ```
    */
-  typeSuffix?: string;
+  fileSuffix?: string;
 }
 
 
