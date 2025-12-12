@@ -67,7 +67,7 @@ function loadConfigFromFile(filePath: string): TypeSharpConfig {
  * Merge user config with defaults
  */
 function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
-  if (!config.targetPath) {
+  if (!config.projectFile) {
     throw new Error('targetPath is required in configuration');
   }
 
@@ -85,13 +85,13 @@ function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
  * Validate configuration
  */
 function validateConfig(config: TypeSharpConfig): void {
-  if (!fs.existsSync(config.targetPath)) {
-    throw new Error(`Target path does not exist: ${config.targetPath}`);
+  if (!fs.existsSync(config.projectFile)) {
+    throw new Error(`Target path does not exist: ${config.projectFile}`);
   }
 
-  const stats = fs.statSync(config.targetPath);
+  const stats = fs.statSync(config.projectFile);
   if (!stats.isDirectory()) {
-    throw new Error(`Target path is not a directory: ${config.targetPath}`);
+    throw new Error(`Target path is not a directory: ${config.projectFile}`);
   }
 }
 
@@ -102,33 +102,46 @@ export async function generate(configPath?: string): Promise<void> {
   try {
     console.log('🚀 TypeSharp - Starting generation...\n');
 
+
+
     // Load configuration
     const config = loadConfig(configPath);
     console.log('✓ Configuration loaded');
-    console.log(`  Target: ${config.targetPath}`);
+    console.log(`  Target: ${config.projectFile}`);
     console.log(`  Output: ${config.outputPath}`);
     console.log(`  Annotation: [${config.targetAnnotation}]`);
     console.log(`  Single file: ${config.singleOutputFile}\n`);
+
+
 
     // Validate configuration
     validateConfig(config);
     console.log('✓ Configuration validated\n');
 
+
+
+
     // Parse C# files
     console.log('📖 Parsing C# files...');
     const parseResults = await parseCSharpFiles(
-      config.targetPath,
+      config.projectFile,
       config.targetAnnotation
     );
+
+
 
     if (parseResults.length === 0) {
       console.log('⚠ No C# files found with [TypeSharp] attribute');
       return;
     }
 
+
+
     // Collect all classes
     const allClasses = parseResults.flatMap(result => result.classes);
     console.log(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute\n`);
+
+
 
     // Display found classes
     for (const cls of allClasses) {
@@ -138,10 +151,14 @@ export async function generate(configPath?: string): Promise<void> {
     }
     console.log('');
 
+
+
     // Generate TypeScript files
     console.log('✍️  Generating TypeScript files...');
     generateTypeScriptFiles(allClasses, config);
 
+
+    
     console.log('\n✅ Generation completed successfully!');
   } catch (error) {
     if (error instanceof Error) {
@@ -158,12 +175,12 @@ export async function generate(configPath?: string): Promise<void> {
  */
 export function createSampleConfig(format: 'ts' | 'js' | 'json' = 'ts'): void {
   const sampleConfig: TypeSharpConfig = {
-    targetPath: './Backend',
+    projectFile: './Backend',
     outputPath: './src/types',
     targetAnnotation: 'TypeSharp',
     singleOutputFile: false,
     fileNamingConvention: 'kebab',
-    namingConvention: 'camel'
+    namingConvention: 'camel',
   };
 
   let fileName: string;
