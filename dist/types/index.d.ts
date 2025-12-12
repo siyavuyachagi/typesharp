@@ -71,6 +71,8 @@ export interface CSharpClass {
     inheritsFrom?: string;
     isEnum: boolean;
     enumValues?: string[];
+    genericParameters?: string[];
+    baseClassGenerics?: string[];
 }
 /**
  * Result of parsing C# files

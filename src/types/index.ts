@@ -16,7 +16,7 @@ export interface TypeSharpConfig {
    * ```
    */
   projectFile: string;
-  
+
   /**
    * Path where TypeScript files will be generated
    */
@@ -82,6 +82,8 @@ export interface CSharpClass {
   inheritsFrom?: string;
   isEnum: boolean;
   enumValues?: string[];
+  genericParameters?: string[]; // NEW: e.g., ['T'] or ['T', 'U']
+  baseClassGenerics?: string[]; // NEW: e.g., ['T'] for ApiResponse<T>
 }
 
 /**

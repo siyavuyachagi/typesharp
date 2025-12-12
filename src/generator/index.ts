@@ -25,6 +25,15 @@ export function generateTypeScriptFiles(
   }
 }
 
+
+
+
+
+
+
+
+
+
 /**
  * Generate a single file with all types
  */
@@ -46,6 +55,18 @@ function generateSingleFile(
   fs.writeFileSync(filePath, fullContent, 'utf-8');
   console.log(`✓ Generated: ${filePath}`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Generate multiple files - one TypeScript file per C# source file
@@ -103,6 +124,17 @@ function generateMultipleFiles(
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Build a map of class names to their output file paths
  */
@@ -138,6 +170,19 @@ function buildClassToFileMap(
   return map;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Generate import statements for referenced types
  */
@@ -166,7 +211,8 @@ function generateImports(
 
     // Check property types
     for (const prop of cls.properties) {
-      const referencedType = prop.type;
+      // Extract base type (remove array brackets and nullable)
+      let referencedType = prop.type;
       
       // Skip primitive types
       if (isPrimitiveType(referencedType)) continue;
@@ -195,6 +241,18 @@ function generateImports(
   return importStatements.length > 0 ? importStatements.join('\n') : '';
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Get relative import path from one file to another
  */
@@ -216,6 +274,16 @@ function getRelativeImportPath(fromFile: string, toFile: string): string {
   return relativePath;
 }
 
+
+
+
+
+
+
+
+
+
+
 /**
  * Check if a type is a primitive TypeScript type
  */
@@ -223,6 +291,14 @@ function isPrimitiveType(type: string): boolean {
   const primitives = ['string', 'number', 'boolean', 'any', 'void', 'null', 'undefined'];
   return primitives.includes(type);
 }
+
+
+
+
+
+
+
+
 
 /**
  * Generate TypeScript interface or enum from C# class
@@ -234,6 +310,15 @@ function generateTypeScriptClass(cls: CSharpClass, config: TypeSharpConfig): str
 
   return generateInterface(cls, config);
 }
+
+
+
+
+
+
+
+
+
 
 /**
  * Generate TypeScript enum
@@ -247,6 +332,15 @@ function generateEnum(cls: CSharpClass): string {
   return `export enum ${cls.name} {\n${enumValues}\n}`;
 }
 
+
+
+
+
+
+
+
+
+
 /**
  * Generate TypeScript interface
  */
@@ -255,10 +349,32 @@ function generateInterface(cls: CSharpClass, config: TypeSharpConfig): string {
     .map(prop => generateProperty(prop, config.namingConvention || 'camel'))
     .join('\n');
 
-  const extendsClause = cls.inheritsFrom ? ` extends ${cls.inheritsFrom}` : '';
+  // Build generic parameters for the interface
+  const genericParams = cls.genericParameters && cls.genericParameters.length > 0
+    ? `<${cls.genericParameters.join(', ')}>`
+    : '';
 
-  return `export interface ${cls.name}${extendsClause} {\n${properties}\n}`;
+  // Build extends clause with generics
+  let extendsClause = '';
+  if (cls.inheritsFrom) {
+    const baseGenerics = cls.baseClassGenerics && cls.baseClassGenerics.length > 0
+      ? `<${cls.baseClassGenerics.join(', ')}>`
+      : '';
+    extendsClause = ` extends ${cls.inheritsFrom}${baseGenerics}`;
+  }
+
+  return `export interface ${cls.name}${genericParams}${extendsClause} {\n${properties}\n}`;
 }
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Generate a single property
@@ -280,6 +396,15 @@ function generateProperty(prop: CSharpProperty, convention: NamingConvention): s
   return `  ${propertyName}: ${type};`;
 }
 
+
+
+
+
+
+
+
+
+
 /**
  * Convert property name to specified convention
  */
@@ -297,6 +422,16 @@ function convertPropertyName(name: string, convention: NamingConvention): string
       return name;
   }
 }
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Convert file name to specified convention
@@ -316,6 +451,15 @@ function convertFileName(name: string, convention: NamingConvention): string {
   }
 }
 
+
+
+
+
+
+
+
+
+
 /**
  * Convert string to camelCase
  */
@@ -323,6 +467,12 @@ function toCamelCase(str: string): string {
   const pascal = toPascalCase(str);
   return pascal.charAt(0).toLowerCase() + pascal.slice(1);
 }
+
+
+
+
+
+
 
 /**
  * Convert string to PascalCase
@@ -332,6 +482,13 @@ function toPascalCase(str: string): string {
     .replace(/[_-](.)/g, (_, char) => char.toUpperCase())
     .replace(/^(.)/, (_, char) => char.toUpperCase());
 }
+
+
+
+
+
+
+
 
 /**
  * Convert string to snake_case
@@ -343,6 +500,14 @@ function toSnakeCase(str: string): string {
     .replace(/^_/, '');
 }
 
+
+
+
+
+
+
+
+
 /**
  * Convert string to kebab-case
  */
@@ -352,6 +517,13 @@ function toKebabCase(str: string): string {
     .toLowerCase()
     .replace(/^-/, '');
 }
+
+
+
+
+
+
+
 
 /**
  * Generate file header comment

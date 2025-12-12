@@ -154,7 +154,8 @@ function generateImports(classes, classToFileMap, currentFilePath, currentClassN
         }
         // Check property types
         for (const prop of cls.properties) {
-            const referencedType = prop.type;
+            // Extract base type (remove array brackets and nullable)
+            let referencedType = prop.type;
             // Skip primitive types
             if (isPrimitiveType(referencedType))
                 continue;
@@ -228,8 +229,19 @@ function generateInterface(cls, config) {
     const properties = cls.properties
         .map(prop => generateProperty(prop, config.namingConvention || 'camel'))
         .join('\n');
-    const extendsClause = cls.inheritsFrom ? ` extends ${cls.inheritsFrom}` : '';
-    return `export interface ${cls.name}${extendsClause} {\n${properties}\n}`;
+    // Build generic parameters for the interface
+    const genericParams = cls.genericParameters && cls.genericParameters.length > 0
+        ? `<${cls.genericParameters.join(', ')}>`
+        : '';
+    // Build extends clause with generics
+    let extendsClause = '';
+    if (cls.inheritsFrom) {
+        const baseGenerics = cls.baseClassGenerics && cls.baseClassGenerics.length > 0
+            ? `<${cls.baseClassGenerics.join(', ')}>`
+            : '';
+        extendsClause = ` extends ${cls.inheritsFrom}${baseGenerics}`;
+    }
+    return `export interface ${cls.name}${genericParams}${extendsClause} {\n${properties}\n}`;
 }
 /**
  * Generate a single property

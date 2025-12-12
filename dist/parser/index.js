@@ -81,20 +81,31 @@ function parseClassesFromFile(content, targetAnnotation) {
                 classes.push(enumClass);
             continue;
         }
-        // Parse as class - Updated regex to handle generics
-        // Matches: public class ClassName<T> : BaseClass<T>
-        const classMatch = afterAnnotation.match(/\[[\w]+\]\s*public\s+class\s+(\w+)(?:<[^>]+>)?(?:\s*:\s*(\w+)(?:<[^>]+>)?)?/);
+        // Parse as class with full generic support
+        // Matches: public class ClassName<T, U> : BaseClass<T>
+        const classMatch = afterAnnotation.match(/\[[\w]+\]\s*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/);
         if (classMatch) {
-            const className = classMatch[1]; // Just the class name without <T>
-            const inheritsFrom = classMatch[2]; // Just the base class name without <T>
+            const className = classMatch[1];
+            const genericParams = classMatch[2]; // e.g., "T" or "T, U"
+            const inheritsFrom = classMatch[3];
+            const baseGenerics = classMatch[4]; // e.g., "T" or "T, U"
             const classBody = extractClassBody(afterAnnotation);
             if (classBody) {
                 const properties = parseProperties(classBody);
+                // Parse generic parameters
+                const genericParameters = genericParams
+                    ? genericParams.split(',').map(p => p.trim())
+                    : undefined;
+                const baseClassGenerics = baseGenerics
+                    ? baseGenerics.split(',').map(p => p.trim())
+                    : undefined;
                 classes.push({
                     name: className,
                     properties,
                     inheritsFrom,
-                    isEnum: false
+                    isEnum: false,
+                    genericParameters,
+                    baseClassGenerics
                 });
             }
         }
