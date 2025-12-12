@@ -32,6 +32,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generate = generate;
 exports.loadConfig = loadConfig;
@@ -40,6 +43,7 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const parser_1 = require("../parser");
 const generator_1 = require("../generator");
+const chalk_1 = __importDefault(require("chalk"));
 /**
  * Default configuration values
  */
@@ -88,47 +92,49 @@ function mergeWithDefaults(config) {
  */
 async function generate(configPath) {
     try {
-        console.log('🚀 TypeSharp - Starting generation...\n');
+        console.log(chalk_1.default.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
         // Load configuration
         const config = loadConfig(configPath);
-        console.log('✓ Configuration loaded');
-        console.log(`->  Target: ${config.projectFile}`);
-        console.log(`->  Output: ${config.outputPath}`);
-        console.log(`->  Annotation: [${config.targetAnnotation}]`);
-        console.log(`->  Single file: ${config.singleOutputFile}\n`);
-        if (config.fileSuffix)
-            console.log(`-> File suffix: ${config.fileSuffix}\n`);
+        console.log(chalk_1.default.green.bold('\n✓ Configuration loaded'));
+        console.log(chalk_1.default.cyan(`->  Target:`), chalk_1.default.white(config.projectFile));
+        console.log(chalk_1.default.cyan(`->  Output:`), chalk_1.default.white(config.outputPath));
+        console.log(chalk_1.default.cyan(`->  Annotation:`), chalk_1.default.white(`[${config.targetAnnotation}]`));
+        console.log(chalk_1.default.cyan(`->  Single file:`), chalk_1.default.white(config.singleOutputFile));
+        if (config.fileSuffix) {
+            console.log(chalk_1.default.cyan(`->  File suffix:`), chalk_1.default.white(config.fileSuffix));
+        }
         // Validate configuration
+        console.log(chalk_1.default.cyan('\n⧖ Configuration validation...'));
         validateConfig(config);
-        console.log('✓ Configuration validated\n');
+        console.log(chalk_1.default.green.bold('✓ Configuration validated'));
         // Parse C# files
-        console.log('📖 Parsing C# files...');
+        console.log(chalk_1.default.cyan('\n⧖ Parsing C# files...'));
         const parseResults = await (0, parser_1.parseCSharpFiles)(config);
         if (parseResults.length === 0) {
-            console.log('⚠ No C# files found with [TypeSharp] attribute');
+            console.warn(chalk_1.default.yellow.bold('❗ Warning:'), chalk_1.default.white(`No C# files found with [TypeSharp] attribute\n`));
             return;
         }
         // Collect all classes
         const allClasses = parseResults.flatMap(result => result.classes);
-        console.log(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute\n`);
+        console.log(chalk_1.default.green.bold(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute`));
         // Display found classes
-        for (const cls of allClasses) {
-            const type = cls.isEnum ? 'enum' : 'class';
-            const inheritance = cls.inheritsFrom ? ` : ${cls.inheritsFrom}` : '';
-            console.log(`  - ${cls.name} (${type})${inheritance}`);
-        }
-        console.log('');
+        // for (const cls of allClasses) {
+        //   const type = cls.isEnum ? 'enum' : 'class';
+        //   const inheritance = cls.inheritsFrom ? ` : ${cls.inheritsFrom}` : '';
+        //   console.log(chalk.gray.italic(`  - ${cls.name} (${type})${inheritance}`));
+        // }
         // Generate TypeScript files
-        console.log('✍️  Generating TypeScript files...');
+        console.log(chalk_1.default.blue.cyan('\n⧖ Generating TypeScript files...'));
         (0, generator_1.generateTypeScriptFiles)(config, parseResults);
-        console.log('\n✅ Generation completed successfully!');
+        console.log(chalk_1.default.green.bold('✅ Generation completed successfully!\n'));
     }
     catch (error) {
         if (error instanceof Error) {
-            console.error(`\n❌ Error: ${error.message}`);
+            console.error(chalk_1.default.red.bold(`\n❌ Error:`), chalk_1.default.white(error.message));
         }
         else {
             console.error(`\n❌ An unknown error occurred`);
+            console.error(chalk_1.default.red.bold(`\n❌ An unknown error occurred`));
         }
         throw error;
     }
@@ -167,6 +173,17 @@ function validateConfig(config) {
     if (!config.projectFile.endsWith('.csproj')) {
         throw new Error(`Target file is not a .csproj: ${config.projectFile}`);
     }
+    /**
+     * Optional fields sanitization
+     */
+    if (config.targetAnnotation) {
+        const original = config.targetAnnotation;
+        // Remove spaces, [ and ]
+        config.targetAnnotation = config.targetAnnotation.replace(/[ \[\]]/g, '');
+        if (config.targetAnnotation !== original) {
+            console.warn(chalk_1.default.yellow.bold('❗ Warning:'), chalk_1.default.white(`remove invalid characters (space, [ or ]) from your`), chalk_1.default.bold('targetAnnotation'), `\n`);
+        }
+    }
 }
 /**
  * Create a sample configuration file
@@ -200,10 +217,10 @@ export default config;
 `;
     }
     if (fs.existsSync(fileName)) {
-        console.log(`⚠ ${fileName} already exists. Skipping creation.`);
+        console.log(chalk_1.default.yellow.bold('❗ Warning:'), chalk_1.default.white(`${fileName} already exists. Skipping creation.`));
         return;
     }
     fs.writeFileSync(fileName, content, 'utf-8');
-    console.log(`✓ Created ${fileName}`);
+    console.log(chalk_1.default.green.bold('✅ Created'), chalk_1.default.white(`./${fileName}`));
 }
 //# sourceMappingURL=index.js.map

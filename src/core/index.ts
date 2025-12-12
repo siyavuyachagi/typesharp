@@ -3,6 +3,7 @@ import * as path from 'path';
 import { TypeSharpConfig } from '../types';
 import { parseCSharpFiles } from '../parser';
 import { generateTypeScriptFiles } from '../generator';
+import chalk from 'chalk';
 
 /**
  * Default configuration values
@@ -62,35 +63,37 @@ function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
  */
 export async function generate(configPath?: string): Promise<void> {
   try {
-    console.log('🚀 TypeSharp - Starting generation...\n');
-
+    console.log(chalk.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
 
     // Load configuration
     const config = loadConfig(configPath);
-    console.log('✓ Configuration loaded');
-    console.log(`->  Target: ${config.projectFile}`);
-    console.log(`->  Output: ${config.outputPath}`);
-    console.log(`->  Annotation: [${config.targetAnnotation}]`);
-    console.log(`->  Single file: ${config.singleOutputFile}\n`);
-    if (config.fileSuffix) console.log(`-> File suffix: ${config.fileSuffix}\n`);
+    console.log(chalk.green.bold('\n✓ Configuration loaded'));
+    console.log(chalk.cyan(`->  Target:`), chalk.white(config.projectFile));
+    console.log(chalk.cyan(`->  Output:`), chalk.white(config.outputPath));
+    console.log(chalk.cyan(`->  Annotation:`), chalk.white(`[${config.targetAnnotation}]`));
+    console.log(chalk.cyan(`->  Single file:`), chalk.white(config.singleOutputFile));
+    if (config.fileSuffix) {
+      console.log(chalk.cyan(`->  File suffix:`), chalk.white(config.fileSuffix));
+    }
 
 
 
     // Validate configuration
+    console.log(chalk.cyan('\n⧖ Configuration validation...'));
     validateConfig(config);
-    console.log('✓ Configuration validated\n');
+    console.log(chalk.green.bold('✓ Configuration validated'));
 
 
 
 
     // Parse C# files
-    console.log('📖 Parsing C# files...');
+    console.log(chalk.cyan('\n⧖ Parsing C# files...'));
     const parseResults = await parseCSharpFiles(config);
 
 
 
     if (parseResults.length === 0) {
-      console.log('⚠ No C# files found with [TypeSharp] attribute');
+      console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`No C# files found with [TypeSharp] attribute\n`));
       return;
     }
 
@@ -98,32 +101,29 @@ export async function generate(configPath?: string): Promise<void> {
 
     // Collect all classes
     const allClasses = parseResults.flatMap(result => result.classes);
-    console.log(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute\n`);
-
-
-
+    console.log(chalk.green.bold(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute`));
     // Display found classes
-    for (const cls of allClasses) {
-      const type = cls.isEnum ? 'enum' : 'class';
-      const inheritance = cls.inheritsFrom ? ` : ${cls.inheritsFrom}` : '';
-      console.log(`  - ${cls.name} (${type})${inheritance}`);
-    }
-    console.log('');
+    // for (const cls of allClasses) {
+    //   const type = cls.isEnum ? 'enum' : 'class';
+    //   const inheritance = cls.inheritsFrom ? ` : ${cls.inheritsFrom}` : '';
+    //   console.log(chalk.gray.italic(`  - ${cls.name} (${type})${inheritance}`));
+    // }
 
 
 
     // Generate TypeScript files
-    console.log('✍️  Generating TypeScript files...');
+    console.log(chalk.blue.cyan('\n⧖ Generating TypeScript files...'));
     generateTypeScriptFiles(config, parseResults);
 
 
 
-    console.log('\n✅ Generation completed successfully!');
+    console.log(chalk.green.bold('✅ Generation completed successfully!\n'));
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`\n❌ Error: ${error.message}`);
+      console.error(chalk.red.bold(`\n❌ Error:`), chalk.white(error.message));
     } else {
       console.error(`\n❌ An unknown error occurred`);
+      console.error(chalk.red.bold(`\n❌ An unknown error occurred`));
     }
     throw error;
   }
@@ -182,9 +182,7 @@ function validateConfig(config: TypeSharpConfig): void {
     config.targetAnnotation = config.targetAnnotation.replace(/[ \[\]]/g, '');
 
     if (config.targetAnnotation !== original) {
-      console.warn(
-        `Warning: targetAnnotation had invalid characters (space, [ or ]). They have been removed.`
-      );
+      console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`remove invalid characters (space, [ or ]) from your`), chalk.bold('targetAnnotation'),`\n`);
     }
   }
 }
@@ -223,10 +221,10 @@ export default config;
   }
 
   if (fs.existsSync(fileName)) {
-    console.log(`⚠ ${fileName} already exists. Skipping creation.`);
+    console.log(chalk.yellow.bold('❗ Warning:'), chalk.white(`${fileName} already exists. Skipping creation.`));
     return;
   }
 
   fs.writeFileSync(fileName, content, 'utf-8');
-  console.log(`✓ Created ${fileName}`);
+  console.log(chalk.green.bold('✅ Created'), chalk.white(`./${fileName}`));
 }

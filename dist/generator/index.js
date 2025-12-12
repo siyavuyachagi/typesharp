@@ -32,10 +32,14 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateTypeScriptFiles = generateTypeScriptFiles;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
+const chalk_1 = __importDefault(require("chalk"));
 /**
  * Generate TypeScript files from parsed C# classes
  */
@@ -65,7 +69,7 @@ function generateSingleFile(classes, outputPath, config) {
     const fileName = 'types.ts';
     const filePath = path.join(outputPath, fileName);
     fs.writeFileSync(filePath, fullContent, 'utf-8');
-    console.log(`✓ Generated: ${filePath}`);
+    console.log(chalk_1.default.whiteBright(` - Generated:`), chalk_1.default.blue(filePath));
 }
 /**
  * Generate multiple files - one TypeScript file per C# source file
@@ -106,7 +110,7 @@ function generateMultipleFiles(outputPath, config, parseResults) {
             ? `${header}\n\n${imports}\n\n${content}\n`
             : `${header}\n\n${content}\n`;
         fs.writeFileSync(filePath, fullContent, 'utf-8');
-        console.log(`✓ Generated: ${filePath}`);
+        console.log(chalk_1.default.whiteBright(` - Generated:`), chalk_1.default.blue(filePath));
     }
 }
 /**

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { CSharpClass, CSharpProperty, NamingConvention } from '../types';
 import type { ParseResult, TypeSharpConfig } from '../types';
+import chalk from 'chalk';
 
 /**
  * Generate TypeScript files from parsed C# classes
@@ -53,7 +54,7 @@ function generateSingleFile(
   const filePath = path.join(outputPath, fileName);
 
   fs.writeFileSync(filePath, fullContent, 'utf-8');
-  console.log(`✓ Generated: ${filePath}`);
+  console.log(chalk.whiteBright(` - Generated:`), chalk.blue(filePath));
 }
 
 
@@ -89,7 +90,7 @@ function generateMultipleFiles(
     // Preserve folder structure
     const relativeDir = path.dirname(result.relativePath);
     const targetDir = path.join(outputPath, relativeDir);
-    
+
     // Create directory if needed
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
@@ -97,7 +98,7 @@ function generateMultipleFiles(
 
     // Get the original C# filename without extension
     const originalFileName = path.basename(result.relativePath, '.cs');
-    
+
     // Apply file suffix if configured
     let baseName = originalFileName;
     if (config.fileSuffix) {
@@ -115,12 +116,12 @@ function generateMultipleFiles(
     const imports = generateImports(result.classes, classToFileMap, filePath, currentClassNames);
 
     const header = generateFileHeader();
-    const fullContent = imports 
+    const fullContent = imports
       ? `${header}\n\n${imports}\n\n${content}\n`
       : `${header}\n\n${content}\n`;
 
     fs.writeFileSync(filePath, fullContent, 'utf-8');
-    console.log(`✓ Generated: ${filePath}`);
+    console.log(chalk.whiteBright(` - Generated:`), chalk.blue(filePath));
   }
 }
 
@@ -148,9 +149,9 @@ function buildClassToFileMap(
   for (const result of parseResults) {
     const relativeDir = path.dirname(result.relativePath);
     const targetDir = path.join(outputPath, relativeDir);
-    
+
     const originalFileName = path.basename(result.relativePath, '.cs');
-    
+
     let baseName = originalFileName;
     if (config.fileSuffix) {
       const convention = config.fileNamingConvention || 'kebab';
@@ -213,10 +214,10 @@ function generateImports(
     for (const prop of cls.properties) {
       // Extract base type (remove array brackets and nullable)
       let referencedType = prop.type;
-      
+
       // Skip primitive types
       if (isPrimitiveType(referencedType)) continue;
-      
+
       // Skip if it's in the same file
       if (currentClassNames.includes(referencedType)) continue;
 
@@ -259,18 +260,18 @@ function generateImports(
 function getRelativeImportPath(fromFile: string, toFile: string): string {
   const fromDir = path.dirname(fromFile);
   let relativePath = path.relative(fromDir, toFile);
-  
+
   // Remove .ts extension
   relativePath = relativePath.replace(/\.ts$/, '');
-  
+
   // Ensure it starts with ./ or ../
   if (!relativePath.startsWith('.')) {
     relativePath = './' + relativePath;
   }
-  
+
   // Convert Windows backslashes to forward slashes
   relativePath = relativePath.replace(/\\/g, '/');
-  
+
   return relativePath;
 }
 

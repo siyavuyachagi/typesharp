@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import { generate, createSampleConfig } from '../core';
+import chalk from 'chalk';
 
 const program = new Command();
 
@@ -33,17 +34,17 @@ program
   .action((options) => {
     try {
       const format = options.format as 'ts' | 'js' | 'json';
-      
+
       if (!['ts', 'js', 'json'].includes(format)) {
-        console.error('❌ Invalid format. Use: ts, js, or json');
+        console.error(chalk.red.bold('❌ Invalid format.') + ' Use: ' + chalk.yellow('json, ts, ') + 'or' + chalk.yellow(' js'));
         process.exit(1);
       }
-      
+
       createSampleConfig(format);
       process.exit(0);
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`❌ Error: ${error.message}`);
+        console.error(chalk.red.bold(`❌ Error:`), chalk.white(error.message));
       }
       process.exit(1);
     }
