@@ -264,9 +264,9 @@ generateTypes();
 - Node.js >= 14
 - TypeScript >= 4.5 (if using TypeScript config)
 
-## Contributing
+<!-- ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. -->
 
 ## License
 
