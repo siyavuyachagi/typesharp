@@ -191,7 +191,7 @@ function validateConfig(config) {
 function createSampleConfig(format = 'ts') {
     const sampleConfig = {
         projectFile: 'C:/Users/User/Desktop/MyApp/Api/Api.csproj',
-        outputPath: './app/src/types',
+        outputPath: './app/types',
         targetAnnotation: 'TypeSharp',
         singleOutputFile: false,
         fileNamingConvention: 'kebab',
