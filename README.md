@@ -4,16 +4,16 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 
 ## Features
 
-✨ **Automatic Type Generation** - Convert C# models to TypeScript interfaces  
-🎯 **Custom Attribute Targeting** - Use `[TypeSharp]` or any custom attribute  
-🔄 **Nullable Support** - `string?` becomes `string | null`  
-📦 **Array Handling** - Supports `List<T>`, `IEnumerable<T>`, and arrays  
-🧬 **Generic Types** - Preserves generic type definitions like `Response<T>` → `Response<T>`
-🧬 **Inheritance** - Preserves class inheritance with `extends`  
-🎨 **Naming Conventions** - Convert property names (camel, pascal, snake, kebab)  
-📁 **Flexible Output** - Single file or multiple files  
-🔢 **Enum Support** - Converts C# enums to TypeScript string enums  
-🗂️ **File Grouping** - Preserves C# file organization (multiple classes per file stay together)
+✨ **Automatic Type Generation** – Convert C# models to TypeScript interfaces  
+🎯 **Custom Attribute Targeting** – Use `[TypeSharp]` or any custom attribute  
+🔄 **Nullable Support** – `string?` → `string | null`  
+📦 **Collection Handling** – Supports `List<T>`, `IEnumerable<T>`, arrays **and generic collections**  
+🧬 **Generic Types** – Preserves generic type definitions like `Response<T>` → `Response<T>`  
+🧬 **Inheritance** – Preserves class inheritance using `extends`  
+🎨 **Naming Conventions** – Convert property names (camel, pascal, snake, kebab)  
+📁 **Flexible Output** – Single file or multiple files  
+🔢 **Enum Support** – Converts C# enums to TypeScript string enums  
+🗂️ **File Grouping** – Preserves C# file organization (multiple classes per file stay together)
 
 ## Installation
 
