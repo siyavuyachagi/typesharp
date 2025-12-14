@@ -8,6 +8,7 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 🎯 **Custom Attribute Targeting** - Use `[TypeSharp]` or any custom attribute  
 🔄 **Nullable Support** - `string?` becomes `string | null`  
 📦 **Array Handling** - Supports `List<T>`, `IEnumerable<T>`, and arrays  
+🧬 **Generic Types** - Preserves generic type definitions like `Response<T>` → `Response<T>`
 🧬 **Inheritance** - Preserves class inheritance with `extends`  
 🎨 **Naming Conventions** - Convert property names (camel, pascal, snake, kebab)  
 📁 **Flexible Output** - Single file or multiple files  
@@ -19,7 +20,7 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 ```shell
 npm i -D https://github.com/siyavuyachagi/typesharp.git
 ```
-or later use
+or later use ```diff(not yet on `npm`)```
 ```bash
 npm install typesharp --save-dev
 ```
