@@ -16,55 +16,63 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 
 ## Installation
 
+```shell
+npm i -D https://github.com/siyavuyachagi/typesharp.git
+```
+or later use
 ```bash
 npm install typesharp --save-dev
 ```
 
 ## Quick Start
 
-### 1. Decorate your C# models
+### 1. Create an attribute to target
+In your target project create the following attribute (`TypeSharp`)
+```cs
+namespace YourProject.Attribute
+{
+  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum)]
+  public class TypeSharpAttribute : Attribute { }
+}
+```
+### 1. Decorate your C# models or DTOs
 
 ```csharp
 [TypeSharp]
 public class User
 {
-    public int Id { get; set; }
-    public string? Name { get; set; }
-    public string Email { get; set; }
-    public List<string> Roles { get; set; }
-    public DateTime CreatedAt { get; set; }
+  public int Id { get; set; }
+  public string? Name { get; set; }
+  public string Email { get; set; }
+  public List<string> Roles { get; set; }
+  public DateTime CreatedAt { get; set; }
 }
 
 [TypeSharp]
 public enum UserRole
 {
-    Admin,
-    User,
-    Guest
+  Admin,
+  User,
+  Guest
 }
 ```
 
 ### 2. Create a configuration file
-
+In your frontend end project run the following script
 ```bash
 npx typesharp init
 ```
+This creates `typesharp.config.json`:
 
-This creates `typesharp.config.ts`:
-
-```typescript
-import { TypeSharpConfig } from 'typesharp';
-
-const config: TypeSharpConfig = {
-  projectFile: './Backend/Backend.csproj',
-  outputPath: './src/types',
-  targetAnnotation: 'TypeSharp',
-  singleOutputFile: false,
-  fileNamingConvention: 'kebab',
-  namingConvention: 'camel'
-};
-
-export default config;
+```json
+{
+  "projectFile": "./Backend/Backend.csproj",
+  "outputPath": "./app/types",
+  "targetAnnotation": "TypeSharp",
+  "singleOutputFile": false,
+  "fileNamingConvention": "kebab",
+  "namingConvention": "camel"
+}
 ```
 
 ### 3. Generate TypeScript types
@@ -73,7 +81,7 @@ export default config;
 npx typesharp
 ```
 
-Output (`src/types/user.ts`):
+Output (`app/types/user.ts`):
 
 ```typescript
 /**
@@ -103,7 +111,7 @@ export interface User {
 | `singleOutputFile` | `boolean` | `false` | Generate one file or multiple files (see below) |
 | `fileNamingConvention` | `string` | `'kebab'` | File naming: `kebab`, `camel`, `pascal`, `snake` |
 | `namingConvention` | `string` | `'camel'` | Property naming: `camel`, `pascal`, `snake` |
-| `fileSuffix` | `string` | `optional` | Suffix for file names: `user-dto.ts`, `product-dto.ts` |
+| `fileSuffix` | `string` | `optional` | Suffix for file names: `user-dto.ts` |
 
 ### Output File Behavior
 
@@ -156,7 +164,7 @@ module.exports = {
 };
 ```
 
-**JSON** (`typesharp.config.json`):
+**JSON** (`typesharp.config.json`): (recommended)
 ```json
 {
   "projectFile": "./Backend/Backend.csproj",
