@@ -180,66 +180,129 @@ function parseProperties(classBody) {
     */
     return properties;
 }
+// /**
+//  * Parse C# type to extract type information
+//  */
+// function parsePropertyType(name: string, csType: string): CSharpProperty {
+//   let type = csType.trim();
+//   let isNullable = false;
+//   let isArray = false;
+//   let isGeneric = false;
+//   let genericType: string | undefined;
+//   // Check for nullable
+//   if (type.endsWith('?')) {
+//     isNullable = true;
+//     type = type.slice(0, -1);
+//   }
+//   // Check for array
+//   if (type.endsWith('[]')) {
+//     isArray = true;
+//     type = type.slice(0, -2);
+//   }
+//   // Check for List<T>
+//   const listMatch = type.match(/^List<(.+)>$/);
+//   if (listMatch) {
+//     isArray = true;
+//     isGeneric = true;
+//     genericType = listMatch[1];
+//     type = genericType!;
+//   }
+//   // Check for IEnumerable<T>, ICollection<T>
+//   const collectionMatch = type.match(/^(?:IEnumerable|ICollection|IList)<(.+)>$/);
+//   if (collectionMatch) {
+//     isArray = true;
+//     isGeneric = true;
+//     genericType = collectionMatch[1];
+//     type = genericType!;
+//   }
+//   // Check for Dictionary<TKey, TValue>
+//   const dictMatch = type.match(/^Dictionary<(.+),\s*(.+)>$/);
+//   if (dictMatch) {
+//     const keyType = mapCSharpTypeToTypeScript(dictMatch[1]!.trim());
+//     const valueType = mapCSharpTypeToTypeScript(dictMatch[2]!.trim());
+//     // Handle nested types like Dictionary<string, List<string>>
+//     let finalValueType = valueType;
+//     // Check if value type is a List
+//     const valueListMatch = dictMatch[2]!.trim().match(/^List<(.+)>$/);
+//     if (valueListMatch) {
+//       const innerType = mapCSharpTypeToTypeScript(valueListMatch[1]!.trim());
+//       finalValueType = `${innerType}[]`;
+//     }
+//     type = `Record<${keyType}, ${finalValueType}>`;
+//     isGeneric = false; // It's already converted to TypeScript Record
+//   }
+//   // Convert C# types to TypeScript types
+//   type = mapCSharpTypeToTypeScript(type);
+//   return {
+//     name,
+//     type,
+//     isNullable,
+//     isArray,
+//     isGeneric,
+//     genericType
+//   };
+// }
 /**
  * Parse C# type to extract type information
+ *
+ * This uses a small recursive resolver to support nested generics such as:
+ * - List<T>
+ * - T[]
+ * - Dictionary<TKey, TValue> (and IDictionary/IReadOnlyDictionary)
+ * The resolver returns a TypeScript type string and whether the original C# type
+ * should be considered an array (so the generator can append `[]` appropriately).
  */
 function parsePropertyType(name, csType) {
-    let type = csType.trim();
+    let raw = csType.trim();
     let isNullable = false;
-    let isArray = false;
-    let isGeneric = false;
-    let genericType;
-    // Check for nullable
-    if (type.endsWith('?')) {
+    // Extract nullable marker (T?)
+    if (raw.endsWith('?')) {
         isNullable = true;
-        type = type.slice(0, -1);
+        raw = raw.slice(0, -1).trim();
     }
-    // Check for array
-    if (type.endsWith('[]')) {
-        isArray = true;
-        type = type.slice(0, -2);
-    }
-    // Check for List<T>
-    const listMatch = type.match(/^List<(.+)>$/);
-    if (listMatch) {
-        isArray = true;
-        isGeneric = true;
-        genericType = listMatch[1];
-        type = genericType;
-    }
-    // Check for IEnumerable<T>, ICollection<T>
-    const collectionMatch = type.match(/^(?:IEnumerable|ICollection|IList)<(.+)>$/);
-    if (collectionMatch) {
-        isArray = true;
-        isGeneric = true;
-        genericType = collectionMatch[1];
-        type = genericType;
-    }
-    // Check for Dictionary<TKey, TValue>
-    const dictMatch = type.match(/^Dictionary<(.+),\s*(.+)>$/);
-    if (dictMatch) {
-        const keyType = mapCSharpTypeToTypeScript(dictMatch[1].trim());
-        const valueType = mapCSharpTypeToTypeScript(dictMatch[2].trim());
-        // Handle nested types like Dictionary<string, List<string>>
-        let finalValueType = valueType;
-        // Check if value type is a List
-        const valueListMatch = dictMatch[2].trim().match(/^List<(.+)>$/);
-        if (valueListMatch) {
-            const innerType = mapCSharpTypeToTypeScript(valueListMatch[1].trim());
-            finalValueType = `${innerType}[]`;
+    // Recursive resolver: returns { tsType, isArray }
+    function resolveType(typeText) {
+        const t = typeText.trim();
+        // 1) Array syntax: T[]
+        if (t.endsWith('[]')) {
+            const inner = t.slice(0, -2).trim();
+            const resolved = resolveType(inner);
+            // If inner is already an array, keep it as array-of-array semantics;
+            // mark as array so generator will append [] (or use resolved.tsType which may include [] already)
+            return { tsType: resolved.tsType, isArray: true };
         }
-        type = `Record<${keyType}, ${finalValueType}>`;
-        isGeneric = false; // It's already converted to TypeScript Record
+        // 2) Dictionary-like types (handle Dictionary, IDictionary, IReadOnlyDictionary)
+        const dictMatch = t.match(/^(?:Dictionary|IDictionary|IReadOnlyDictionary)\s*<\s*([^,>]+)\s*,\s*([^>]+)\s*>$/);
+        if (dictMatch) {
+            const keyCs = dictMatch[1].trim();
+            const valueCs = dictMatch[2].trim();
+            const resolvedKey = resolveType(keyCs);
+            const resolvedValue = resolveType(valueCs);
+            // Key must be a valid TS key type; we just use the mapped ts type.
+            // If value is array, ensure it's represented correctly (e.g., string[])
+            const valueType = resolvedValue.isArray ? `${resolvedValue.tsType}[]` : resolvedValue.tsType;
+            return { tsType: `Record<${resolvedKey.tsType}, ${valueType}>`, isArray: false };
+        }
+        // 3) Collections: List<T>, IEnumerable<T>, ICollection<T>, IList<T>
+        const collectionMatch = t.match(/^(?:List|IEnumerable|ICollection|IList)\s*<\s*(.+)\s*>$/);
+        if (collectionMatch) {
+            const inner = collectionMatch[1].trim();
+            const resolvedInner = resolveType(inner);
+            // Collections become inner[] in TS; mark isArray true and tsType = resolvedInner.tsType
+            // The generator will append [].
+            return { tsType: resolvedInner.tsType, isArray: true };
+        }
+        // 4) Fallback: map primitive / known types, else return as-is (class name)
+        return { tsType: mapCSharpTypeToTypeScript(t), isArray: false };
     }
-    // Convert C# types to TypeScript types
-    type = mapCSharpTypeToTypeScript(type);
+    const resolved = resolveType(raw);
     return {
         name,
-        type,
+        type: resolved.tsType,
         isNullable,
-        isArray,
-        isGeneric,
-        genericType
+        isArray: resolved.isArray,
+        isGeneric: false,
+        genericType: undefined
     };
 }
 /**

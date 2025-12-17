@@ -247,14 +247,32 @@ function generateInterface(cls, config) {
     }
     return `export interface ${cls.name}${genericParams}${extendsClause} {\n${properties}\n}`;
 }
+// /**
+//  * Generate a single property
+//  */
+// function generateProperty(prop: CSharpProperty, convention: NamingConvention): string {
+//   const propertyName = convertPropertyName(prop.name, convention);
+//   let type = prop.type;
+//   // Handle arrays
+//   if (prop.isArray) {
+//     type = `${type}[]`;
+//   }
+//   // Handle nullable
+//   if (prop.isNullable) {
+//     type = `${type} | null`;
+//   }
+//   return `  ${propertyName}: ${type};`;
+// }
 /**
  * Generate a single property
  */
 function generateProperty(prop, convention) {
     const propertyName = convertPropertyName(prop.name, convention);
     let type = prop.type;
-    // Handle arrays
-    if (prop.isArray) {
+    // Handle arrays: append [] only when prop.isArray is true and the type does not already look like a Record or an array
+    const alreadyArrayLike = /\[\]$/.test(type);
+    const isRecordType = /^Record<.*>$/.test(type);
+    if (prop.isArray && !isRecordType && !alreadyArrayLike) {
         type = `${type}[]`;
     }
     // Handle nullable
