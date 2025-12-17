@@ -260,6 +260,26 @@ function parsePropertyType(name: string, csType: string): CSharpProperty {
     type = genericType!;
   }
   
+  // Check for Dictionary<TKey, TValue>
+  const dictMatch = type.match(/^Dictionary<(.+),\s*(.+)>$/);
+  if (dictMatch) {
+    const keyType = mapCSharpTypeToTypeScript(dictMatch[1]!.trim());
+    const valueType = mapCSharpTypeToTypeScript(dictMatch[2]!.trim());
+    
+    // Handle nested types like Dictionary<string, List<string>>
+    let finalValueType = valueType;
+    
+    // Check if value type is a List
+    const valueListMatch = dictMatch[2]!.trim().match(/^List<(.+)>$/);
+    if (valueListMatch) {
+      const innerType = mapCSharpTypeToTypeScript(valueListMatch[1]!.trim());
+      finalValueType = `${innerType}[]`;
+    }
+    
+    type = `Record<${keyType}, ${finalValueType}>`;
+    isGeneric = false; // It's already converted to TypeScript Record
+  }
+
   // Convert C# types to TypeScript types
   type = mapCSharpTypeToTypeScript(type);
   
