@@ -20,7 +20,7 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 ```shell
 npm i -D https://github.com/siyavuyachagi/typesharp.git
 ```
-or later use ```diff(not yet on `npm`)```
+or later use **(Not yet on `npm`!)**
 ```bash
 npm install typesharp --save-dev
 ```
