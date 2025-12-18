@@ -180,78 +180,54 @@ function parseProperties(classBody) {
     */
     return properties;
 }
-// /**
-//  * Parse C# type to extract type information
-//  */
-// function parsePropertyType(name: string, csType: string): CSharpProperty {
-//   let type = csType.trim();
-//   let isNullable = false;
-//   let isArray = false;
-//   let isGeneric = false;
-//   let genericType: string | undefined;
-//   // Check for nullable
-//   if (type.endsWith('?')) {
-//     isNullable = true;
-//     type = type.slice(0, -1);
-//   }
-//   // Check for array
-//   if (type.endsWith('[]')) {
-//     isArray = true;
-//     type = type.slice(0, -2);
-//   }
-//   // Check for List<T>
-//   const listMatch = type.match(/^List<(.+)>$/);
-//   if (listMatch) {
-//     isArray = true;
-//     isGeneric = true;
-//     genericType = listMatch[1];
-//     type = genericType!;
-//   }
-//   // Check for IEnumerable<T>, ICollection<T>
-//   const collectionMatch = type.match(/^(?:IEnumerable|ICollection|IList)<(.+)>$/);
-//   if (collectionMatch) {
-//     isArray = true;
-//     isGeneric = true;
-//     genericType = collectionMatch[1];
-//     type = genericType!;
-//   }
-//   // Check for Dictionary<TKey, TValue>
-//   const dictMatch = type.match(/^Dictionary<(.+),\s*(.+)>$/);
-//   if (dictMatch) {
-//     const keyType = mapCSharpTypeToTypeScript(dictMatch[1]!.trim());
-//     const valueType = mapCSharpTypeToTypeScript(dictMatch[2]!.trim());
-//     // Handle nested types like Dictionary<string, List<string>>
-//     let finalValueType = valueType;
-//     // Check if value type is a List
-//     const valueListMatch = dictMatch[2]!.trim().match(/^List<(.+)>$/);
-//     if (valueListMatch) {
-//       const innerType = mapCSharpTypeToTypeScript(valueListMatch[1]!.trim());
-//       finalValueType = `${innerType}[]`;
-//     }
-//     type = `Record<${keyType}, ${finalValueType}>`;
-//     isGeneric = false; // It's already converted to TypeScript Record
-//   }
-//   // Convert C# types to TypeScript types
-//   type = mapCSharpTypeToTypeScript(type);
-//   return {
-//     name,
-//     type,
-//     isNullable,
-//     isArray,
-//     isGeneric,
-//     genericType
-//   };
-// }
 /**
- * Parse C# type to extract type information
- *
- * This uses a small recursive resolver to support nested generics such as:
- * - List<T>
- * - T[]
- * - Dictionary<TKey, TValue> (and IDictionary/IReadOnlyDictionary)
- * The resolver returns a TypeScript type string and whether the original C# type
- * should be considered an array (so the generator can append `[]` appropriately).
+ * Find the index of the matching '>' for the first '<' at startIdx.
+ * Returns -1 if not found.
  */
+function findMatchingAngleBracket(s, startIdx) {
+    let depth = 0;
+    for (let i = startIdx; i < s.length; i++) {
+        if (s[i] === '<')
+            depth++;
+        else if (s[i] === '>') {
+            depth--;
+            if (depth === 0)
+                return i;
+        }
+    }
+    return -1;
+}
+/**
+ * Split a comma-separated generic-argument string into top-level args,
+ * i.e. respects nested <...> and does NOT split commas inside nested generics.
+ * Example: "string, List<Dictionary<string, Foo>>, int" -> ["string", "List<Dictionary<string, Foo>>", "int"]
+ */
+function splitTopLevelGenericArgs(s) {
+    const parts = [];
+    let depth = 0;
+    let buf = '';
+    for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === '<') {
+            depth++;
+            buf += ch;
+        }
+        else if (ch === '>') {
+            depth--;
+            buf += ch;
+        }
+        else if (ch === ',' && depth === 0) {
+            parts.push(buf.trim());
+            buf = '';
+        }
+        else {
+            buf += ch;
+        }
+    }
+    if (buf.trim().length > 0)
+        parts.push(buf.trim());
+    return parts;
+}
 function parsePropertyType(name, csType) {
     let raw = csType.trim();
     let isNullable = false;
@@ -271,17 +247,50 @@ function parsePropertyType(name, csType) {
             // mark as array so generator will append [] (or use resolved.tsType which may include [] already)
             return { tsType: resolved.tsType, isArray: true };
         }
+        // // 2) Dictionary-like types (handle Dictionary, IDictionary, IReadOnlyDictionary)
+        // const dictMatch = t.match(
+        //   /^(?:Dictionary|IDictionary|IReadOnlyDictionary)\s*<\s*([^,>]+)\s*,\s*([^>]+)\s*>$/
+        // );
+        // if (dictMatch) {
+        //   const keyCs = dictMatch[1]!.trim();
+        //   const valueCs = dictMatch[2]!.trim();
+        //   const resolvedKey = resolveType(keyCs);
+        //   const resolvedValue = resolveType(valueCs);
+        //   // Key must be a valid TS key type; we just use the mapped ts type.
+        //   // If value is array, ensure it's represented correctly (e.g., string[])
+        //   const valueType = resolvedValue.isArray ? `${resolvedValue.tsType}[]` : resolvedValue.tsType;
+        //   return { tsType: `Record<${resolvedKey.tsType}, ${valueType}>`, isArray: false };
+        // }
         // 2) Dictionary-like types (handle Dictionary, IDictionary, IReadOnlyDictionary)
-        const dictMatch = t.match(/^(?:Dictionary|IDictionary|IReadOnlyDictionary)\s*<\s*([^,>]+)\s*,\s*([^>]+)\s*>$/);
-        if (dictMatch) {
-            const keyCs = dictMatch[1].trim();
-            const valueCs = dictMatch[2].trim();
-            const resolvedKey = resolveType(keyCs);
-            const resolvedValue = resolveType(valueCs);
-            // Key must be a valid TS key type; we just use the mapped ts type.
-            // If value is array, ensure it's represented correctly (e.g., string[])
-            const valueType = resolvedValue.isArray ? `${resolvedValue.tsType}[]` : resolvedValue.tsType;
-            return { tsType: `Record<${resolvedKey.tsType}, ${valueType}>`, isArray: false };
+        if (/^(?:[\w\.]+\.)?(?:Dictionary|IDictionary|IReadOnlyDictionary)\s*</.test(t)) {
+            // locate first '<' and its matching '>'
+            const firstAngle = t.indexOf('<');
+            const lastAngle = findMatchingAngleBracket(t, firstAngle);
+            if (firstAngle !== -1 && lastAngle !== -1) {
+                const inner = t.slice(firstAngle + 1, lastAngle).trim();
+                const args = splitTopLevelGenericArgs(inner);
+                if (args.length === 2) {
+                    const keyCs = args[0];
+                    const valueCs = args[1];
+                    // Guard against undefined/null/empty parts before resolving
+                    if (typeof keyCs !== 'string' || typeof valueCs !== 'string' || keyCs.trim() === '' || valueCs.trim() === '') {
+                        // Fallback: avoid throwing — emit a generic record
+                        return { tsType: 'Record<string, any>', isArray: false };
+                    }
+                    const resolvedKey = resolveType(keyCs);
+                    const resolvedValue = resolveType(valueCs);
+                    // Normalize key to a safe TS key type: Record<K extends keyof any, V>
+                    // If key is not primitive 'string' or 'number' or 'symbol', coerce to 'string'
+                    const keyTsRaw = resolvedKey.tsType;
+                    const safeKey = keyTsRaw === 'string' || keyTsRaw === 'number' || keyTsRaw === 'symbol'
+                        ? keyTsRaw
+                        : 'string';
+                    // Build value type (respect nested arrays)
+                    const valueType = resolvedValue.isArray ? `${resolvedValue.tsType}[]` : resolvedValue.tsType;
+                    return { tsType: `Record<${safeKey}, ${valueType}>`, isArray: false };
+                }
+                // else: fallthrough to other checks (malformed or >2 args) — do not falsely match
+            }
         }
         // 3) Collections: List<T>, IEnumerable<T>, ICollection<T>, IList<T>
         const collectionMatch = t.match(/^(?:List|IEnumerable|ICollection|IList)\s*<\s*(.+)\s*>$/);

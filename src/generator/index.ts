@@ -374,28 +374,6 @@ function generateInterface(cls: CSharpClass, config: TypeSharpConfig): string {
 
 
 
-
-
-
-// /**
-//  * Generate a single property
-//  */
-// function generateProperty(prop: CSharpProperty, convention: NamingConvention): string {
-//   const propertyName = convertPropertyName(prop.name, convention);
-//   let type = prop.type;
-
-//   // Handle arrays
-//   if (prop.isArray) {
-//     type = `${type}[]`;
-//   }
-
-//   // Handle nullable
-//   if (prop.isNullable) {
-//     type = `${type} | null`;
-//   }
-
-//   return `  ${propertyName}: ${type};`;
-// }
 /**
  * Generate a single property
  */
