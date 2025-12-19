@@ -16,6 +16,7 @@
   },
   "type": "commonjs",
   "files": [
+    "bin",
     "dist",
     "README.md",
     "LICENSE"
