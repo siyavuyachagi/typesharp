@@ -76,7 +76,7 @@ function loadConfigFromFile(filePath) {
  * Merge user config with defaults
  */
 function mergeWithDefaults(config) {
-    if (!config.projectFile) {
+    if (!config.projectFiles) {
         throw new Error('targetPath is required in configuration');
     }
     if (!config.outputPath) {
@@ -87,16 +87,25 @@ function mergeWithDefaults(config) {
         ...config
     };
 }
-/**
- * Main function to run TypeSharp generation
- */
 async function generate(configPath) {
     try {
         console.log(chalk_1.default.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
         // Load configuration
         const config = loadConfig(configPath);
         console.log(chalk_1.default.green.bold('\n✓ Configuration loaded'));
-        console.log(chalk_1.default.cyan(`->  Target:`), chalk_1.default.white(config.projectFile));
+        // Display project files
+        const projectFiles = Array.isArray(config.projectFiles)
+            ? config.projectFiles
+            : [config.projectFiles];
+        if (projectFiles.length === 1) {
+            console.log(chalk_1.default.cyan(`->  Target:`), chalk_1.default.white(projectFiles[0]));
+        }
+        else {
+            console.log(chalk_1.default.cyan(`->  Targets (${projectFiles.length} projects):`));
+            projectFiles.forEach((file, index) => {
+                console.log(chalk_1.default.cyan(`    ${index + 1}.`), chalk_1.default.white(file));
+            });
+        }
         console.log(chalk_1.default.cyan(`->  Output:`), chalk_1.default.white(config.outputPath));
         console.log(chalk_1.default.cyan(`->  Annotation:`), chalk_1.default.white(`[${config.targetAnnotation}]`));
         console.log(chalk_1.default.cyan(`->  Single file:`), chalk_1.default.white(config.singleOutputFile));
@@ -107,7 +116,7 @@ async function generate(configPath) {
         console.log(chalk_1.default.cyan('\n⧖ Configuration validation...'));
         validateConfig(config);
         console.log(chalk_1.default.green.bold('✓ Configuration validated'));
-        // Parse C# files
+        // Parse C# files from all projects
         console.log(chalk_1.default.cyan('\n⧖ Parsing C# files...'));
         const parseResults = await (0, parser_1.parseCSharpFiles)(config);
         if (parseResults.length === 0) {
@@ -117,12 +126,6 @@ async function generate(configPath) {
         // Collect all classes
         const allClasses = parseResults.flatMap(result => result.classes);
         console.log(chalk_1.default.green.bold(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute`));
-        // Display found classes
-        // for (const cls of allClasses) {
-        //   const type = cls.isEnum ? 'enum' : 'class';
-        //   const inheritance = cls.inheritsFrom ? ` : ${cls.inheritsFrom}` : '';
-        //   console.log(chalk.gray.italic(`  - ${cls.name} (${type})${inheritance}`));
-        // }
         // Generate TypeScript files
         console.log(chalk_1.default.blue.cyan('\n⧖ Generating TypeScript files...'));
         (0, generator_1.generateTypeScriptFiles)(config, parseResults);
@@ -133,7 +136,6 @@ async function generate(configPath) {
             console.error(chalk_1.default.red.bold(`\n❌ Error:`), chalk_1.default.white(error.message));
         }
         else {
-            console.error(`\n❌ An unknown error occurred`);
             console.error(chalk_1.default.red.bold(`\n❌ An unknown error occurred`));
         }
         throw error;
@@ -163,15 +165,22 @@ function loadConfig(configPath) {
  * Validate configuration
  */
 function validateConfig(config) {
-    if (!fs.existsSync(config.projectFile)) {
-        throw new Error(`Project file does not exist: ${config.projectFile}`);
-    }
-    const stats = fs.statSync(config.projectFile);
-    if (!stats.isFile()) {
-        throw new Error(`Target path is not a file: ${config.projectFile}`);
-    }
-    if (!config.projectFile.endsWith('.csproj')) {
-        throw new Error(`Target file is not a .csproj: ${config.projectFile}`);
+    // Convert single project to array for unified handling
+    const projectFiles = Array.isArray(config.projectFiles)
+        ? config.projectFiles
+        : [config.projectFiles];
+    // Validate each project file
+    for (const projectFile of projectFiles) {
+        if (!fs.existsSync(projectFile)) {
+            throw new Error(`Project file does not exist: ${projectFile}`);
+        }
+        const stats = fs.statSync(projectFile);
+        if (!stats.isFile()) {
+            throw new Error(`Target path is not a file: ${projectFile}`);
+        }
+        if (!projectFile.endsWith('.csproj')) {
+            throw new Error(`Target file is not a .csproj: ${projectFile}`);
+        }
     }
     /**
      * Optional fields sanitization
@@ -188,9 +197,13 @@ function validateConfig(config) {
 /**
  * Create a sample configuration file
  */
-function createSampleConfig(format = 'ts') {
+function createSampleConfig(format = 'json') {
     const sampleConfig = {
-        projectFile: 'C:/Users/User/Desktop/MyApp/Api/Api.csproj',
+        // Show array format as example
+        projectFiles: [
+            'C:/Users/User/Desktop/MyApp/Api/Api.csproj',
+            'C:/Users/User/Desktop/MyApp/Domain/Domain.csproj'
+        ],
         outputPath: './app/types',
         targetAnnotation: 'TypeSharp',
         singleOutputFile: false,
@@ -209,7 +222,7 @@ function createSampleConfig(format = 'ts') {
     }
     else {
         fileName = 'typesharp.config.ts';
-        content = `import { TypeSharpConfig } from 'typesharp';
+        content = `import type { TypeSharpConfig } from 'typesharp';
 
 const config: TypeSharpConfig = ${JSON.stringify(sampleConfig, null, 2)};
 

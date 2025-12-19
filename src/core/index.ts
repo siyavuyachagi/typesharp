@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { TypeSharpConfig } from '../types';
 import { parseCSharpFiles } from '../parser';
 import { generateTypeScriptFiles } from '../generator';
 import chalk from 'chalk';
+import { TypeSharpConfig } from '../types/typesharp-config';
 
 /**
  * Default configuration values
@@ -42,7 +42,7 @@ function loadConfigFromFile(filePath: string): TypeSharpConfig {
  * Merge user config with defaults
  */
 function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
-  if (!config.projectFile) {
+  if (!config.projectFiles) {
     throw new Error('targetPath is required in configuration');
   }
 
@@ -58,9 +58,6 @@ function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
 
 
 
-/**
- * Main function to run TypeSharp generation
- */
 export async function generate(configPath?: string): Promise<void> {
   try {
     console.log(chalk.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
@@ -68,7 +65,21 @@ export async function generate(configPath?: string): Promise<void> {
     // Load configuration
     const config = loadConfig(configPath);
     console.log(chalk.green.bold('\n✓ Configuration loaded'));
-    console.log(chalk.cyan(`->  Target:`), chalk.white(config.projectFile));
+
+    // Display project files
+    const projectFiles = Array.isArray(config.projectFiles)
+      ? config.projectFiles
+      : [config.projectFiles];
+
+    if (projectFiles.length === 1) {
+      console.log(chalk.cyan(`->  Target:`), chalk.white(projectFiles[0]));
+    } else {
+      console.log(chalk.cyan(`->  Targets (${projectFiles.length} projects):`));
+      projectFiles.forEach((file, index) => {
+        console.log(chalk.cyan(`    ${index + 1}.`), chalk.white(file));
+      });
+    }
+
     console.log(chalk.cyan(`->  Output:`), chalk.white(config.outputPath));
     console.log(chalk.cyan(`->  Annotation:`), chalk.white(`[${config.targetAnnotation}]`));
     console.log(chalk.cyan(`->  Single file:`), chalk.white(config.singleOutputFile));
@@ -76,58 +87,41 @@ export async function generate(configPath?: string): Promise<void> {
       console.log(chalk.cyan(`->  File suffix:`), chalk.white(config.fileSuffix));
     }
 
-
-
     // Validate configuration
     console.log(chalk.cyan('\n⧖ Configuration validation...'));
     validateConfig(config);
     console.log(chalk.green.bold('✓ Configuration validated'));
 
-
-
-
-    // Parse C# files
+    // Parse C# files from all projects
     console.log(chalk.cyan('\n⧖ Parsing C# files...'));
     const parseResults = await parseCSharpFiles(config);
-
-
 
     if (parseResults.length === 0) {
       console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`No C# files found with [TypeSharp] attribute\n`));
       return;
     }
 
-
-
     // Collect all classes
     const allClasses = parseResults.flatMap(result => result.classes);
     console.log(chalk.green.bold(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute`));
-    // Display found classes
-    // for (const cls of allClasses) {
-    //   const type = cls.isEnum ? 'enum' : 'class';
-    //   const inheritance = cls.inheritsFrom ? ` : ${cls.inheritsFrom}` : '';
-    //   console.log(chalk.gray.italic(`  - ${cls.name} (${type})${inheritance}`));
-    // }
-
-
 
     // Generate TypeScript files
     console.log(chalk.blue.cyan('\n⧖ Generating TypeScript files...'));
     generateTypeScriptFiles(config, parseResults);
-
-
 
     console.log(chalk.green.bold('✅ Generation completed successfully!\n'));
   } catch (error) {
     if (error instanceof Error) {
       console.error(chalk.red.bold(`\n❌ Error:`), chalk.white(error.message));
     } else {
-      console.error(`\n❌ An unknown error occurred`);
       console.error(chalk.red.bold(`\n❌ An unknown error occurred`));
     }
     throw error;
   }
 }
+
+
+
 
 /**
  * Load configuration from file or use provided config
@@ -160,17 +154,25 @@ export function loadConfig(configPath?: string): TypeSharpConfig {
  * Validate configuration
  */
 function validateConfig(config: TypeSharpConfig): void {
-  if (!fs.existsSync(config.projectFile)) {
-    throw new Error(`Project file does not exist: ${config.projectFile}`);
-  }
+  // Convert single project to array for unified handling
+  const projectFiles = Array.isArray(config.projectFiles)
+    ? config.projectFiles
+    : [config.projectFiles];
 
-  const stats = fs.statSync(config.projectFile);
-  if (!stats.isFile()) {
-    throw new Error(`Target path is not a file: ${config.projectFile}`);
-  }
+  // Validate each project file
+  for (const projectFile of projectFiles) {
+    if (!fs.existsSync(projectFile)) {
+      throw new Error(`Project file does not exist: ${projectFile}`);
+    }
 
-  if (!config.projectFile.endsWith('.csproj')) {
-    throw new Error(`Target file is not a .csproj: ${config.projectFile}`);
+    const stats = fs.statSync(projectFile);
+    if (!stats.isFile()) {
+      throw new Error(`Target path is not a file: ${projectFile}`);
+    }
+
+    if (!projectFile.endsWith('.csproj')) {
+      throw new Error(`Target file is not a .csproj: ${projectFile}`);
+    }
   }
 
   /**
@@ -182,7 +184,7 @@ function validateConfig(config: TypeSharpConfig): void {
     config.targetAnnotation = config.targetAnnotation.replace(/[ \[\]]/g, '');
 
     if (config.targetAnnotation !== original) {
-      console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`remove invalid characters (space, [ or ]) from your`), chalk.bold('targetAnnotation'),`\n`);
+      console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`remove invalid characters (space, [ or ]) from your`), chalk.bold('targetAnnotation'), `\n`);
     }
   }
 }
@@ -191,9 +193,13 @@ function validateConfig(config: TypeSharpConfig): void {
 /**
  * Create a sample configuration file
  */
-export function createSampleConfig(format: 'ts' | 'js' | 'json' = 'ts'): void {
+export function createSampleConfig(format: 'ts' | 'js' | 'json' = 'json'): void {
   const sampleConfig: TypeSharpConfig = {
-    projectFile: 'C:/Users/User/Desktop/MyApp/Api/Api.csproj',
+    // Show array format as example
+    projectFiles: [
+      'C:/Users/User/Desktop/MyApp/Api/Api.csproj',
+      'C:/Users/User/Desktop/MyApp/Domain/Domain.csproj'
+    ],
     outputPath: './app/types',
     targetAnnotation: 'TypeSharp',
     singleOutputFile: false,
@@ -212,7 +218,7 @@ export function createSampleConfig(format: 'ts' | 'js' | 'json' = 'ts'): void {
     content = `module.exports = ${JSON.stringify(sampleConfig, null, 2)};\n`;
   } else {
     fileName = 'typesharp.config.ts';
-    content = `import { TypeSharpConfig } from 'typesharp';
+    content = `import type { TypeSharpConfig } from 'typesharp';
 
 const config: TypeSharpConfig = ${JSON.stringify(sampleConfig, null, 2)};
 

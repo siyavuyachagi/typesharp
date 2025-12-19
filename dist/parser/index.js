@@ -38,27 +38,34 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const glob_1 = require("glob");
 /**
- * Parse C# files in the target project
+ * Parse C# files in the target project(s)
  */
 async function parseCSharpFiles(config) {
-    const projectDir = path.dirname(config.projectFile); // get folder containing the .csproj
     const targetAnnotation = config.targetAnnotation ?? 'TypeSharp';
-    const csFiles = await (0, glob_1.glob)('**/*.cs', {
-        cwd: projectDir,
-        absolute: true,
-        ignore: ['**/bin/**', '**/obj/**', '**/node_modules/**']
-    });
-    const results = [];
-    for (const filePath of csFiles) {
-        const content = fs.readFileSync(filePath, 'utf-8');
-        const classes = parseClassesFromFile(content, targetAnnotation);
-        if (classes.length > 0) {
-            // store relative path for preserving folder structure later
-            const relativePath = path.relative(projectDir, filePath);
-            results.push({ classes, filePath, relativePath });
+    // Convert single project to array for unified handling
+    const projectFiles = Array.isArray(config.projectFiles)
+        ? config.projectFiles
+        : [config.projectFiles];
+    const allResults = [];
+    // Process each project
+    for (const projectFile of projectFiles) {
+        const projectDir = path.dirname(projectFile);
+        const csFiles = await (0, glob_1.glob)('**/*.cs', {
+            cwd: projectDir,
+            absolute: true,
+            ignore: ['**/bin/**', '**/obj/**', '**/node_modules/**']
+        });
+        for (const filePath of csFiles) {
+            const content = fs.readFileSync(filePath, 'utf-8');
+            const classes = parseClassesFromFile(content, targetAnnotation);
+            if (classes.length > 0) {
+                // Store relative path for preserving folder structure later
+                const relativePath = path.relative(projectDir, filePath);
+                allResults.push({ classes, filePath, relativePath });
+            }
         }
     }
-    return results;
+    return allResults;
 }
 /**
  * Parse classes from a C# file content
@@ -247,20 +254,6 @@ function parsePropertyType(name, csType) {
             // mark as array so generator will append [] (or use resolved.tsType which may include [] already)
             return { tsType: resolved.tsType, isArray: true };
         }
-        // // 2) Dictionary-like types (handle Dictionary, IDictionary, IReadOnlyDictionary)
-        // const dictMatch = t.match(
-        //   /^(?:Dictionary|IDictionary|IReadOnlyDictionary)\s*<\s*([^,>]+)\s*,\s*([^>]+)\s*>$/
-        // );
-        // if (dictMatch) {
-        //   const keyCs = dictMatch[1]!.trim();
-        //   const valueCs = dictMatch[2]!.trim();
-        //   const resolvedKey = resolveType(keyCs);
-        //   const resolvedValue = resolveType(valueCs);
-        //   // Key must be a valid TS key type; we just use the mapped ts type.
-        //   // If value is array, ensure it's represented correctly (e.g., string[])
-        //   const valueType = resolvedValue.isArray ? `${resolvedValue.tsType}[]` : resolvedValue.tsType;
-        //   return { tsType: `Record<${resolvedKey.tsType}, ${valueType}>`, isArray: false };
-        // }
         // 2) Dictionary-like types (handle Dictionary, IDictionary, IReadOnlyDictionary)
         if (/^(?:[\w\.]+\.)?(?:Dictionary|IDictionary|IReadOnlyDictionary)\s*</.test(t)) {
             // locate first '<' and its matching '>'

@@ -1,0 +1,69 @@
+/**
+ * TypeSharp configuration
+ */
+export interface TypeSharpConfig {
+
+    /**
+     * Full path(s) to the C# .csproj file(s).
+     * Can be a single path or an array of paths.
+     * Example (Windows):
+     * ```
+     *   `C:\\Users\\User\\Desktop\\MyApp\\Api\\Api.csproj`
+     *   // or
+     *   [
+     *     `C:\\Users\\User\\Desktop\\MyApp\\Api\\Api.csproj`,
+     *     `C:\\Users\\User\\Desktop\\MyApp\\Domain\\Domain.csproj`
+     *   ]
+     * ```
+     */
+    projectFiles: string | string[];  // <- CHANGE THIS LINE
+
+    /**
+     * Path where TypeScript files will be generated
+     */
+    outputPath: string;
+
+    /**
+     * The C# attribute name to look for (default: "TypeSharp")
+     */
+    targetAnnotation?: string;
+
+    /**
+     * Controls whether generated types are written to one file or multiple files.
+     *
+     * - true  → All generated types go into a single file: "index.ts"
+     * - false → Each type is written to its own file, using the naming convention.
+     *           The original folder structure is preserved in the output.
+     */
+    singleOutputFile?: boolean;
+
+    /**
+     * Naming convention for generated file names
+     */
+    fileNamingConvention?: NamingConvention;
+
+    /**
+     * Naming convention for property names in generated types
+     */
+    namingConvention?: NamingConvention;
+
+    /**
+     * Suffix appended to generated TypeScript type names.
+     * The suffix is formatted based on the selected naming convention.
+     * ```
+     * Examples (suffix = "Dto"):
+     *   camel : User -> userDto
+     *   pascal: User -> UserDto
+     *   snake : User -> user_dto
+     *   kebab : User -> user-dto
+     * ```
+     */
+    fileSuffix?: string;
+}
+
+
+
+/**
+ * Naming convention options for file and property names
+ */
+export type NamingConvention = 'kebab' | 'snake' | 'camel' | 'pascal';

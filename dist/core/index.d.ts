@@ -1,7 +1,4 @@
-import { TypeSharpConfig } from '../types';
-/**
- * Main function to run TypeSharp generation
- */
+import { TypeSharpConfig } from '../types/typesharp-config';
 export declare function generate(configPath?: string): Promise<void>;
 /**
  * Load configuration from file or use provided config
