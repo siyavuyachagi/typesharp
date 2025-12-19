@@ -15,6 +15,22 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 🔢 **Enum Support** – Converts C# enums to TypeScript string enums  
 🗂️ **File Grouping** – Preserves C# file organization (multiple classes per file stay together)
 
+
+## How TypeSharp Compares   
+
+| Feature               | TypeSharp | NSwag | openapi-typescript | TypeGen |
+| --------------------- | --------- | ----- | ------------------ | ------- |
+| Direct C# parsing     | ✅         | ❌     | ❌                  | ✅       |
+| Attribute targeting   | ✅         | ⚠️    | ❌                  | ⚠️      |
+| Non-API models        | ✅         | ❌     | ❌                  | ✅       |
+| Generics preserved    | ✅         | ⚠️    | ⚠️                 | ⚠️      |
+| File grouping         | ✅         | ❌     | ❌                  | ❌       |
+| Naming control        | ✅         | ⚠️    | ⚠️                 | ❌       |
+| API client generation | ❌         | ✅     | ❌                  | ❌       |
+
+For more [docs/why-typesharp](docs/why-typesharp.md)
+
+
 ## Installation
 
 ```shell
@@ -312,7 +328,7 @@ const config: TypeSharpConfig = {
 };
 ```
 
-All types will be generated in `src/types/types.ts`
+All types will be generated in `src/types/index.ts`
 
 ### 3. Custom Naming Conventions
 

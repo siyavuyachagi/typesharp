@@ -78,7 +78,7 @@ Edit `typesharp.config.json`:
 
 ```json
 {
-  "projectFile": "C:/Users/User/Desktop/MyApp/Api/Api.csproj",
+  "projectFile": ["C:/Users/User/Desktop/MyApp/Api/Api.csproj"],
   "outputPath": "./src/types",
   "targetAnnotation": "TypeSharp",
   "singleOutputFile": false,
@@ -99,13 +99,14 @@ npx typesharp
 
 #### Required Options
 
-**`projectFile`** (string)
+**`projectFiles`** (string[])
+
 - Full path to your C# .csproj file
 - Must be an absolute or relative path to a `.csproj` file
 
 ```json
 {
-  "projectFile": "C:/Users/User/Desktop/MyApp/Api/Api.csproj"
+  "projectFiles": ["C:/Users/User/Desktop/MyApp/Api/Api.csproj"]
 }
 ```
 
@@ -113,11 +114,12 @@ Or relative:
 
 ```json
 {
-  "projectFile": "../Backend/Api.csproj"
+  "projectFiles": ["../MyApp/Api/Api.csproj"]
 }
 ```
 
 **`outputPath`** (string)
+
 - Where TypeScript files will be generated
 - Directory will be created if it doesn't exist
 
@@ -130,6 +132,7 @@ Or relative:
 #### Optional Options
 
 **`targetAnnotation`** (string, default: `'TypeSharp'`)
+
 - The C# attribute name to look for
 - Don't include brackets `[]` or '`spaces`'
 
@@ -140,6 +143,7 @@ Or relative:
 ```
 
 **`singleOutputFile`** (boolean, default: `false`)
+
 - `false`: Generate one file per C# source file (preserves grouping)
 - `true`: Generate all types in one file
 
@@ -150,6 +154,7 @@ Or relative:
 ```
 
 **`fileNamingConvention`** (string, default: `'kebab'`)
+
 - How to name the output files
 - Options: `'kebab'`, `'snake'`, `'camel'`, `'pascal'`
 
@@ -160,6 +165,7 @@ Or relative:
 ```
 
 **`namingConvention`** (string, default: `'camel'`)
+
 - How to transform property names
 - Options: `'camel'`, `'pascal'`, `'snake'`, `'kebab'`
 
@@ -170,6 +176,7 @@ Or relative:
 ```
 
 **`fileSuffix`** (string, optional)
+
 - Suffix to append to generated file names
 - The suffix will be formatted according to `fileNamingConvention`
 
@@ -180,6 +187,7 @@ Or relative:
 ```
 
 Example: If C# file is `User.cs` with suffix `"dto"` and convention `"kebab"`:
+
 - Output: `user-dto.ts`
 
 ### Configuration File Formats
@@ -189,9 +197,10 @@ TypeSharp supports three configuration formats:
 #### JSON (Recommended)
 
 **`typesharp.config.json`**
+
 ```json
 {
-  "projectFile": "C:/Users/User/Desktop/MyApp/Api/Api.csproj",
+  "projectFiles": ["C:/Users/User/Desktop/MyApp/Api/Api.csproj"],
   "outputPath": "./src/types",
   "targetAnnotation": "TypeSharp",
   "singleOutputFile": false,
@@ -203,16 +212,17 @@ TypeSharp supports three configuration formats:
 #### TypeScript
 
 **`typesharp.config.ts`**
+
 ```typescript
-import { TypeSharpConfig } from 'typesharp';
+import { TypeSharpConfig } from "typesharp";
 
 const config: TypeSharpConfig = {
-  projectFile: 'C:/Users/User/Desktop/MyApp/Api/Api.csproj',
-  outputPath: './src/types',
-  targetAnnotation: 'TypeSharp',
+  projectFiles: ["C:/Users/User/Desktop/MyApp/Api/Api.csproj"],
+  outputPath: "./src/types",
+  targetAnnotation: "TypeSharp",
   singleOutputFile: false,
-  fileNamingConvention: 'kebab',
-  namingConvention: 'camel'
+  fileNamingConvention: "kebab",
+  namingConvention: "camel",
 };
 
 export default config;
@@ -221,14 +231,15 @@ export default config;
 #### JavaScript
 
 **`typesharp.config.js`**
+
 ```javascript
 module.exports = {
-  projectFile: 'C:/Users/User/Desktop/MyApp/Api/Api.csproj',
-  outputPath: './src/types',
-  targetAnnotation: 'TypeSharp',
+  projectFile: ["C:/Users/User/Desktop/MyApp/Api/Api.csproj"],
+  outputPath: "./src/types",
+  targetAnnotation: "TypeSharp",
   singleOutputFile: false,
-  fileNamingConvention: 'kebab',
-  namingConvention: 'camel'
+  fileNamingConvention: "kebab",
+  namingConvention: "camel",
 };
 ```
 
@@ -391,36 +402,37 @@ Then update your config:
 
 ### Primitive Types
 
-| C# Type | TypeScript Type |
-|---------|-----------------|
-| `string` | `string` |
-| `int` | `number` |
-| `long` | `number` |
-| `float` | `number` |
-| `double` | `number` |
-| `decimal` | `number` |
-| `bool` | `boolean` |
-| `object` | `any` |
+| C# Type   | TypeScript Type |
+| --------- | --------------- |
+| `string`  | `string`        |
+| `int`     | `number`        |
+| `long`    | `number`        |
+| `float`   | `number`        |
+| `double`  | `number`        |
+| `decimal` | `number`        |
+| `bool`    | `boolean`       |
+| `object`  | `any`           |
 
 ### Date/Time Types
 
-| C# Type | TypeScript Type |
-|---------|-----------------|
-| `DateTime` | `string` |
-| `DateOnly` | `string` |
-| `TimeOnly` | `string` |
-| `DateTimeOffset` | `string` |
+| C# Type          | TypeScript Type |
+| ---------------- | --------------- |
+| `DateTime`       | `string`        |
+| `DateOnly`       | `string`        |
+| `TimeOnly`       | `string`        |
+| `DateTimeOffset` | `string`        |
 
 ### Special Types
 
-| C# Type | TypeScript Type |
-|---------|-----------------|
-| `Guid` | `string` |
-| `byte[]` | `string` |
+| C# Type  | TypeScript Type |
+| -------- | --------------- |
+| `Guid`   | `string`        |
+| `byte[]` | `string`        |
 
 ### Nullable Types
 
 **C# Nullable Reference Types:**
+
 ```csharp
 public string? Name { get; set; }        // string | null
 public int? Age { get; set; }            // number | null
@@ -428,6 +440,7 @@ public DateTime? BirthDate { get; set; } // string | null
 ```
 
 **TypeScript Output:**
+
 ```typescript
 interface User {
   name: string | null;
@@ -439,6 +452,7 @@ interface User {
 ### Collections/Arrays
 
 **C# Collections:**
+
 ```csharp
 public int[] Numbers { get; set; }
 public List<string> Tags { get; set; }
@@ -448,6 +462,7 @@ public IList<Order> Orders { get; set; }
 ```
 
 **TypeScript Output:**
+
 ```typescript
 interface MyModel {
   numbers: number[];
@@ -461,6 +476,7 @@ interface MyModel {
 ### Enums
 
 **C# Enum:**
+
 ```csharp
 [TypeSharp]
 public enum Status
@@ -472,17 +488,19 @@ public enum Status
 ```
 
 **TypeScript Output:**
+
 ```typescript
 export enum Status {
-  Active = 'Active',
-  Inactive = 'Inactive',
-  Pending = 'Pending'
+  Active = "Active",
+  Inactive = "Inactive",
+  Pending = "Pending",
 }
 ```
 
 ### Complex Types
 
 **C# with Custom Types:**
+
 ```csharp
 [TypeSharp]
 public class Address
@@ -501,6 +519,7 @@ public class User
 ```
 
 **TypeScript Output:**
+
 ```typescript
 export interface Address {
   street: string;
@@ -521,6 +540,7 @@ TypeSharp fully supports C# generic types and preserves them in TypeScript outpu
 ### Single Generic Parameter
 
 **C# Code:**
+
 ```csharp
 [TypeSharp]
 public class ApiResponse<T>
@@ -533,6 +553,7 @@ public class ApiResponse<T>
 ```
 
 **TypeScript Output:**
+
 ```typescript
 export interface ApiResponse<T> {
   success: boolean;
@@ -545,6 +566,7 @@ export interface ApiResponse<T> {
 ### Multiple Generic Parameters
 
 **C# Code:**
+
 ```csharp
 [TypeSharp]
 public class Dictionary<TKey, TValue>
@@ -555,6 +577,7 @@ public class Dictionary<TKey, TValue>
 ```
 
 **TypeScript Output:**
+
 ```typescript
 export interface Dictionary<TKey, TValue> {
   key: TKey;
@@ -565,6 +588,7 @@ export interface Dictionary<TKey, TValue> {
 ### Generic Inheritance
 
 **C# Code:**
+
 ```csharp
 [TypeSharp]
 public class ApiResponse<T>
@@ -585,6 +609,7 @@ public class PagedApiResponse<T> : ApiResponse<T>
 ```
 
 **TypeScript Output:**
+
 ```typescript
 export interface ApiResponse<T> {
   success: boolean;
@@ -603,9 +628,10 @@ export interface PagedApiResponse<T> extends ApiResponse<T> {
 ### Using Generated Generic Types
 
 **In Vue 3 with Composition API:**
+
 ```typescript
-import type { ApiResponse, PagedApiResponse } from '~/types/api-response';
-import type { User } from '~/types/user';
+import type { ApiResponse, PagedApiResponse } from "~/types/api-response";
+import type { User } from "~/types/user";
 
 // Single item response
 const userResponse = ref<ApiResponse<User>>();
@@ -620,7 +646,9 @@ const fetchUser = async (id: number) => {
 };
 
 const fetchUsers = async (page: number) => {
-  const response = await $fetch<PagedApiResponse<User[]>>(`/api/users?page=${page}`);
+  const response = await $fetch<PagedApiResponse<User[]>>(
+    `/api/users?page=${page}`
+  );
   usersResponse.value = response;
 };
 ```
@@ -628,6 +656,7 @@ const fetchUsers = async (page: number) => {
 ### Complex Generic Scenarios
 
 **C# Code:**
+
 ```csharp
 [TypeSharp]
 public class Result<TData, TError>
@@ -652,6 +681,7 @@ public class UserResult : Result<User, ValidationError>
 ```
 
 **TypeScript Output:**
+
 ```typescript
 export interface Result<TData, TError> {
   isSuccess: boolean;
@@ -719,9 +749,9 @@ interface User {
 ```typescript
 // namingConvention: 'kebab'
 interface User {
-  'user-name': string;
-  'user-id': number;
-  'created-at': string;
+  "user-name": string;
+  "user-id": number;
+  "created-at": string;
 }
 ```
 
@@ -735,7 +765,7 @@ Configure how C# class names are transformed to file names.
 {
   "fileNamingConvention": "kebab"
 }
-// Output: user-profile.ts (recommended)
+// Output: user-profile.ts
 
 {
   "fileNamingConvention": "snake"
@@ -774,6 +804,7 @@ Add a suffix to generated file names:
 TypeSharp preserves inheritance relationships.
 
 **C#:**
+
 ```csharp
 [TypeSharp]
 public class Entity
@@ -797,6 +828,7 @@ public class User : AuditableEntity
 ```
 
 **TypeScript Output:**
+
 ```typescript
 export interface Entity {
   id: number;
@@ -818,15 +850,17 @@ export interface User extends AuditableEntity {
 Generate all types in one file for easier imports.
 
 **Config:**
+
 ```json
 {
-  "projectFile": "C:/path/to/Api.csproj",
+  "projectFiles": ["C:/Users/User/Desktop/MyApp/Api/Api.csproj"],
   "outputPath": "./src/types",
   "singleOutputFile": true
 }
 ```
 
 **Output: `src/types/types.ts`**
+
 ```typescript
 /**
  * Auto-generated by TypeSharp
@@ -846,8 +880,8 @@ export interface Product {
 }
 
 export enum Status {
-  Active = 'Active',
-  Inactive = 'Inactive'
+  Active = "Active",
+  Inactive = "Inactive",
 }
 ```
 
@@ -856,6 +890,7 @@ export enum Status {
 Generate separate files preserving C# file grouping (default).
 
 **Config:**
+
 ```json
 {
   "projectFile": "C:/path/to/Api.csproj",
@@ -866,6 +901,7 @@ Generate separate files preserving C# file grouping (default).
 ```
 
 **C# Structure:**
+
 ```
 Backend/
 ├── DTOs/
@@ -879,6 +915,7 @@ Backend/
 ```
 
 **TypeScript Output:**
+
 ```
 src/types/
 ├── DTOs/
@@ -893,19 +930,19 @@ This means if you organize related DTOs in one C# file, they'll stay together in
 Use TypeSharp in your Node.js scripts.
 
 ```typescript
-import { generate, loadConfig } from 'typesharp';
+import { generate, loadConfig } from "typesharp";
 
 async function generateTypes() {
   try {
     // Using default config file
     await generate();
-    
+
     // Or with custom config path
-    await generate('./custom-config.json');
-    
-    console.log('Types generated successfully!');
+    await generate("./custom-config.json");
+
+    console.log("Types generated successfully!");
   } catch (error) {
-    console.error('Error generating types:', error);
+    console.error("Error generating types:", error);
   }
 }
 
@@ -915,28 +952,28 @@ generateTypes();
 ### Advanced Programmatic Usage
 
 ```typescript
-import { 
-  parseCSharpFiles, 
+import {
+  parseCSharpFiles,
   generateTypeScriptFiles,
-  TypeSharpConfig 
-} from 'typesharp';
+  TypeSharpConfig,
+} from "typesharp";
 
 async function customGeneration() {
   const config: TypeSharpConfig = {
-    projectFile: 'C:/path/to/Api.csproj',
-    outputPath: './src/types',
-    targetAnnotation: 'TypeSharp'
+    projectFiles: ["C:/Users/User/Desktop/MyApp/Api/Api.csproj"],
+    outputPath: "./src/types",
+    targetAnnotation: "TypeSharp",
   };
-  
+
   // Parse C# files
   const parseResults = await parseCSharpFiles(config);
-  
+
   // Get all classes
-  const classes = parseResults.flatMap(r => r.classes);
-  
+  const classes = parseResults.flatMap((r) => r.classes);
+
   // Custom filtering or transformation
-  const filteredClasses = classes.filter(c => !c.name.startsWith('Internal'));
-  
+  const filteredClasses = classes.filter((c) => !c.name.startsWith("Internal"));
+
   // Generate TypeScript
   generateTypeScriptFiles(config, parseResults);
 }
@@ -949,6 +986,7 @@ customGeneration();
 ### Vue 3 + Nuxt 3 + ASP.NET Core
 
 **Project Structure:**
+
 ```
 my-project/
 ├── Backend/              # ASP.NET Core
@@ -962,9 +1000,10 @@ my-project/
 ```
 
 **typesharp.config.json:**
+
 ```json
 {
-  "projectFile": "../Backend/Api.csproj",
+  "projectFile": ["../MyApp/Api/Api.csproj"],
   "outputPath": "./src/types",
   "targetAnnotation": "TypeSharp",
   "singleOutputFile": false,
@@ -974,6 +1013,7 @@ my-project/
 ```
 
 **package.json:**
+
 ```json
 {
   "scripts": {
@@ -987,16 +1027,17 @@ my-project/
 ```
 
 **Usage in Vue with Composition API:**
+
 ```vue
 <script setup lang="ts">
-import type { User } from '~/types/user';
-import type { ApiResponse } from '~/types/api-response';
+import type { User } from "~/types/user";
+import type { ApiResponse } from "~/types/api-response";
 
 const user = ref<User>({
   id: 1,
-  name: 'John Doe',
-  email: 'john@example.com',
-  createdAt: new Date().toISOString()
+  name: "John Doe",
+  email: "john@example.com",
+  createdAt: new Date().toISOString(),
 });
 
 const fetchUser = async (id: number) => {
@@ -1011,6 +1052,7 @@ const fetchUser = async (id: number) => {
 ### CI/CD Integration
 
 **GitHub Actions:**
+
 ```yaml
 name: Build
 
@@ -1022,18 +1064,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Generate TypeScript types
         run: npx typesharp
-      
+
       - name: Build frontend
         run: npm run build
 ```
 
 **GitLab CI:**
+
 ```yaml
 build:
   stage: build
@@ -1049,27 +1092,28 @@ Create a watch script for development:
 
 ```typescript
 // scripts/watch-types.ts
-import { watch } from 'fs';
-import { generate } from 'typesharp';
+import { watch } from "fs";
+import { generate } from "typesharp";
 
-const projectDir = '../Backend';
+const projectDir = "../Backend";
 
-console.log('👀 Watching for C# file changes...');
+console.log("👀 Watching for C# file changes...");
 
 watch(projectDir, { recursive: true }, async (eventType, filename) => {
-  if (filename?.endsWith('.cs')) {
+  if (filename?.endsWith(".cs")) {
     console.log(`📝 Detected change in ${filename}`);
     try {
       await generate();
-      console.log('✅ Types regenerated');
+      console.log("✅ Types regenerated");
     } catch (error) {
-      console.error('❌ Error:', error);
+      console.error("❌ Error:", error);
     }
   }
 });
 ```
 
 **package.json:**
+
 ```json
 {
   "scripts": {
@@ -1087,6 +1131,7 @@ watch(projectDir, { recursive: true }, async (eventType, filename) => {
 **Problem:** TypeSharp runs but no files are created.
 
 **Solution:**
+
 - Verify `[TypeSharp]` attribute is on your C# classes
 - Check that `projectFile` points to the correct `.csproj` file
 - Ensure C# files are not in `bin/` or `obj/` folders
@@ -1110,6 +1155,7 @@ Update your config:
 **Problem:** "Project file does not exist" error.
 
 **Solution:**
+
 - Use absolute paths for `projectFile`
 - On Windows: `C:/Users/User/Desktop/MyApp/Api/Api.csproj`
 - On Mac/Linux: `/home/user/projects/MyApp/Api/Api.csproj`
@@ -1120,6 +1166,7 @@ Update your config:
 **Problem:** Changes in C# not reflected in TypeScript.
 
 **Solution:**
+
 - Re-run `npx typesharp`
 - Check if you modified the right C# files
 - Ensure files have `[TypeSharp]` attribute
@@ -1135,6 +1182,7 @@ npx typesharp
 **Problem:** Generated types have import errors.
 
 **Solution:**
+
 - Ensure all referenced types also have `[TypeSharp]` attribute
 - Use single output file for easier imports
 - Check TypeScript path aliases in `tsconfig.json`
@@ -1155,6 +1203,7 @@ npx typesharp
 **Problem:** Generic types like `ApiResponse<T>` not generating correctly.
 
 **Solution:**
+
 - Ensure you're using TypeSharp v1.0.0 or later
 - Check that the C# class has the `[TypeSharp]` attribute
 - Verify the base class also has the attribute if using generic inheritance
@@ -1166,7 +1215,7 @@ npx typesharp
 Verify your configuration is correct:
 
 ```typescript
-import { loadConfig } from 'typesharp';
+import { loadConfig } from "typesharp";
 
 const config = loadConfig();
 console.log(config);
@@ -1234,6 +1283,7 @@ Automatically generate types before development/build:
 ### 2. Commit Generated Types
 
 **Option A: Commit types (Recommended)**
+
 - Types are always available
 - No build step needed for new developers
 - Easier to review changes
@@ -1244,6 +1294,7 @@ Automatically generate types before development/build:
 ```
 
 **Option B: Don't commit types**
+
 - Smaller repository
 - Requires generation on every machine
 - Add to `.gitignore`:
@@ -1314,20 +1365,20 @@ No need for complex attribute properties.
 After generation, verify types work:
 
 ```typescript
-import { User } from './types/user';
-import { ApiResponse } from './types/api-response';
+import { User } from "./types/user";
+import { ApiResponse } from "./types/api-response";
 
 const response: ApiResponse<User> = {
   success: true,
   status: 200,
-  message: 'User retrieved',
+  message: "User retrieved",
   data: {
     id: 1,
-    name: 'Test',
-    email: 'test@example.com',
-    createdAt: new Date().toISOString()
+    name: "Test",
+    email: "test@example.com",
+    createdAt: new Date().toISOString(),
   },
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 };
 
 // TypeScript will error if structure doesn't match
@@ -1357,12 +1408,14 @@ public class PagedApiResponse<T> : ApiResponse<T>
 Then use in frontend:
 
 ```typescript
-import type { ApiResponse, PagedApiResponse } from '~/types/api-response';
-import type { User, Product } from '~/types/models';
+import type { ApiResponse, PagedApiResponse } from "~/types/api-response";
+import type { User, Product } from "~/types/models";
 
 // Type-safe API calls
-const userResponse = await $fetch<ApiResponse<User>>('/api/users/1');
-const productsResponse = await $fetch<PagedApiResponse<Product[]>>('/api/products');
+const userResponse = await $fetch<ApiResponse<User>>("/api/users/1");
+const productsResponse = await $fetch<PagedApiResponse<Product[]>>(
+  "/api/products"
+);
 ```
 
 ---
