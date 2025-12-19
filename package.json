@@ -1,15 +1,25 @@
 {
   "name": "@siyavuyachagi/typesharp",
-  "version": "0.1.0",
   "description": "Generate TypeScript types from C# models with TypeSharp attribute",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "Siyavuya Chagi <syavuya08@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/siyavuyachagi/typesharp.git"
+  },
+  "homepage": "https://github.com/siyavuyachagi/typesharp#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "typesharp": "./bin/typesharp.js"
   },
-  "license": "MIT",
   "type": "commonjs",
-  "author": "Siyavuya Chagi <syavuya08@gmail.com>",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [
     "typescript",
     "csharp",
