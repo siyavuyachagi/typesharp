@@ -21,13 +21,13 @@ Complete guide to using TypeSharp for generating TypeScript types from C# models
 ### Install as Dev Dependency
 
 ```bash
-npm install typesharp --save-dev
+npm install @siyavuyachagi/typesharp --save-dev
 ```
 
 ### Install Globally (Optional)
 
 ```bash
-npm install -g typesharp
+npm install -g @siyavuyachagi/typesharp
 ```
 
 ## Quick Start

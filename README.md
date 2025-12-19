@@ -40,7 +40,7 @@ npm i -D https://github.com/siyavuyachagi/typesharp.git
 or later use **(Not yet on `npm`!)**
 
 ```bash
-npm install typesharp --save-dev
+npm install -D @siyavuyachagi/typesharp
 ```
 
 ## Quick Start
