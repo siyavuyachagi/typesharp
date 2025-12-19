@@ -189,6 +189,7 @@ export interface ApiResponse<T> {
   errors: string[];
 }
 ```
+For more advanced usage [docs/usage](docs/usage.md)
 
 ## Configuration
 
