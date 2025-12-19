@@ -1,5 +1,5 @@
 {
-  "name": "typesharp",
+  "name": "@siyavuyachagi/typesharp",
   "version": "0.1.0",
   "description": "Generate TypeScript types from C# models with TypeSharp attribute",
   "main": "dist/index.js",
