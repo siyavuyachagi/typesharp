@@ -1,5 +1,9 @@
 # TypeSharp
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/@siyavuyachagi/typesharp.svg)](https://www.npmjs.com/package/@siyavuyachagi/typesharp)
+[![Sponsor](https://img.shields.io/badge/Sponsor-💖-ff69b4)](https://github.com/sponsors/siyavuyachagi)
+
 Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET Core projects and automatically generates TypeScript interfaces from your C# classes decorated with the `[TypeSharp]` attribute.
 
 ## Features
