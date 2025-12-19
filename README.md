@@ -17,7 +17,7 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 
 
 ## How TypeSharp Compares   
-
+This is not an OpenApi-based tool !
 | Feature               | TypeSharp | NSwag | openapi-typescript | TypeGen |
 | --------------------- | --------- | ----- | ------------------ | ------- |
 | Direct C# parsing     | ✅         | ❌     | ❌                  | ✅       |
