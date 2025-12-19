@@ -33,12 +33,6 @@ For more [docs/why-typesharp](docs/why-typesharp.md)
 
 ## Installation
 
-```shell
-npm i -D https://github.com/siyavuyachagi/typesharp.git
-```
-
-or later use **(Not yet on `npm`!)**
-
 ```bash
 npm install -D @siyavuyachagi/typesharp
 ```
