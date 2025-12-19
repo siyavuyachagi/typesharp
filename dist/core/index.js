@@ -37,6 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generate = generate;
+exports.cleanOutputDirectory = cleanOutputDirectory;
 exports.loadConfig = loadConfig;
 exports.createSampleConfig = createSampleConfig;
 const fs = __importStar(require("fs"));
@@ -116,6 +117,8 @@ async function generate(configPath) {
         console.log(chalk_1.default.cyan('\n⧖ Configuration validation...'));
         validateConfig(config);
         console.log(chalk_1.default.green.bold('✓ Configuration validated'));
+        // Clean output directory
+        cleanOutputDirectory(config.outputPath);
         // Parse C# files from all projects
         console.log(chalk_1.default.cyan('\n⧖ Parsing C# files...'));
         const parseResults = await (0, parser_1.parseCSharpFiles)(config);
@@ -139,6 +142,27 @@ async function generate(configPath) {
             console.error(chalk_1.default.red.bold(`\n❌ An unknown error occurred`));
         }
         throw error;
+    }
+}
+/**
+ * Deletes all contents of a directory but keeps the directory itself.
+ * @param dir Path to the directory to clean
+ */
+function cleanOutputDirectory(dir) {
+    if (!fs.existsSync(dir))
+        return;
+    const entries = fs.readdirSync(dir);
+    console.log('\nRemoving:');
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry);
+        console.log(chalk_1.default.red('-', chalk_1.default.strikethrough(`${fullPath}`)));
+        const stat = fs.lstatSync(fullPath);
+        if (stat.isDirectory()) {
+            fs.rmSync(fullPath, { recursive: true, force: true });
+        }
+        else {
+            fs.unlinkSync(fullPath);
+        }
     }
 }
 /**

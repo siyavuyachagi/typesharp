@@ -92,6 +92,11 @@ export async function generate(configPath?: string): Promise<void> {
     validateConfig(config);
     console.log(chalk.green.bold('✓ Configuration validated'));
 
+
+    // Clean output directory
+    cleanOutputDirectory(config.outputPath);
+
+
     // Parse C# files from all projects
     console.log(chalk.cyan('\n⧖ Parsing C# files...'));
     const parseResults = await parseCSharpFiles(config);
@@ -119,6 +124,41 @@ export async function generate(configPath?: string): Promise<void> {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+/**
+ * Deletes all contents of a directory but keeps the directory itself.
+ * @param dir Path to the directory to clean
+ */
+export function cleanOutputDirectory(dir: string) {
+  if (!fs.existsSync(dir)) return
+
+  const entries = fs.readdirSync(dir)
+
+  console.log('\nRemoving:');
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry)
+    console.log(chalk.red('-', chalk.strikethrough(`${fullPath}`)))
+    const stat = fs.lstatSync(fullPath)
+
+    if (stat.isDirectory()) {
+      fs.rmSync(fullPath, { recursive: true, force: true })
+    } else {
+      fs.unlinkSync(fullPath)
+    }
+  }
+}
+
+
+
+
+
 
 
 
