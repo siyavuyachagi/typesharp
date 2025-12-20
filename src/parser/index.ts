@@ -387,7 +387,16 @@ function mapCSharpTypeToTypeScript(csType: string): string {
     'DateOnly': 'string',
     'TimeOnly': 'string',
     'Guid': 'string',
-    'object': 'any'
+    'object': 'any',
+    // ASP.NET Core file types
+    'FormFile': 'File',
+    'IFormFile': 'File',
+    'IFormFileCollection': 'FileList',
+    // .NET file/stream types
+    'Stream': 'Blob',
+    'FileStream': 'Blob',
+    'MemoryStream': 'Blob',
+    'byte[]': 'Blob',
   };
 
   return typeMap[csType] || csType;
