@@ -347,12 +347,14 @@ const config: TypeSharpConfig = {
 | C# Type                                     | TypeScript Type  |
 | ------------------------------------------- | ---------------- |
 | `string`                                    | `string`         |
+| `string?`                                   | `string \| null` |
 | `int`, `long`, `double`, `float`, `decimal` | `number`         |
 | `bool`                                      | `boolean`        |
 | `DateTime`, `DateOnly`, `TimeOnly`          | `string`         |
 | `Guid`                                      | `string`         |
 | `List<T>`, `IEnumerable<T>`, `T[]`          | `T[]`            |
-| `string?`                                   | `string \| null` |
+| `FormFile`, `IFormFile`                     | `File`           |
+| `IFormFileCollection`                       | `FileList`       |
 
 ## Programmatic Usage
 
