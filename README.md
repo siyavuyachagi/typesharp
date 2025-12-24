@@ -112,7 +112,7 @@ This creates `typesharp.config.json`:
 
 ```json
 {
-  "projectFile": [
+  "projectFiles": [
     "C:/Users/User/Desktop/MyApp/Api/Api.csproj",
     "C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"
   ],
@@ -321,7 +321,7 @@ export interface Product extends BaseEntity {
 
 ```typescript
 const config: TypeSharpConfig = {
-  projectFile: "./Backend/Backend.csproj",
+  projectFiles: "./Backend/Backend.csproj",
   outputPath: "./src/types",
   singleOutputFile: true,
 };
@@ -335,7 +335,7 @@ All types will be generated in `src/types/index.ts`
 
 ```typescript
 const config: TypeSharpConfig = {
-  projectFile: "./Backend/Backend.csproj",
+  projectFiles: "./Backend/Backend.csproj",
   outputPath: "./src/types",
   fileNamingConvention: "snake", // user_model.ts
   namingConvention: "pascal", // UserName, not userName
