@@ -89,7 +89,7 @@ public class ApiResponse<T>
 
 ### 3. Create a configuration file
 
-In your frontend end project run the following script
+In your frontend project run the following script
 
 ```bash
 # Create TypeScript config
