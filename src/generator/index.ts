@@ -81,7 +81,7 @@ function generateMultipleFiles(
   // Build a map of class names to their file paths for import resolution
   const classToFileMap = buildClassToFileMap(parseResults, config, outputPath);
 
-  for (const result of parseResults) {
+  for (const result of parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath))) {
     // Generate content for all classes in this C# file
     const content = result.classes
       .map(cls => generateTypeScriptClass(cls, config))
