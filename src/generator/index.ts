@@ -89,7 +89,8 @@ function generateMultipleFiles(
 
     // Preserve folder structure
     const relativeDir = path.dirname(result.relativePath).toLowerCase();
-    const targetDir = path.join(outputPath, relativeDir);
+    const relativeDirCaseFormatted = convertFileName(relativeDir, config.fileNamingConvention || 'kebab')
+    const targetDir = path.join(outputPath, relativeDirCaseFormatted);
 
     // Create directory if needed
     if (!fs.existsSync(targetDir)) {
