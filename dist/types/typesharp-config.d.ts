@@ -1,5 +1,6 @@
 /**
  * TypeSharp configuration
+ * @see https://github.com/siyavuyachagi/typesharp
  */
 export interface TypeSharpConfig {
     /**
@@ -28,7 +29,7 @@ export interface TypeSharpConfig {
      * Controls whether generated types are written to one file or multiple files.
      *
      * - true  → All generated types go into a single file: "index.ts"
-     * - false → Each type is written to its own file, using the naming convention.
+     * - false → Each file is written separately, using the naming convention.
      *           The original folder structure is preserved in the output.
      */
     singleOutputFile?: boolean;
@@ -44,7 +45,7 @@ export interface TypeSharpConfig {
      * Suffix appended to generated TypeScript type names.
      * The suffix is formatted based on the selected naming convention.
      * ```
-     * Examples (suffix = "Dto"):
+     * Examples (suffix = "dto"):
      *   camel : User -> userDto
      *   pascal: User -> UserDto
      *   snake : User -> user_dto

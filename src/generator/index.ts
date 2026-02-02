@@ -44,6 +44,7 @@ function generateSingleFile(
   config: TypeSharpConfig
 ): void {
   const content = classes
+    .sort((a, b) => (a.isEnum ? -1 : 1) - (b.isEnum ? -1 : 1) || a.name.localeCompare(b.name)) // Sort by type or name - Asc order
     .map(cls => generateTypeScriptClass(cls, config))
     .join('\n\n');
 
@@ -63,12 +64,6 @@ function generateSingleFile(
 
 
 
-
-
-
-
-
-
 /**
  * Generate multiple files - one TypeScript file per C# source file.
  * This preserves the original grouping of classes
@@ -81,16 +76,18 @@ function generateMultipleFiles(
   // Build a map of class names to their file paths for import resolution
   const classToFileMap = buildClassToFileMap(parseResults, config, outputPath);
 
-  for (const result of parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath))) {
+  // Sort results by path - Asc order
+  const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+
+  for (const result of parseResultsSorted) {
     // Generate content for all classes in this C# file
     const content = result.classes
       .map(cls => generateTypeScriptClass(cls, config))
       .join('\n\n');
 
     // Preserve folder structure
-    const relativeDir = path.dirname(result.relativePath).toLowerCase();
-    const relativeDirCaseFormatted = convertFileName(relativeDir, config.fileNamingConvention || 'kebab')
-    const targetDir = path.join(outputPath, relativeDirCaseFormatted);
+    const relativeDir = path.dirname(result.relativePath);
+    const targetDir = path.join(outputPath, relativeDir);
 
     // Create directory if needed
     if (!fs.existsSync(targetDir)) {
@@ -118,11 +115,11 @@ function generateMultipleFiles(
 
     const header = generateFileHeader();
     const fullContent = imports
-      ? `${header}\n\n${imports}\n\n${content}\n`
+      ? `${imports}\n\n${header}\n\n${content}\n`
       : `${header}\n\n${content}\n`;
 
     fs.writeFileSync(filePath, fullContent, 'utf-8');
-    console.log(chalk.whiteBright(` - Generated:`), chalk.blue(filePath));
+    console.log(chalk.blue(` ↳`), chalk.blue(filePath));
   }
 }
 
@@ -149,6 +146,9 @@ function buildClassToFileMap(
 
   for (const result of parseResults) {
     const relativeDir = path.dirname(result.relativePath);
+
+    convertDirName(relativeDir, config);
+
     const targetDir = path.join(outputPath, relativeDir);
 
     const originalFileName = path.basename(result.relativePath, '.cs');
@@ -175,13 +175,14 @@ function buildClassToFileMap(
 
 
 
-
-
-
-
-
-
-
+function convertDirName(dir: string, config: TypeSharpConfig) {
+  // console.log(dir)
+  const segments = dir.split('\\');
+  segments.forEach((s) => {
+    let a = convertFileName(s, config.fileNamingConvention || 'kebab');
+    console.log(a)
+  })
+}
 
 
 
@@ -247,14 +248,6 @@ function generateImports(
 
 
 
-
-
-
-
-
-
-
-
 /**
  * Get relative import path from one file to another
  */
@@ -280,12 +273,6 @@ function getRelativeImportPath(fromFile: string, toFile: string): string {
 
 
 
-
-
-
-
-
-
 /**
  * Check if a type is a primitive TypeScript type
  */
@@ -293,10 +280,6 @@ function isPrimitiveType(type: string): boolean {
   const primitives = ['string', 'number', 'boolean', 'any', 'void', 'null', 'undefined'];
   return primitives.includes(type);
 }
-
-
-
-
 
 
 
@@ -318,10 +301,6 @@ function generateTypeScriptClass(cls: CSharpClass, config: TypeSharpConfig): str
 
 
 
-
-
-
-
 /**
  * Generate TypeScript enum
  */
@@ -333,10 +312,6 @@ function generateEnum(cls: CSharpClass): string {
 
   return `export enum ${cls.name} {\n${enumValues}\n}`;
 }
-
-
-
-
 
 
 
@@ -367,9 +342,6 @@ function generateInterface(cls: CSharpClass, config: TypeSharpConfig): string {
 
   return `export interface ${cls.name}${genericParams}${extendsClause} {\n${properties}\n}`;
 }
-
-
-
 
 
 
@@ -407,23 +379,18 @@ function generateProperty(prop: CSharpProperty, convention: NamingConvention): s
  */
 function convertPropertyName(name: string, convention: NamingConvention): string {
   switch (convention) {
-    case 'camel':
-      return toCamelCase(name);
+    // case 'camel':
     case 'pascal':
       return toPascalCase(name);
     case 'snake':
       return toSnakeCase(name);
-    case 'kebab':
-      return toKebabCase(name);
+    // case 'kebab':
+    //   return toKebabCase(name);
     default:
-      return name;
+      return toCamelCase(name);
+    // return name;
   }
 }
-
-
-
-
-
 
 
 
@@ -452,11 +419,6 @@ function convertFileName(name: string, convention: NamingConvention): string {
 
 
 
-
-
-
-
-
 /**
  * Convert string to camelCase
  */
@@ -464,9 +426,6 @@ function toCamelCase(str: string): string {
   const pascal = toPascalCase(str);
   return pascal.charAt(0).toLowerCase() + pascal.slice(1);
 }
-
-
-
 
 
 
@@ -479,10 +438,6 @@ function toPascalCase(str: string): string {
     .replace(/[_-](.)/g, (_, char) => char.toUpperCase())
     .replace(/^(.)/, (_, char) => char.toUpperCase());
 }
-
-
-
-
 
 
 
@@ -501,10 +456,6 @@ function toSnakeCase(str: string): string {
 
 
 
-
-
-
-
 /**
  * Convert string to kebab-case
  */
@@ -514,10 +465,6 @@ function toKebabCase(str: string): string {
     .toLowerCase()
     .replace(/^-/, '');
 }
-
-
-
-
 
 
 

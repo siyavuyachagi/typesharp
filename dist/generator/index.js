@@ -62,6 +62,7 @@ function generateTypeScriptFiles(config, parseResults) {
  */
 function generateSingleFile(classes, outputPath, config) {
     const content = classes
+        .sort((a, b) => (a.isEnum ? -1 : 1) - (b.isEnum ? -1 : 1) || a.name.localeCompare(b.name)) // Sort by type or name - Asc order
         .map(cls => generateTypeScriptClass(cls, config))
         .join('\n\n');
     const header = generateFileHeader();
@@ -78,15 +79,16 @@ function generateSingleFile(classes, outputPath, config) {
 function generateMultipleFiles(outputPath, config, parseResults) {
     // Build a map of class names to their file paths for import resolution
     const classToFileMap = buildClassToFileMap(parseResults, config, outputPath);
-    for (const result of parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath))) {
+    // Sort results by path - Asc order
+    const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+    for (const result of parseResultsSorted) {
         // Generate content for all classes in this C# file
         const content = result.classes
             .map(cls => generateTypeScriptClass(cls, config))
             .join('\n\n');
         // Preserve folder structure
-        const relativeDir = path.dirname(result.relativePath).toLowerCase();
-        const relativeDirCaseFormatted = convertFileName(relativeDir, config.fileNamingConvention || 'kebab');
-        const targetDir = path.join(outputPath, relativeDirCaseFormatted);
+        const relativeDir = path.dirname(result.relativePath);
+        const targetDir = path.join(outputPath, relativeDir);
         // Create directory if needed
         if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
@@ -108,10 +110,10 @@ function generateMultipleFiles(outputPath, config, parseResults) {
         const imports = generateImports(result.classes, classToFileMap, filePath, currentClassNames);
         const header = generateFileHeader();
         const fullContent = imports
-            ? `${header}\n\n${imports}\n\n${content}\n`
+            ? `${imports}\n\n${header}\n\n${content}\n`
             : `${header}\n\n${content}\n`;
         fs.writeFileSync(filePath, fullContent, 'utf-8');
-        console.log(chalk_1.default.whiteBright(` - Generated:`), chalk_1.default.blue(filePath));
+        console.log(chalk_1.default.blue(` ↳`), chalk_1.default.blue(filePath));
     }
 }
 /**
@@ -121,6 +123,7 @@ function buildClassToFileMap(parseResults, config, outputPath) {
     const map = new Map();
     for (const result of parseResults) {
         const relativeDir = path.dirname(result.relativePath);
+        convertDirName(relativeDir, config);
         const targetDir = path.join(outputPath, relativeDir);
         const originalFileName = path.basename(result.relativePath, '.cs');
         let baseName = originalFileName;
@@ -137,6 +140,14 @@ function buildClassToFileMap(parseResults, config, outputPath) {
         }
     }
     return map;
+}
+function convertDirName(dir, config) {
+    // console.log(dir)
+    const segments = dir.split('\\');
+    segments.forEach((s) => {
+        let a = convertFileName(s, config.fileNamingConvention || 'kebab');
+        console.log(a);
+    });
 }
 /**
  * Generate import statements for referenced types
@@ -271,16 +282,16 @@ function generateProperty(prop, convention) {
  */
 function convertPropertyName(name, convention) {
     switch (convention) {
-        case 'camel':
-            return toCamelCase(name);
+        // case 'camel':
         case 'pascal':
             return toPascalCase(name);
         case 'snake':
             return toSnakeCase(name);
-        case 'kebab':
-            return toKebabCase(name);
+        // case 'kebab':
+        //   return toKebabCase(name);
         default:
-            return name;
+            return toCamelCase(name);
+        // return name;
     }
 }
 /**

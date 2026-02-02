@@ -376,27 +376,26 @@ function parsePropertyType(name: string, csType: string): CSharpProperty {
  */
 function mapCSharpTypeToTypeScript(csType: string): string {
   const typeMap: Record<string, string> = {
-    'string': 'string',
-    'int': 'number',
-    'long': 'number',
-    'double': 'number',
-    'float': 'number',
-    'decimal': 'number',
     'bool': 'boolean',
-    'DateTime': 'string',
-    'DateOnly': 'string',
-    'TimeOnly': 'string',
-    'Guid': 'string',
-    'object': 'any',
-    // ASP.NET Core file types
-    'FormFile': 'File',
-    'IFormFile': 'File',
-    'IFormFileCollection': 'FileList',
-    // .NET file/stream types
-    'Stream': 'Blob',
-    'FileStream': 'Blob',
-    'MemoryStream': 'Blob',
+    'byte': 'number',
     'byte[]': 'Blob',
+    'decimal': 'number',
+    'double': 'number',
+    'DateOnly': 'string',
+    'DateTime': 'string',
+    'float': 'number',
+    'FileStream': 'Blob',
+    'FormFile': 'File',
+    'Guid': 'string',
+    'int': 'number',
+    'IFormFile': 'File',
+    'IFormFileCollection': 'File[]',
+    'long': 'number',
+    'MemoryStream': 'Blob',
+    'object': 'any',
+    'string': 'string',
+    'Stream': 'Blob',
+    'TimeOnly': 'string',
   };
 
   return typeMap[csType] || csType;
