@@ -70,7 +70,7 @@ function generateSingleFile(
 
 
 /**
- * Generate multiple files - one TypeScript file per C# source file
+ * Generate multiple files - one TypeScript file per C# source file.
  * This preserves the original grouping of classes
  */
 function generateMultipleFiles(
@@ -88,7 +88,7 @@ function generateMultipleFiles(
       .join('\n\n');
 
     // Preserve folder structure
-    const relativeDir = path.dirname(result.relativePath);
+    const relativeDir = path.dirname(result.relativePath).toLowerCase();
     const targetDir = path.join(outputPath, relativeDir);
 
     // Create directory if needed
