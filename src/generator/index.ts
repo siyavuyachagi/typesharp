@@ -12,6 +12,8 @@ export function generateTypeScriptFiles(
   parseResults: ParseResult[],
 ): void {
   const outputPath = config.outputPath;
+  // Convention output type
+  const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
 
   if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath, { recursive: true });
@@ -19,7 +21,7 @@ export function generateTypeScriptFiles(
 
   if (config.singleOutputFile) {
     const allClasses = parseResults.flatMap(r => r.classes);
-    generateSingleFile(allClasses, outputPath, config);
+    generateSingleFile(allClasses, outputPath, fileConvention);
   } else {
     // Generate one TypeScript file per C# file (preserves grouping)
     generateMultipleFiles(outputPath, config, parseResults);
@@ -41,11 +43,11 @@ export function generateTypeScriptFiles(
 function generateSingleFile(
   classes: CSharpClass[],
   outputPath: string,
-  config: TypeSharpConfig
+  namingConvension: NamingConvention
 ): void {
   const content = classes
     .sort((a, b) => (a.isEnum ? -1 : 1) - (b.isEnum ? -1 : 1) || a.name.localeCompare(b.name)) // Sort by type or name - Asc order
-    .map(cls => generateTypeScriptClass(cls, config))
+    .map(cls => generateTypeScriptClass(cls, namingConvension))
     .join('\n\n');
 
   const header = generateFileHeader();
@@ -73,21 +75,28 @@ function generateMultipleFiles(
   config: TypeSharpConfig,
   parseResults: ParseResult[]
 ): void {
+  // Convention output type
+  const dirConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.dir ?? 'snake';
+  const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
+
   // Build a map of class names to their file paths for import resolution
-  const classToFileMap = buildClassToFileMap(parseResults, config, outputPath);
+  const classToFileMap = buildClassToFileMap(parseResults, config, outputPath, fileConvention);
+
 
   // Sort results by path - Asc order
   const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
-
   for (const result of parseResultsSorted) {
     // Generate content for all classes in this C# file
     const content = result.classes
-      .map(cls => generateTypeScriptClass(cls, config))
+      .map(cls => generateTypeScriptClass(cls, fileConvention))
       .join('\n\n');
 
     // Preserve folder structure
     const relativeDir = path.dirname(result.relativePath);
-    const targetDir = path.join(outputPath, relativeDir);
+    const appDir = path.join(outputPath, relativeDir);
+
+    // Convert dir with configued conventions
+    const targetDir = convertDirName(appDir, dirConvention);
 
     // Create directory if needed
     if (!fs.existsSync(targetDir)) {
@@ -100,19 +109,18 @@ function generateMultipleFiles(
     // Apply file suffix if configured
     let baseName = originalFileName;
     if (config.fileSuffix) {
-      const convention = config.fileNamingConvention || 'kebab';
-      const suffix = convertFileName(config.fileSuffix, convention);
-      baseName = `${baseName}-${suffix}`;
+      // Capitalize the 1st character for better convention
+      const suffix = config.fileSuffix.charAt(0).toUpperCase() + config.fileSuffix.slice(1);
+      baseName = `${baseName}${suffix}`;
     }
 
     // Apply naming convention to the filename
-    const fileName = convertFileName(baseName, config.fileNamingConvention || 'kebab');
+    const fileName = convertFileName(baseName, fileConvention);
     const filePath = path.join(targetDir, `${fileName}.ts`);
 
     // Generate imports for this file
     const currentClassNames = result.classes.map(c => c.name);
-    const imports = generateImports(result.classes, classToFileMap, filePath, currentClassNames);
-
+    const imports = generateImports(result.classes, classToFileMap, filePath, currentClassNames, dirConvention);
     const header = generateFileHeader();
     const fullContent = imports
       ? `${imports}\n\n${header}\n\n${content}\n`
@@ -140,27 +148,23 @@ function generateMultipleFiles(
 function buildClassToFileMap(
   parseResults: ParseResult[],
   config: TypeSharpConfig,
-  outputPath: string
+  outputPath: string,
+  namingConvension: NamingConvention
 ): Map<string, string> {
   const map = new Map<string, string>();
-
   for (const result of parseResults) {
     const relativeDir = path.dirname(result.relativePath);
-
-    convertDirName(relativeDir, config);
-
     const targetDir = path.join(outputPath, relativeDir);
 
     const originalFileName = path.basename(result.relativePath, '.cs');
 
     let baseName = originalFileName;
     if (config.fileSuffix) {
-      const convention = config.fileNamingConvention || 'kebab';
-      const suffix = convertFileName(config.fileSuffix, convention);
+      const suffix = convertFileName(config.fileSuffix, namingConvension);
       baseName = `${baseName}-${suffix}`;
     }
 
-    const fileName = convertFileName(baseName, config.fileNamingConvention || 'kebab');
+    const fileName = convertFileName(baseName, namingConvension);
     const filePath = path.join(targetDir, `${fileName}.ts`);
 
     // Map all classes in this file to this file path
@@ -175,17 +179,6 @@ function buildClassToFileMap(
 
 
 
-function convertDirName(dir: string, config: TypeSharpConfig) {
-  // console.log(dir)
-  const segments = dir.split('\\');
-  segments.forEach((s) => {
-    let a = convertFileName(s, config.fileNamingConvention || 'kebab');
-    console.log(a)
-  })
-}
-
-
-
 /**
  * Generate import statements for referenced types
  */
@@ -193,7 +186,8 @@ function generateImports(
   classes: CSharpClass[],
   classToFileMap: Map<string, string>,
   currentFilePath: string,
-  currentClassNames: string[]
+  currentClassNames: string[],
+  namingConvension: NamingConvention
 ): string {
   const imports = new Map<string, Set<string>>(); // filePath -> Set of class names
 
@@ -236,7 +230,7 @@ function generateImports(
   // Generate import statements
   const importStatements: string[] = [];
   for (const [filePath, classNames] of imports.entries()) {
-    const relativePath = getRelativeImportPath(currentFilePath, filePath);
+    const relativePath = getRelativeImportPath(currentFilePath, filePath, namingConvension);
     const sortedNames = Array.from(classNames).sort();
     importStatements.push(`import type { ${sortedNames.join(', ')} } from '${relativePath}';`);
   }
@@ -251,10 +245,9 @@ function generateImports(
 /**
  * Get relative import path from one file to another
  */
-function getRelativeImportPath(fromFile: string, toFile: string): string {
+function getRelativeImportPath(fromFile: string, toFile: string, namingConvension: NamingConvention): string {
   const fromDir = path.dirname(fromFile);
   let relativePath = path.relative(fromDir, toFile);
-
   // Remove .ts extension
   relativePath = relativePath.replace(/\.ts$/, '');
 
@@ -263,8 +256,12 @@ function getRelativeImportPath(fromFile: string, toFile: string): string {
     relativePath = './' + relativePath;
   }
 
+  // Convert dir naming
+  relativePath = convertDirName(relativePath, namingConvension);
+
   // Convert Windows backslashes to forward slashes
   relativePath = relativePath.replace(/\\/g, '/');
+
 
   return relativePath;
 }
@@ -288,12 +285,12 @@ function isPrimitiveType(type: string): boolean {
 /**
  * Generate TypeScript interface or enum from C# class
  */
-function generateTypeScriptClass(cls: CSharpClass, config: TypeSharpConfig): string {
+function generateTypeScriptClass(cls: CSharpClass, namingConvension: NamingConvention): string {
   if (cls.isEnum) {
     return generateEnum(cls);
   }
 
-  return generateInterface(cls, config);
+  return generateInterface(cls);
 }
 
 
@@ -321,9 +318,10 @@ function generateEnum(cls: CSharpClass): string {
 /**
  * Generate TypeScript interface
  */
-function generateInterface(cls: CSharpClass, config: TypeSharpConfig): string {
+function generateInterface(cls: CSharpClass): string {
+
   const properties = cls.properties
-    .map(prop => generateProperty(prop, config.namingConvention || 'camel'))
+    .map(prop => generateProperty(prop))
     .join('\n');
 
   // Build generic parameters for the interface
@@ -350,8 +348,8 @@ function generateInterface(cls: CSharpClass, config: TypeSharpConfig): string {
 /**
  * Generate a single property
  */
-function generateProperty(prop: CSharpProperty, convention: NamingConvention): string {
-  const propertyName = convertPropertyName(prop.name, convention);
+function generateProperty(prop: CSharpProperty): string {
+  const propertyName = convertPropertyName(prop.name);
   let type = prop.type;
 
   // Handle arrays: append [] only when prop.isArray is true and the type does not already look like a Record or an array
@@ -377,19 +375,18 @@ function generateProperty(prop: CSharpProperty, convention: NamingConvention): s
 /**
  * Convert property name to specified convention
  */
-function convertPropertyName(name: string, convention: NamingConvention): string {
-  switch (convention) {
-    // case 'camel':
-    case 'pascal':
-      return toPascalCase(name);
-    case 'snake':
-      return toSnakeCase(name);
-    // case 'kebab':
-    //   return toKebabCase(name);
-    default:
-      return toCamelCase(name);
-    // return name;
-  }
+function convertPropertyName(name: string): string {
+  return toCamelCase(name);
+  // switch (convention) {
+  //   case 'camel':
+  //     return toCamelCase(name);
+  //   case 'pascal':
+  //     return toPascalCase(name);
+  //   case 'snake':
+  //     return toSnakeCase(name);
+  //   default:
+  //     return name;
+  // }
 }
 
 
@@ -402,20 +399,36 @@ function convertPropertyName(name: string, convention: NamingConvention): string
  */
 function convertFileName(name: string, convention: NamingConvention): string {
   switch (convention) {
-    case 'kebab':
-      return toKebabCase(name);
-    case 'snake':
-      return toSnakeCase(name);
     case 'camel':
       return toCamelCase(name);
+    case 'kebab':
+      return toKebabCase(name);
     case 'pascal':
       return toPascalCase(name);
+    case 'snake':
+      return toSnakeCase(name);
     default:
       return name;
   }
 }
 
 
+
+
+const convertDirName = (dir: string, convension: NamingConvention) => {
+  try {
+    const splitter = path.sep;
+    const segments = dir.split(splitter);
+    const formatted = segments.map((segment) => {
+      return convertFileName(segment, convension)
+    });
+    const joined = formatted.join(splitter);
+    return joined;
+  } catch (error) {
+    console.error('Error converting dir name', error);
+    throw error;
+  }
+}
 
 
 
@@ -447,9 +460,8 @@ function toPascalCase(str: string): string {
  */
 function toSnakeCase(str: string): string {
   return str
-    .replace(/([A-Z])/g, '_$1')
-    .toLowerCase()
-    .replace(/^_/, '');
+    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    .toLowerCase();
 }
 
 
@@ -461,9 +473,8 @@ function toSnakeCase(str: string): string {
  */
 function toKebabCase(str: string): string {
   return str
-    .replace(/([A-Z])/g, '-$1')
-    .toLowerCase()
-    .replace(/^-/, '');
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .toLowerCase();
 }
 
 

@@ -30,7 +30,7 @@ program
 program
   .command('init')
   .description('Create a sample configuration file')
-  .option('-f, --format <format>', 'Configuration file format (ts, js, json)', 'json') // default to 'json'
+  .option('-f, --format <format>', 'Configuration file format (ts, js, json)', 'ts') // default to 'ts'
   .action((options) => {
     try {
       const format = options.format as 'ts' | 'js' | 'json';

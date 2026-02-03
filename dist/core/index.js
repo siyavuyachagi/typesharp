@@ -51,7 +51,7 @@ const chalk_1 = __importDefault(require("chalk"));
 const DEFAULT_CONFIG = {
     targetAnnotation: 'TypeSharp',
     singleOutputFile: false,
-    fileNamingConvention: 'kebab',
+    // fileNamingConvention: 'kebab',
     namingConvention: 'camel'
 };
 /**
@@ -221,7 +221,7 @@ function validateConfig(config) {
 /**
  * Create a sample configuration file
  */
-function createSampleConfig(format = 'json') {
+function createSampleConfig(format) {
     const sampleConfig = {
         // Show array format as example
         projectFiles: [
@@ -231,8 +231,8 @@ function createSampleConfig(format = 'json') {
         outputPath: './app/types',
         targetAnnotation: 'TypeSharp',
         singleOutputFile: false,
-        fileNamingConvention: 'kebab',
         namingConvention: 'camel',
+        fileSuffix: ''
     };
     let fileName;
     let content;

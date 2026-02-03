@@ -1,4 +1,4 @@
-import { NamingConvention } from "./typesharp-config";
+import { NamingConvention, NamingConventionConfig } from "./typesharp-config";
 import { TypeSharpConfig } from "./typesharp-config";
 /**
  * Parsed C# property
@@ -40,4 +40,5 @@ export interface GenerationOptions {
 }
 export type { TypeSharpConfig };
 export type { NamingConvention };
+export type { NamingConventionConfig };
 //# sourceMappingURL=index.d.ts.map

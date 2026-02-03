@@ -34,13 +34,16 @@ export interface TypeSharpConfig {
      */
     singleOutputFile?: boolean;
     /**
-     * Naming convention for generated file names
-     */
-    fileNamingConvention?: NamingConvention;
-    /**
      * Naming convention for property names in generated types
+     * @example
+     *   "namingConvention": "camel",
+     * // or
+     *   "namingConvention": {
+     *      dir: 'kebab',
+     *      file: 'camel',
+     *    }
      */
-    namingConvention?: NamingConvention;
+    namingConvention?: NamingConvention | NamingConventionConfig;
     /**
      * Suffix appended to generated TypeScript type names.
      * The suffix is formatted based on the selected naming convention.
@@ -55,7 +58,14 @@ export interface TypeSharpConfig {
     fileSuffix?: string;
 }
 /**
- * Naming convention options for file and property names
+ * Naming convention options for path, file and property names
  */
 export type NamingConvention = 'kebab' | 'snake' | 'camel' | 'pascal';
+/**
+ * More specific naming convension configuration
+ */
+export type NamingConventionConfig = {
+    file: NamingConvention;
+    dir: NamingConvention;
+};
 //# sourceMappingURL=typesharp-config.d.ts.map

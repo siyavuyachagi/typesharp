@@ -11,7 +11,7 @@ import { TypeSharpConfig } from '../types/typesharp-config';
 const DEFAULT_CONFIG: Partial<TypeSharpConfig> = {
   targetAnnotation: 'TypeSharp',
   singleOutputFile: false,
-  fileNamingConvention: 'kebab',
+  // fileNamingConvention: 'kebab',
   namingConvention: 'camel'
 };
 
@@ -233,7 +233,7 @@ function validateConfig(config: TypeSharpConfig): void {
 /**
  * Create a sample configuration file
  */
-export function createSampleConfig(format: 'ts' | 'js' | 'json' = 'json'): void {
+export function createSampleConfig(format: 'ts' | 'js' | 'json'): void {
   const sampleConfig: TypeSharpConfig = {
     // Show array format as example
     projectFiles: [
@@ -243,8 +243,8 @@ export function createSampleConfig(format: 'ts' | 'js' | 'json' = 'json'): void 
     outputPath: './app/types',
     targetAnnotation: 'TypeSharp',
     singleOutputFile: false,
-    fileNamingConvention: 'kebab',
     namingConvention: 'camel',
+    fileSuffix: ''
   };
 
   let fileName: string;
