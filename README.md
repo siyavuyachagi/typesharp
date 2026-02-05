@@ -97,10 +97,10 @@ npx typesharp init
 
 # ----- OR -------
 
-# Create JSON config (default)
+# Create JSON config
 npx typesharp init --format json
 
-# Create TypeScript config
+# Create TypeScript config (default)
 npx typesharp init --format ts
 
 # Create JavaScript config
@@ -344,17 +344,15 @@ const config: TypeSharpConfig = {
 
 ## Type Mappings
 
-| C# Type                                     | TypeScript Type  |
-| ------------------------------------------- | ---------------- |
-| `string`                                    | `string`         |
-| `string?`                                   | `string \| null` |
-| `int`, `long`, `double`, `float`, `decimal` | `number`         |
-| `bool`                                      | `boolean`        |
-| `DateTime`, `DateOnly`, `TimeOnly`          | `string`         |
-| `Guid`                                      | `string`         |
-| `List<T>`, `IEnumerable<T>`, `T[]`          | `T[]`            |
-| `FormFile`, `IFormFile`                     | `File`           |
-| `IFormFileCollection`                       | `FileList`       |
+| C# Type                                                        | TypeScript Type  |
+| -------------------------------------------------------------- | ---------------- |
+| `bool`                                                         | `boolean`        |
+| `byte`, `decimal`, `double`, `float`, `int`, `long`            | `number`         |
+| `FormFile`, `IFormFile`                                        | `File`           |
+| `DateTime`, `DateOnly`, `TimeOnly`                             | `string`         |
+| `Guid`, `string`                                               | `string`         |
+| `IFormFileCollection`                                          | `File[]`         |
+| `List<T>`, `ICollection<T>` `IEnumerable<T>`, `T[]`            | `T[]`            |
 
 ## Programmatic Usage
 

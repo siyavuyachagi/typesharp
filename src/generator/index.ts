@@ -262,7 +262,6 @@ function getRelativeImportPath(fromFile: string, toFile: string, namingConvensio
   // Convert Windows backslashes to forward slashes
   relativePath = relativePath.replace(/\\/g, '/');
 
-
   return relativePath;
 }
 
