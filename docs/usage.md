@@ -153,25 +153,31 @@ Or relative:
 }
 ```
 
-**`fileNamingConvention`** (string, default: `'kebab'`)
+**`NamingConvention`** (string, default: `'kebab'`)
 
-- How to name the output files
-- Options: `'kebab'`, `'snake'`, `'camel'`, `'pascal'`
+- How to name the output folder sub-directories & files
+- Options:
 
-```json
-{
-  "fileNamingConvention": "kebab"
+```ts
+// Simple configuration type
+type NamingConvention = "camel" | "kebab" | "pascal" | "snake";
+// Advanced naming convention type
+type NamingConventionConfig = {
+  'dir': NamingConvention,
+  'file': NamingConvention,
 }
 ```
 
-**`namingConvention`** (string, default: `'camel'`)
-
-- How to transform property names
-- Options: `'camel'`, `'pascal'`, `'snake'`, `'kebab'`
-
-```json
+```ts
 {
-  "namingConvention": "camel"
+  fileNamingConvention: "kebab" // ./src/path-to/my-types/emailVerification.ts
+}
+// OR
+{
+  fileNamingConvention: {
+    dir: 'snake', // ./src/path_to/my_types/
+    file: 'camel' // /emailVerification.ts
+  }
 }
 ```
 
@@ -186,7 +192,7 @@ Or relative:
 }
 ```
 
-Example: If C# file is `User.cs` with suffix `"dto"` and convention `"kebab"`:
+Example: If C# file is `User.cs` and the suffix `"dto"` and convention `"kebab"`:
 
 - Output: `user-dto.ts`
 
@@ -194,7 +200,7 @@ Example: If C# file is `User.cs` with suffix `"dto"` and convention `"kebab"`:
 
 TypeSharp supports three configuration formats:
 
-#### JSON (Recommended)
+#### JSON
 
 **`typesharp.config.json`**
 
@@ -211,7 +217,7 @@ TypeSharp supports three configuration formats:
 
 #### TypeScript
 
-**`typesharp.config.ts`**
+**`typesharp.config.ts`** (Recommended)
 
 ```typescript
 import { TypeSharpConfig } from "typesharp";
@@ -491,9 +497,9 @@ public enum Status
 
 ```typescript
 export enum Status {
-  Active = "Active",
-  Inactive = "Inactive",
-  Pending = "Pending",
+  Active = 1,
+  Inactive = 2,
+  Pending = 3,
 }
 ```
 
@@ -647,7 +653,7 @@ const fetchUser = async (id: number) => {
 
 const fetchUsers = async (page: number) => {
   const response = await $fetch<PagedApiResponse<User[]>>(
-    `/api/users?page=${page}`
+    `/api/users?page=${page}`,
   );
   usersResponse.value = response;
 };
@@ -1413,9 +1419,8 @@ import type { User, Product } from "~/types/models";
 
 // Type-safe API calls
 const userResponse = await $fetch<ApiResponse<User>>("/api/users/1");
-const productsResponse = await $fetch<PagedApiResponse<Product[]>>(
-  "/api/products"
-);
+const productsResponse =
+  await $fetch<PagedApiResponse<Product[]>>("/api/products");
 ```
 
 ---

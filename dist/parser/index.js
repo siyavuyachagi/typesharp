@@ -75,7 +75,8 @@ function parseClassesFromFile(content, targetAnnotation) {
     // Remove comments
     const cleanContent = removeComments(content);
     // Find all classes/enums with the target annotation
-    const annotationRegex = new RegExp(`\\[${targetAnnotation}\\]`, 'g');
+    // const annotationRegex = new RegExp(`\\[${targetAnnotation}\\]`, 'g');
+    const annotationRegex = new RegExp(`\\[${targetAnnotation}(Attribute)?\\]`, 'g');
     const matches = [...cleanContent.matchAll(annotationRegex)];
     for (const match of matches) {
         const startIndex = match.index;
