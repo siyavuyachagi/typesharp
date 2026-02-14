@@ -63,7 +63,7 @@ function parseClassesFromFile(content: string, targetAnnotation: string): CSharp
 
   // Find all classes/enums with the target annotation
   const annotationRegex = new RegExp(
-    `\\[${targetAnnotation}(Attribute)?\\]`,
+    `\\[${targetAnnotation}(Attribute)?\\]`, // support 'Attribute; suffix
     'g'
   );
 
