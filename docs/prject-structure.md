@@ -2,22 +2,26 @@
 
 ```
 typesharp/
-├── docs/                           ✅ Documentation
-├── src/
-│   ├── index.ts                    ✅ Main exports
-│   ├── cli/index.ts                ✅ CLI interface
-│   ├── core/index.ts               ✅ Core logic
-│   ├── parser/index.ts             ✅ C# parser
-│   ├── generator/index.ts          ✅ TS generator
-│   └── types                       
-│       ├── index.ts                ✅ Type definitions
-│       └── typesharp-config.ts     ✅ Configuration file
 ├── bin/
 │   └── typesharp.js                ✅ CLI executable
+├── docs/                           ✅ Documentation
+├── src/
+│   ├── cli
+│   │   └── index.ts                ✅ CLI interface
+│   ├── core
+│   │   └── index.ts                ✅ Core logic
+│   ├── generator
+│   │   └── index.ts                ✅ TS generator
+│   ├── parser
+│   │   └── index.ts                ✅ C# parser
+│   └── types
+│       ├── index.ts                ✅ Type definitions
+│       └── typesharp-config.ts     ✅ Configuration file
 ├── tests/                          ✅ Tests
-├── package.json                    ✅ Package config
-├── tsconfig.json                   ✅ TypeScript config
 ├── .gitignore                      ✅ Git ignore
+├── CHANGELOG.md                    ✅ Documentation
+├── LICENSE                         ✅ MIT License
+├── package.json                    ✅ Package config
 ├── README.md                       ✅ Documentation
-└── LICENSE                         ✅ MIT License
+└── tsconfig.json                   ✅ TypeScript config
 ```

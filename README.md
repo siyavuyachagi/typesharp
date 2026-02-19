@@ -12,28 +12,31 @@ Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET
 🎯 **Custom Attribute Targeting** – Use `[TypeSharp]` or any custom attribute  
 🔄 **Nullable Support** – `string?` → `string | null`  
 📦 **Collection Handling** – Supports `List<T>`, `IEnumerable<T>`, arrays **and generic collections**  
+🗺️ **Dictionary Mapping** – `Dictionary<K, V>` → `Record<K, V>`  
 🧬 **Generic Types** – Preserves generic type definitions like `Response<T>` → `Response<T>`  
 🧬 **Inheritance** – Preserves class inheritance using `extends`  
+🏗️ **Computed Properties** – Expression-bodied and block getter properties are included  
 🎨 **Naming Conventions** – Convert property names (camel, pascal, snake, kebab)  
 📁 **Flexible Output** – Single file or multiple files  
 🔢 **Enum Support** – Converts C# enums to TypeScript string enums  
-🗂️ **File Grouping** – Preserves C# file organization (multiple classes per file stay together)
+🗂️ **File Grouping** – Preserves C# file organization (multiple classes per file stay together)  
+🔗 **Auto Imports** – Automatically generates `import type` statements between output files  
+🏢 **Multi-Project** – Scan multiple `.csproj` files in a single run
 
+## How TypeSharp Compares
 
-## How TypeSharp Compares   
 This is not an OpenApi-based tool !
-| Feature               | TypeSharp | NSwag | openapi-typescript | TypeGen |
+| Feature | TypeSharp | NSwag | openapi-typescript | TypeGen |
 | --------------------- | --------- | ----- | ------------------ | ------- |
-| Direct C# parsing     | ✅         | ❌     | ❌                  | ✅       |
-| Attribute targeting   | ✅         | ⚠️    | ❌                  | ⚠️      |
-| Non-API models        | ✅         | ❌     | ❌                  | ✅       |
-| Generics preserved    | ✅         | ⚠️    | ⚠️                 | ⚠️      |
-| File grouping         | ✅         | ❌     | ❌                  | ❌       |
-| Naming control        | ✅         | ⚠️    | ⚠️                 | ❌       |
-| API client generation | ❌         | ✅     | ❌                  | ❌       |
+| Direct C# parsing | ✅ | ❌ | ❌ | ✅ |
+| Attribute targeting | ✅ | ⚠️ | ❌ | ⚠️ |
+| Non-API models | ✅ | ❌ | ❌ | ✅ |
+| Generics preserved | ✅ | ⚠️ | ⚠️ | ⚠️ |
+| File grouping | ✅ | ❌ | ❌ | ❌ |
+| Naming control | ✅ | ⚠️ | ⚠️ | ❌ |
+| API client generation | ❌ | ✅ | ❌ | ❌ |
 
 For more [docs/why-typesharp](docs/why-typesharp.md)
-
 
 ## Installation
 
@@ -105,7 +108,6 @@ npx typesharp init --format ts
 
 # Create JavaScript config
 npx typesharp init --format js
-
 ```
 
 This creates `typesharp.config.json`:
@@ -119,7 +121,6 @@ This creates `typesharp.config.json`:
   "outputPath": "./app/types",
   "targetAnnotation": "TypeSharp",
   "singleOutputFile": false,
-  "fileNamingConvention": "kebab",
   "namingConvention": "camel"
 }
 ```
@@ -187,23 +188,40 @@ export interface ApiResponse<T> {
   errors: string[];
 }
 ```
+
 For more advanced usage [docs/usage](docs/usage.md)
 
 ## Configuration
 
 ### 1. Configuration Options
 
-| Option                 | Type       | Default       | Description                                      |
-| ---------------------- | ---------- | ------------- | ------------------------------------------------ |
-| `projectFiles`         | `string[]` | _required_    | Full path(s) to your C# .csproj file             |
-| `outputPath`           | `string`   | _required_    | Where to generate TypeScript files               |
-| `targetAnnotation`     | `string`   | `'TypeSharp'` | C# attribute name to look for                    |
-| `singleOutputFile`     | `boolean`  | `false`       | Generate one file or multiple files (see below)  |
-| `fileNamingConvention` | `string`   | `'kebab'`     | File naming: `kebab`, `camel`, `pascal`, `snake` |
-| `namingConvention`     | `string`   | `'camel'`     | Property naming: `camel`, `pascal`, `snake`      |
-| `fileSuffix`           | `string`   | `optional`    | Suffix for file names: `user-dto.ts`             |
+| Option             | Type                                      | Default       | Description                                                   |
+| ------------------ | ----------------------------------------- | ------------- | ------------------------------------------------------------- |
+| `projectFiles`     | `string \| string[]`                      | _required_    | Full path(s) to your C# .csproj file(s)                       |
+| `outputPath`       | `string`                                  | _required_    | Where to generate TypeScript files                            |
+| `targetAnnotation` | `string`                                  | `'TypeSharp'` | C# attribute name to look for                                 |
+| `singleOutputFile` | `boolean`                                 | `false`       | Generate one file or multiple files (see below)               |
+| `namingConvention` | `string \| { dir: string, file: string }` | `'camel'`     | Property/file/dir naming: `kebab`, `camel`, `pascal`, `snake` |
+| `fileSuffix`       | `string`                                  | _optional_    | Suffix appended to generated file names: `user-dto.ts`        |
 
-### 2. Output File Behavior
+### 2. Naming Convention
+
+`namingConvention` accepts either a simple string that applies to everything, or a config object for separate control over directories and files:
+
+```json
+// Simple — applies to both dirs and files
+{ "namingConvention": "kebab" }
+
+// Advanced — separate control
+{
+  "namingConvention": {
+    "dir": "kebab",
+    "file": "camel"
+  }
+}
+```
+
+### 3. Output File Behavior
 
 TypeSharp preserves your C# file organization. Here's how it works:
 
@@ -230,7 +248,7 @@ Backend/                           src/types/
 
 **This means if you organize related DTOs in one C# file, they'll stay together in the generated TypeScript file!** 🎯
 
-### 3. Configuration File Formats
+### 4. Configuration File Formats
 
 TypeSharp supports multiple configuration formats:
 
@@ -315,7 +333,82 @@ export interface Product extends BaseEntity {
 }
 ```
 
-### 2. Single Output File
+### 2. Computed Properties
+
+TypeSharp includes expression-bodied and block getter properties in the generated output:
+
+**C#:**
+
+```csharp
+[TypeSharp]
+public class PollOptionUserLinkDto
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public UserDto User { get; set; }
+
+    // Expression-bodied
+    public string? Avatar => User?.Avatar;
+
+    // Block getter
+    public string UserFirstName { get { return User.FirstName; } }
+
+    // Init-only (Planned)
+    // public string Slug { get; init; }
+}
+```
+
+**Generated TypeScript:**
+
+```typescript
+export interface PollOptionUserLinkDto {
+  id: number;
+  userId: number;
+  user: UserDto;
+  avatar: string | null;
+  userFirstName: string;
+  slug: string;
+}
+```
+
+### 3. Dictionary Types
+
+**C#:**
+
+```csharp
+[TypeSharp]
+public class PermissionMap
+{
+    public Dictionary<string, bool> Flags { get; set; }
+    public IReadOnlyDictionary<string, List<string>> RolePermissions { get; set; }
+}
+```
+
+**Generated TypeScript:**
+
+```typescript
+export interface PermissionMap {
+  flags: Record<string, boolean>;
+  rolePermissions: Record<string, string[]>;
+}
+```
+
+### 4. Multi-Project
+
+Scan multiple C# projects at once:
+
+```json
+{
+  "projectFiles": [
+    "C:/MyApp/Api/Api.csproj",
+    "C:/MyApp/Domain/Domain.csproj",
+    "C:/MyApp/Contracts/Contracts.csproj"
+  ],
+  "outputPath": "./src/types"
+}
+```
+
+### 5. Single Output File
 
 **Config:**
 
@@ -327,9 +420,9 @@ const config: TypeSharpConfig = {
 };
 ```
 
-All types will be generated in `src/types/index.ts`
+All types will be generated in `src/types/types.ts`
 
-### 3. Custom Naming Conventions
+### 6. Custom Naming Conventions
 
 **Config:**
 
@@ -337,22 +430,39 @@ All types will be generated in `src/types/index.ts`
 const config: TypeSharpConfig = {
   projectFiles: "./Backend/Backend.csproj",
   outputPath: "./src/types",
-  fileNamingConvention: "snake", // user_model.ts
-  namingConvention: "pascal", // UserName, not userName
+  namingConvention: {
+    dir: "kebab", // ./src/types/my-feature/
+    file: "camel", // myFeatureDto.ts
+  },
 };
 ```
 
 ## Type Mappings
 
-| C# Type                                                        | TypeScript Type  |
-| -------------------------------------------------------------- | ---------------- |
-| `bool`                                                         | `boolean`        |
-| `byte`, `decimal`, `double`, `float`, `int`, `long`            | `number`         |
-| `FormFile`, `IFormFile`                                        | `File`           |
-| `DateTime`, `DateOnly`, `TimeOnly`                             | `string`         |
-| `Guid`, `string`                                               | `string`         |
-| `IFormFileCollection`                                          | `File[]`         |
-| `List<T>`, `ICollection<T>` `IEnumerable<T>`, `T[]`            | `T[]`            |
+### Primitives & Common Types
+
+| C# Type                                             | TypeScript Type |
+| --------------------------------------------------- | --------------- |
+| `bool`                                              | `boolean`       |
+| `byte`, `decimal`, `double`, `float`, `int`, `long` | `number`        |
+| `DateTime`, `DateOnly`, `TimeOnly`                  | `string`        |
+| `Guid`, `string`                                    | `string`        |
+| `object`                                            | `any`           |
+
+### Collections
+
+| C# Type                                                              | TypeScript Type |
+| -------------------------------------------------------------------- | --------------- |
+| `List<T>`, `ICollection<T>`, `IEnumerable<T>`, `T[]`                 | `T[]`           |
+| `Dictionary<K, V>`, `IDictionary<K, V>`, `IReadOnlyDictionary<K, V>` | `Record<K, V>`  |
+
+### ASP.NET / File Types
+
+| C# Type                                | TypeScript Type |
+| -------------------------------------- | --------------- |
+| `IFormFile`, `FormFile`                | `File`          |
+| `IFormFileCollection`                  | `File[]`        |
+| `FileStream`, `MemoryStream`, `Stream` | `Blob`          |
 
 ## Programmatic Usage
 
@@ -372,10 +482,6 @@ generateTypes();
 
 - Node.js >= 14
 - TypeScript >= 4.5 (if using TypeScript config)
-
-<!-- ## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. -->
 
 ## License
 
