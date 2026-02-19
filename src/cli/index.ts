@@ -9,7 +9,7 @@ const program = new Command();
 program
   .name('typesharp')
   .description('Generate TypeScript types from C# models with TypeSharp attribute')
-  .version('1.0.0')
+  .version('0.1.1')
   .usage('[command] [options]');
 
 // Generate command (default)
