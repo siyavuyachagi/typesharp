@@ -197,10 +197,10 @@ function extractClassBody(content: string): string | null {
 function parseProperties(classBody: string): CSharpProperty[] {
   const properties: CSharpProperty[] = [];
 
-  // Match property declarations with get/set
-  const propertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*get;\s*set;\s*\}/g;
   let match;
 
+  // Match property declarations with get/set
+  const propertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*get;\s*set;\s*\}/g;
   while ((match = propertyRegex.exec(classBody)) !== null) {
     const type = match[1]!;
     const name = match[2]!;
@@ -209,18 +209,25 @@ function parseProperties(classBody: string): CSharpProperty[] {
   }
 
   // Also match computed/expression-bodied properties (with =>)
-  // These are read-only, so we'll skip them for now since they don't have set;
-  // If you want to include them, uncomment below:
-  /*
   const computedPropertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*=>/g;
   while ((match = computedPropertyRegex.exec(classBody)) !== null) {
     const type = match[1]!;
     const name = match[2]!;
-    
+
     properties.push(parsePropertyType(name, type));
   }
-  */
 
+  // { get { return ...; } }
+  const getBlockRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*get\s*\{[^}]*\}\s*\}/g;
+  while ((match = getBlockRegex.exec(classBody)) !== null) {
+    properties.push(parsePropertyType(match[2]!, match[1]!));
+  }
+
+  // { get; set; } and { get; init; }
+  // const autoPropertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*get;\s*(?:set|init);\s*\}/g;
+  // while ((match = autoPropertyRegex.exec(classBody)) !== null) {
+  //   properties.push(parsePropertyType(match[2]!, match[1]!));
+  // }
   return properties;
 }
 

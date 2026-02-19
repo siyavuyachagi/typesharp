@@ -21,7 +21,7 @@ export function generateTypeScriptFiles(
 
   if (config.singleOutputFile) {
     const allClasses = parseResults.flatMap(r => r.classes);
-    generateSingleFile(allClasses, outputPath, fileConvention);
+    generateSingleFile(allClasses, outputPath);
   } else {
     // Generate one TypeScript file per C# file (preserves grouping)
     generateMultipleFiles(outputPath, config, parseResults);
@@ -43,11 +43,10 @@ export function generateTypeScriptFiles(
 function generateSingleFile(
   classes: CSharpClass[],
   outputPath: string,
-  namingConvension: NamingConvention
 ): void {
   const content = classes
     .sort((a, b) => (a.isEnum ? -1 : 1) - (b.isEnum ? -1 : 1) || a.name.localeCompare(b.name)) // Sort by type or name - Asc order
-    .map(cls => generateTypeScriptClass(cls, namingConvension))
+    .map(cls => generateTypeScriptClass(cls))
     .join('\n\n');
 
   const header = generateFileHeader();
@@ -88,7 +87,7 @@ function generateMultipleFiles(
   for (const result of parseResultsSorted) {
     // Generate content for all classes in this C# file
     const content = result.classes
-      .map(cls => generateTypeScriptClass(cls, fileConvention))
+      .map(cls => generateTypeScriptClass(cls))
       .join('\n\n');
 
     // Preserve folder structure
@@ -284,7 +283,7 @@ function isPrimitiveType(type: string): boolean {
 /**
  * Generate TypeScript interface or enum from C# class
  */
-function generateTypeScriptClass(cls: CSharpClass, namingConvension: NamingConvention): string {
+function generateTypeScriptClass(cls: CSharpClass): string {
   if (cls.isEnum) {
     return generateEnum(cls);
   }
