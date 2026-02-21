@@ -7,11 +7,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = require("commander");
 const core_1 = require("../core");
 const chalk_1 = __importDefault(require("chalk"));
+const package_json_1 = require("../../package.json");
 const program = new commander_1.Command();
 program
-    .name('typesharp')
-    .description('Generate TypeScript types from C# models with TypeSharp attribute')
-    .version('1.0.0')
+    .name(package_json_1.name)
+    .description(package_json_1.description)
+    .version(package_json_1.version)
     .usage('[command] [options]');
 // Generate command (default)
 program
