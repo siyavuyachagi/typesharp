@@ -3,13 +3,13 @@
 import { Command } from 'commander';
 import { generate, createSampleConfig } from '../core';
 import chalk from 'chalk';
-
+import { version, name, description } from '../../package.json';
 const program = new Command();
 
 program
-  .name('typesharp')
-  .description('Generate TypeScript types from C# models with TypeSharp attribute')
-  .version('0.1.1')
+  .name(name)
+  .description(description)
+  .version(version)
   .usage('[command] [options]');
 
 // Generate command (default)

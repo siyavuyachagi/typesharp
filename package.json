@@ -22,10 +22,12 @@
     "LICENSE"
   ],
   "keywords": [
-    "typescript",
-    "csharp",
+    "cli",
     "code-generation",
-    "types"
+    "csharp",
+    "type-sharp",
+    "types",
+    "typescript"
   ],
   "scripts": {
     "build": "tsc",
