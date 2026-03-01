@@ -4,6 +4,7 @@ import { parseCSharpFiles } from '../parser';
 import { generateTypeScriptFiles } from '../generator';
 import chalk from 'chalk';
 import { TypeSharpConfig } from '../types/typesharp-config';
+import { pathToFileURL } from 'url';
 
 /**
  * Default configuration values
@@ -18,7 +19,7 @@ const DEFAULT_CONFIG: Partial<TypeSharpConfig> = {
 /**
  * Load configuration from a file
  */
-function loadConfigFromFile(filePath: string): TypeSharpConfig {
+async function loadConfigFromFile(filePath: string): Promise<TypeSharpConfig> {
   const ext = path.extname(filePath);
 
   if (ext === '.json') {
@@ -28,10 +29,9 @@ function loadConfigFromFile(filePath: string): TypeSharpConfig {
   }
 
   if (ext === '.js' || ext === '.ts') {
-    // For TypeScript/JavaScript files, we need to require them
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const config = require(path.resolve(filePath));
-    const exportedConfig = config.default || config;
+    const fileUrl = pathToFileURL(path.resolve(filePath)).href;
+    const module = await import(fileUrl);
+    const exportedConfig = module.default || module;
     return mergeWithDefaults(exportedConfig);
   }
 
@@ -57,13 +57,38 @@ function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
 }
 
 
+/**
+ * Format a plain object as a JS/TS object literal (no quoted keys)
+ */
+function formatAsJsObject(obj: Record<string, any>, indent = 0): string {
+  const pad = ' '.repeat(indent + 2);
+  const closePad = ' '.repeat(indent);
+
+  const lines = Object.entries(obj).map(([key, value]) => {
+    let formatted: string;
+
+    if (Array.isArray(value)) {
+      const items = value.map(v => `${pad}  ${JSON.stringify(v)}`).join(',\n');
+      formatted = `[\n${items}\n${pad}]`;
+    } else if (typeof value === 'object' && value !== null) {
+      formatted = formatAsJsObject(value, indent + 2);
+    } else {
+      formatted = JSON.stringify(value);
+    }
+
+    return `${pad}${key}: ${formatted}`;
+  });
+
+  return `{\n${lines.join(',\n')}\n${closePad}}`;
+}
+
 
 export async function generate(configPath?: string): Promise<void> {
   try {
     console.log(chalk.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
 
     // Load configuration
-    const config = loadConfig(configPath);
+    const config = await loadConfig(configPath);
     console.log(chalk.green.bold('\n✓ Configuration loaded'));
 
     // Display project files
@@ -166,9 +191,9 @@ export function cleanOutputDirectory(dir: string) {
 /**
  * Load configuration from file or use provided config
  */
-export function loadConfig(configPath?: string): TypeSharpConfig {
+export async function loadConfig(configPath?: string): Promise<TypeSharpConfig> {
   if (configPath && fs.existsSync(configPath)) {
-    return loadConfigFromFile(configPath);
+    return await loadConfigFromFile(configPath);
   }
 
   // Look for default config files
@@ -180,7 +205,7 @@ export function loadConfig(configPath?: string): TypeSharpConfig {
 
   for (const defaultPath of defaultPaths) {
     if (fs.existsSync(defaultPath)) {
-      return loadConfigFromFile(defaultPath);
+      return await loadConfigFromFile(defaultPath);
     }
   }
 
@@ -255,15 +280,17 @@ export function createSampleConfig(format: 'ts' | 'js' | 'json'): void {
     content = JSON.stringify(sampleConfig, null, 2);
   } else if (format === 'js') {
     fileName = 'typesharp.config.js';
-    content = `module.exports = ${JSON.stringify(sampleConfig, null, 2)};\n`;
+    content = `module.exports = ${formatAsJsObject(sampleConfig)};\n`;
   } else {
     fileName = 'typesharp.config.ts';
-    content = `import type { TypeSharpConfig } from 'typesharp';
-
-const config: TypeSharpConfig = ${JSON.stringify(sampleConfig, null, 2)};
-
-export default config;
-`;
+    content = [
+      `import type { TypeSharpConfig } from 'typesharp';`,
+      ``,
+      `const config: TypeSharpConfig = ${formatAsJsObject(sampleConfig)};`,
+      ``,
+      `export default config;`,
+      ``
+    ].join('\n');
   }
 
   if (fs.existsSync(fileName)) {

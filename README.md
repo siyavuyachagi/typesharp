@@ -5,7 +5,6 @@
 [![npm downloads](https://img.shields.io/npm/dm/@siyavuyachagi/typesharp.svg?label=Downloads)](https://www.npmjs.com/package/@siyavuyachagi/typesharp)
 [![GitHub commits](https://img.shields.io/github/commit-activity/m/siyavuyachagi/typesharp?label=Commits)](https://github.com/siyavuyachagi/typesharp/commits/main)
 [![GitHub last commit](https://img.shields.io/github/last-commit/siyavuyachagi/typesharp?label=Last+commit)](https://github.com/siyavuyachagi/typesharp/commits/main)
-[![GitHub issues](https://img.shields.io/github/issues/siyavuyachagi/typesharp?label=Issues)](https://github.com/siyavuyachagi/typesharp/issues)
 [![GitHub stars](https://img.shields.io/github/stars/siyavuyachagi/typesharp?label=Stars)](https://github.com/siyavuyachagi/typesharp/stargazers)
 [![Sponsor](https://img.shields.io/badge/Sponsor-💖-ff69b4)](https://github.com/sponsors/siyavuyachagi)
 

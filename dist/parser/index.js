@@ -82,7 +82,7 @@ function parseClassesFromFile(content, targetAnnotation) {
         const startIndex = match.index;
         const afterAnnotation = cleanContent.substring(startIndex);
         // Check if it's an enum
-        const enumMatch = afterAnnotation.match(/\[[\w]+\]\s*public\s+enum\s+(\w+)/);
+        const enumMatch = afterAnnotation.match(/(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+enum\s+(\w+)/);
         if (enumMatch) {
             const enumClass = parseEnum(afterAnnotation, enumMatch[1]);
             if (enumClass)
@@ -91,7 +91,8 @@ function parseClassesFromFile(content, targetAnnotation) {
         }
         // Parse as class with full generic support
         // Matches: public class ClassName<T, U> : BaseClass<T>
-        const classMatch = afterAnnotation.match(/\[[\w]+\]\s*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/);
+        // Now supports multiple stacked attributes before the class declaration
+        const classMatch = afterAnnotation.match(/(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/);
         if (classMatch) {
             const className = classMatch[1];
             const genericParams = classMatch[2]; // e.g., "T" or "T, U"

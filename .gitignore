@@ -60,3 +60,9 @@ temp/
 
 # misc
 .cache/
+
+# Generated test files
+*.generated/
+
+# VS 
+**/.vs/

@@ -74,7 +74,10 @@ function parseClassesFromFile(content: string, targetAnnotation: string): CSharp
     const afterAnnotation = cleanContent.substring(startIndex);
 
     // Check if it's an enum
-    const enumMatch = afterAnnotation.match(/\[[\w]+\]\s*public\s+enum\s+(\w+)/);
+    const enumMatch = afterAnnotation.match(
+      /(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+enum\s+(\w+)/
+    );
+
     if (enumMatch) {
       const enumClass = parseEnum(afterAnnotation, enumMatch[1]!);
       if (enumClass) classes.push(enumClass);
@@ -83,8 +86,9 @@ function parseClassesFromFile(content: string, targetAnnotation: string): CSharp
 
     // Parse as class with full generic support
     // Matches: public class ClassName<T, U> : BaseClass<T>
+    // Now supports multiple stacked attributes before the class declaration
     const classMatch = afterAnnotation.match(
-      /\[[\w]+\]\s*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/
+      /(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/
     );
 
     if (classMatch) {
