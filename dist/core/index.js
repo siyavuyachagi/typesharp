@@ -65,9 +65,23 @@ async function loadConfigFromFile(filePath) {
         const config = JSON.parse(content);
         return mergeWithDefaults(config);
     }
-    if (ext === '.js' || ext === '.ts') {
+    // if (ext === '.js' || ext === '.ts') {
+    //   const fileUrl = pathToFileURL(path.resolve(filePath)).href;
+    //   const module = await import(fileUrl);
+    //   const exportedConfig = module.default || module;
+    //   return mergeWithDefaults(exportedConfig);
+    // }
+    if (ext === '.js') {
         const fileUrl = (0, url_1.pathToFileURL)(path.resolve(filePath)).href;
         const module = await Promise.resolve(`${fileUrl}`).then(s => __importStar(require(s)));
+        const exportedConfig = module.default || module;
+        return mergeWithDefaults(exportedConfig);
+    }
+    if (ext === '.ts') {
+        // Use tsx to load TypeScript config files at runtime
+        const tsxPath = require.resolve('tsx/cjs');
+        require(tsxPath);
+        const module = require(path.resolve(filePath));
         const exportedConfig = module.default || module;
         return mergeWithDefaults(exportedConfig);
     }

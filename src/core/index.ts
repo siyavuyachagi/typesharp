@@ -28,9 +28,25 @@ async function loadConfigFromFile(filePath: string): Promise<TypeSharpConfig> {
     return mergeWithDefaults(config);
   }
 
-  if (ext === '.js' || ext === '.ts') {
+  // if (ext === '.js' || ext === '.ts') {
+  //   const fileUrl = pathToFileURL(path.resolve(filePath)).href;
+  //   const module = await import(fileUrl);
+  //   const exportedConfig = module.default || module;
+  //   return mergeWithDefaults(exportedConfig);
+  // }
+
+  if (ext === '.js') {
     const fileUrl = pathToFileURL(path.resolve(filePath)).href;
     const module = await import(fileUrl);
+    const exportedConfig = module.default || module;
+    return mergeWithDefaults(exportedConfig);
+  }
+
+  if (ext === '.ts') {
+    // Use tsx to load TypeScript config files at runtime
+    const tsxPath = require.resolve('tsx/cjs');
+    require(tsxPath);
+    const module = require(path.resolve(filePath));
     const exportedConfig = module.default || module;
     return mergeWithDefaults(exportedConfig);
   }
