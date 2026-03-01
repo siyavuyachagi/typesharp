@@ -65,12 +65,6 @@ async function loadConfigFromFile(filePath) {
         const config = JSON.parse(content);
         return mergeWithDefaults(config);
     }
-    // if (ext === '.js' || ext === '.ts') {
-    //   const fileUrl = pathToFileURL(path.resolve(filePath)).href;
-    //   const module = await import(fileUrl);
-    //   const exportedConfig = module.default || module;
-    //   return mergeWithDefaults(exportedConfig);
-    // }
     if (ext === '.js') {
         const fileUrl = (0, url_1.pathToFileURL)(path.resolve(filePath)).href;
         const module = await Promise.resolve(`${fileUrl}`).then(s => __importStar(require(s)));
@@ -291,8 +285,10 @@ function createSampleConfig(format) {
             ``
         ].join('\n');
     }
-    if (fs.existsSync(fileName)) {
-        console.log(chalk_1.default.yellow.bold('❗ Warning:'), chalk_1.default.white(`${fileName} already exists. Skipping creation.`));
+    const allConfigFiles = ['typesharp.config.ts', 'typesharp.config.js', 'typesharp.config.json'];
+    const existingConfig = allConfigFiles.find(f => fs.existsSync(f));
+    if (existingConfig) {
+        console.log(chalk_1.default.yellow.bold('❗ Warning:'), chalk_1.default.white(`${existingConfig} already exists. Skipping creation.`));
         return;
     }
     fs.writeFileSync(fileName, content, 'utf-8');
