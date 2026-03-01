@@ -34,10 +34,12 @@
     "dev": "tsc --watch",
     "prepublishOnly": "npm run build",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:ui": "npx vitest --ui"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",
+    "@vitest/ui": "^4.0.18",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"

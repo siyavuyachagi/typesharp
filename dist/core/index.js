@@ -45,6 +45,7 @@ const path = __importStar(require("path"));
 const parser_1 = require("../parser");
 const generator_1 = require("../generator");
 const chalk_1 = __importDefault(require("chalk"));
+const url_1 = require("url");
 /**
  * Default configuration values
  */
@@ -65,7 +66,8 @@ async function loadConfigFromFile(filePath) {
         return mergeWithDefaults(config);
     }
     if (ext === '.js') {
-        const module = require(path.resolve(filePath));
+        const fileUrl = (0, url_1.pathToFileURL)(path.resolve(filePath)).href;
+        const module = await Promise.resolve(`${fileUrl}`).then(s => __importStar(require(s)));
         const exportedConfig = module.default || module;
         return mergeWithDefaults(exportedConfig);
     }

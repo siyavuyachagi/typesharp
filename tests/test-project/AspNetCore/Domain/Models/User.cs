@@ -12,6 +12,7 @@ namespace Domain.Models
     {
         public int Id { get; set; }
         public string? Name { get; set; }
+        public DateOnly? DateOfBirth { get; set; }
         public string Email { get; set; }
         public ICollection<UserRoleCode> Roles { get; set; } = [];
         public ICollection<string> Permissions { get; set; } = [];

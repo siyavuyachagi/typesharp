@@ -1,5 +1,5 @@
 // tests/typesharp.config.ts
-import type { TypeSharpConfig } from '../src';
+import type { TypeSharpConfig } from '../../src';
 
 const config: TypeSharpConfig = {
   projectFiles: [

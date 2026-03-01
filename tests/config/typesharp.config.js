@@ -1,0 +1,12 @@
+// tests/typesharp.config.js
+module.exports = {
+  projectFiles: [
+    "tests/test-project/AspNetCore/AspNetCore/AspNetCore.csproj",
+    "tests/test-project/AspNetCore/Domain/Domain.csproj"
+  ],
+  outputPath: "./app/types",
+  targetAnnotation: "TypeSharp",
+  singleOutputFile: false,
+  namingConvention: "camel",
+  fileSuffix: ""
+};

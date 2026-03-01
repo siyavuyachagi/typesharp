@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import * as fs from 'fs'
 import * as path from 'path'
 import { generate } from "../../src/core";
-import config from "../typesharp.config";
+import config from "../config/typesharp.config";
 
 const CONFIG_PATH = path.resolve(__dirname, '../typesharp.config.ts')
 
@@ -99,12 +99,12 @@ describe('TypeSharp - Real Project Integration', () => {
 
     describe('Type correctness', () => {
         it('nullable properties have | null', () => {
-            const file = findFileContaining(config.outputPath, 'UserCreateDto')
+            const file = findFileContaining(config.outputPath, 'User')
             if (!file) return
             const content = fs.readFileSync(file, 'utf-8')
-            // userName and phoneNumber are nullable in UserCreateDto
-            expect(content).toMatch(/userName.*null/)
-            expect(content).toMatch(/phoneNumber.*null/)
+            // Name and DateOfBirth are nullable in User
+            expect(content).toMatch(/Name.*null/)
+            expect(content).toMatch(/DateOfBirth.*null/)
         })
 
         it('no raw Guid type — should be string', () => {
