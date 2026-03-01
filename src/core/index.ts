@@ -29,8 +29,7 @@ async function loadConfigFromFile(filePath: string): Promise<TypeSharpConfig> {
   }
 
   if (ext === '.js') {
-    const fileUrl = pathToFileURL(path.resolve(filePath)).href;
-    const module = await import(fileUrl);
+    const module = require(path.resolve(filePath));
     const exportedConfig = module.default || module;
     return mergeWithDefaults(exportedConfig);
   }
