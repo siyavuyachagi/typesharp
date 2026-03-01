@@ -57,6 +57,31 @@ function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
 }
 
 
+/**
+ * Format a plain object as a JS/TS object literal (no quoted keys)
+ */
+function formatAsJsObject(obj: Record<string, any>, indent = 0): string {
+  const pad = ' '.repeat(indent + 2);
+  const closePad = ' '.repeat(indent);
+
+  const lines = Object.entries(obj).map(([key, value]) => {
+    let formatted: string;
+
+    if (Array.isArray(value)) {
+      const items = value.map(v => `${pad}  ${JSON.stringify(v)}`).join(',\n');
+      formatted = `[\n${items}\n${pad}]`;
+    } else if (typeof value === 'object' && value !== null) {
+      formatted = formatAsJsObject(value, indent + 2);
+    } else {
+      formatted = JSON.stringify(value);
+    }
+
+    return `${pad}${key}: ${formatted}`;
+  });
+
+  return `{\n${lines.join(',\n')}\n${closePad}}`;
+}
+
 
 export async function generate(configPath?: string): Promise<void> {
   try {
@@ -255,15 +280,17 @@ export function createSampleConfig(format: 'ts' | 'js' | 'json'): void {
     content = JSON.stringify(sampleConfig, null, 2);
   } else if (format === 'js') {
     fileName = 'typesharp.config.js';
-    content = `module.exports = ${JSON.stringify(sampleConfig, null, 2)};\n`;
+    content = `module.exports = ${formatAsJsObject(sampleConfig)};\n`;
   } else {
     fileName = 'typesharp.config.ts';
-    content = `import type { TypeSharpConfig } from 'typesharp';
-
-const config: TypeSharpConfig = ${JSON.stringify(sampleConfig, null, 2)};
-
-export default config;
-`;
+    content = [
+      `import type { TypeSharpConfig } from 'typesharp';`,
+      ``,
+      `const config: TypeSharpConfig = ${formatAsJsObject(sampleConfig)};`,
+      ``,
+      `export default config;`,
+      ``
+    ].join('\n');
   }
 
   if (fs.existsSync(fileName)) {
