@@ -4,6 +4,7 @@ import { parseCSharpFiles } from '../parser';
 import { generateTypeScriptFiles } from '../generator';
 import chalk from 'chalk';
 import { TypeSharpConfig } from '../types/typesharp-config';
+import { pathToFileURL } from 'url';
 
 /**
  * Default configuration values
@@ -18,7 +19,7 @@ const DEFAULT_CONFIG: Partial<TypeSharpConfig> = {
 /**
  * Load configuration from a file
  */
-function loadConfigFromFile(filePath: string): TypeSharpConfig {
+async function loadConfigFromFile(filePath: string): Promise<TypeSharpConfig> {
   const ext = path.extname(filePath);
 
   if (ext === '.json') {
@@ -28,10 +29,9 @@ function loadConfigFromFile(filePath: string): TypeSharpConfig {
   }
 
   if (ext === '.js' || ext === '.ts') {
-    // For TypeScript/JavaScript files, we need to require them
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const config = require(path.resolve(filePath));
-    const exportedConfig = config.default || config;
+    const fileUrl = pathToFileURL(path.resolve(filePath)).href;
+    const module = await import(fileUrl);
+    const exportedConfig = module.default || module;
     return mergeWithDefaults(exportedConfig);
   }
 
@@ -88,7 +88,7 @@ export async function generate(configPath?: string): Promise<void> {
     console.log(chalk.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
 
     // Load configuration
-    const config = loadConfig(configPath);
+    const config = await loadConfig(configPath);
     console.log(chalk.green.bold('\n✓ Configuration loaded'));
 
     // Display project files
@@ -191,9 +191,9 @@ export function cleanOutputDirectory(dir: string) {
 /**
  * Load configuration from file or use provided config
  */
-export function loadConfig(configPath?: string): TypeSharpConfig {
+export async function loadConfig(configPath?: string): Promise<TypeSharpConfig> {
   if (configPath && fs.existsSync(configPath)) {
-    return loadConfigFromFile(configPath);
+    return await loadConfigFromFile(configPath);
   }
 
   // Look for default config files
@@ -205,7 +205,7 @@ export function loadConfig(configPath?: string): TypeSharpConfig {
 
   for (const defaultPath of defaultPaths) {
     if (fs.existsSync(defaultPath)) {
-      return loadConfigFromFile(defaultPath);
+      return await loadConfigFromFile(defaultPath);
     }
   }
 

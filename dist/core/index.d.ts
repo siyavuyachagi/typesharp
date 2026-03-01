@@ -8,7 +8,7 @@ export declare function cleanOutputDirectory(dir: string): void;
 /**
  * Load configuration from file or use provided config
  */
-export declare function loadConfig(configPath?: string): TypeSharpConfig;
+export declare function loadConfig(configPath?: string): Promise<TypeSharpConfig>;
 /**
  * Create a sample configuration file
  */

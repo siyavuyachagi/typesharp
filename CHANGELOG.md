@@ -11,6 +11,24 @@ TypeSharp is NOT an OpenAPI-based tool. It parses C# projects directly, targetin
 
 ---
 
+## [M.M.P] - YYYY-MM-DD
+
+### Summary
+
+Major parser improvements, expanded type support, multi-project support, and automatic import generation between output files.
+
+### Added
+
+- **ASP.NET Core test project** — Selft contained test project
+
+### Changed
+
+### Fixed
+
+- **Multi-annotation support** — Works with classes that have other annotations along with with 'TypeSharp' or your custom
+
+---
+
 ## [0.1.1] - 2026-02-19
 
 ### Summary

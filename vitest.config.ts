@@ -1,3 +1,4 @@
+// vitest.config.ts
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
@@ -5,6 +6,10 @@ export default defineConfig({
         globals: true,
         environment: 'node',
         include: ['tests/**/*.test.ts'],
-        passWithNoTests: true, // ← stops empty files from failing
-    }
+        passWithNoTests: true,
+        pool: 'forks',
+        forks: {
+            execArgv: ['--import', 'tsx'],
+        }
+    } as any
 })

@@ -45,6 +45,7 @@ const path = __importStar(require("path"));
 const parser_1 = require("../parser");
 const generator_1 = require("../generator");
 const chalk_1 = __importDefault(require("chalk"));
+const url_1 = require("url");
 /**
  * Default configuration values
  */
@@ -57,7 +58,7 @@ const DEFAULT_CONFIG = {
 /**
  * Load configuration from a file
  */
-function loadConfigFromFile(filePath) {
+async function loadConfigFromFile(filePath) {
     const ext = path.extname(filePath);
     if (ext === '.json') {
         const content = fs.readFileSync(filePath, 'utf-8');
@@ -65,10 +66,9 @@ function loadConfigFromFile(filePath) {
         return mergeWithDefaults(config);
     }
     if (ext === '.js' || ext === '.ts') {
-        // For TypeScript/JavaScript files, we need to require them
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const config = require(path.resolve(filePath));
-        const exportedConfig = config.default || config;
+        const fileUrl = (0, url_1.pathToFileURL)(path.resolve(filePath)).href;
+        const module = await Promise.resolve(`${fileUrl}`).then(s => __importStar(require(s)));
+        const exportedConfig = module.default || module;
         return mergeWithDefaults(exportedConfig);
     }
     throw new Error(`Unsupported config file format: ${ext}`);
@@ -114,7 +114,7 @@ async function generate(configPath) {
     try {
         console.log(chalk_1.default.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
         // Load configuration
-        const config = loadConfig(configPath);
+        const config = await loadConfig(configPath);
         console.log(chalk_1.default.green.bold('\n✓ Configuration loaded'));
         // Display project files
         const projectFiles = Array.isArray(config.projectFiles)
@@ -190,9 +190,9 @@ function cleanOutputDirectory(dir) {
 /**
  * Load configuration from file or use provided config
  */
-function loadConfig(configPath) {
+async function loadConfig(configPath) {
     if (configPath && fs.existsSync(configPath)) {
-        return loadConfigFromFile(configPath);
+        return await loadConfigFromFile(configPath);
     }
     // Look for default config files
     const defaultPaths = [
@@ -202,7 +202,7 @@ function loadConfig(configPath) {
     ];
     for (const defaultPath of defaultPaths) {
         if (fs.existsSync(defaultPath)) {
-            return loadConfigFromFile(defaultPath);
+            return await loadConfigFromFile(defaultPath);
         }
     }
     throw new Error('No configuration file found. Please create typesharp.config.ts, typesharp.config.js, or typesharp.config.json');
