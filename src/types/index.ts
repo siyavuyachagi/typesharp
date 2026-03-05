@@ -1,4 +1,5 @@
-import { NamingConvention, NamingConventionConfig } from "./typesharp-config";
+import { NamingConvention } from "./naming-convention";
+import { NamingConventionConfig } from "./naming-convention-config";
 import { TypeSharpConfig } from "./typesharp-config";
 
 /**
@@ -45,5 +46,5 @@ export interface GenerationOptions {
 
 // ==== Export types ======
 export type { TypeSharpConfig }
-export type { NamingConvention }
 export type { NamingConventionConfig }
+export type { NamingConvention }

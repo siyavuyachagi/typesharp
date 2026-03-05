@@ -1,5 +1,8 @@
+import { NamingConvention } from "./naming-convention";
+import { NamingConventionConfig } from "./naming-convention-config";
+
 /**
- * TypeSharp configuration
+ * TypeSharp configuration file
  * @see https://github.com/siyavuyachagi/typesharp
  */
 export interface TypeSharpConfig {
@@ -30,7 +33,7 @@ export interface TypeSharpConfig {
     targetAnnotation?: string;
 
     /**
-     * Controls whether generated types are written to one file or multiple files.
+     * Controls whether generated types are written to one file or multiple files. (default: `false`)
      *
      * - true  → All generated types go into a single file: "index.ts"
      * - false → Each file is written separately, using the naming convention.
@@ -44,7 +47,7 @@ export interface TypeSharpConfig {
     // fileNamingConvention?: NamingConvention;
 
     /**
-     * Naming convention for property names in generated types
+     * Naming convention for property names in generated types (default: `camel`)
      * @example
      *   "namingConvention": "camel",
      * // or
@@ -67,19 +70,4 @@ export interface TypeSharpConfig {
      * ```
      */
     fileSuffix?: string;
-}
-
-
-
-/**
- * Naming convention options for path, file and property names
- */
-export type NamingConvention = 'kebab' | 'snake' | 'camel' | 'pascal';
-
-/**
- * More specific naming convension configuration
- */
-export type NamingConventionConfig = {
-    file: NamingConvention,
-    dir: NamingConvention,
 }

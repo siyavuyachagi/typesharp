@@ -36,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.mergeWithDefaults = void 0;
 exports.generate = generate;
 exports.cleanOutputDirectory = cleanOutputDirectory;
 exports.loadConfig = loadConfig;
@@ -52,7 +53,6 @@ const url_1 = require("url");
 const DEFAULT_CONFIG = {
     targetAnnotation: 'TypeSharp',
     singleOutputFile: false,
-    // fileNamingConvention: 'kebab',
     namingConvention: 'camel'
 };
 /**
@@ -63,13 +63,13 @@ async function loadConfigFromFile(filePath) {
     if (ext === '.json') {
         const content = fs.readFileSync(filePath, 'utf-8');
         const config = JSON.parse(content);
-        return mergeWithDefaults(config);
+        return (0, exports.mergeWithDefaults)(config);
     }
     if (ext === '.js') {
         const fileUrl = (0, url_1.pathToFileURL)(path.resolve(filePath)).href;
         const module = await Promise.resolve(`${fileUrl}`).then(s => __importStar(require(s)));
         const exportedConfig = module.default || module;
-        return mergeWithDefaults(exportedConfig);
+        return (0, exports.mergeWithDefaults)(exportedConfig);
     }
     if (ext === '.ts') {
         // Use tsx to load TypeScript config files at runtime
@@ -77,14 +77,14 @@ async function loadConfigFromFile(filePath) {
         require(tsxPath);
         const module = require(path.resolve(filePath));
         const exportedConfig = module.default || module;
-        return mergeWithDefaults(exportedConfig);
+        return (0, exports.mergeWithDefaults)(exportedConfig);
     }
     throw new Error(`Unsupported config file format: ${ext}`);
 }
 /**
  * Merge user config with defaults
  */
-function mergeWithDefaults(config) {
+const mergeWithDefaults = (config) => {
     if (!config.projectFiles) {
         throw new Error('targetPath is required in configuration');
     }
@@ -95,7 +95,8 @@ function mergeWithDefaults(config) {
         ...DEFAULT_CONFIG,
         ...config
     };
-}
+};
+exports.mergeWithDefaults = mergeWithDefaults;
 /**
  * Format a plain object as a JS/TS object literal (no quoted keys)
  */
@@ -153,7 +154,7 @@ async function generate(configPath) {
         console.log(chalk_1.default.cyan('\n⧖ Parsing C# files...'));
         const parseResults = await (0, parser_1.parseCSharpFiles)(config);
         if (parseResults.length === 0) {
-            console.warn(chalk_1.default.yellow.bold('❗ Warning:'), chalk_1.default.white(`No C# files found with [TypeSharp] attribute\n`));
+            console.warn(chalk_1.default.yellow.bold('❗ Warning:'), chalk_1.default.white(`No C# files found with [${config.targetAnnotation}] attribute\n`));
             return;
         }
         // Collect all classes
@@ -276,8 +277,9 @@ function createSampleConfig(format) {
     }
     else {
         fileName = 'typesharp.config.ts';
+        let namespace = '@siyavuyachagi/typesharp';
         content = [
-            `import type { TypeSharpConfig } from 'typesharp';`,
+            `import type { TypeSharpConfig } from '${namespace}';`,
             ``,
             `const config: TypeSharpConfig = ${formatAsJsObject(sampleConfig)};`,
             ``,

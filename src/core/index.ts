@@ -12,7 +12,6 @@ import { pathToFileURL } from 'url';
 const DEFAULT_CONFIG: Partial<TypeSharpConfig> = {
   targetAnnotation: 'TypeSharp',
   singleOutputFile: false,
-  // fileNamingConvention: 'kebab',
   namingConvention: 'camel'
 };
 
@@ -50,7 +49,7 @@ async function loadConfigFromFile(filePath: string): Promise<TypeSharpConfig> {
 /**
  * Merge user config with defaults
  */
-function mergeWithDefaults(config: Partial<TypeSharpConfig>): TypeSharpConfig {
+export const mergeWithDefaults = (config: Partial<TypeSharpConfig>): TypeSharpConfig => {
   if (!config.projectFiles) {
     throw new Error('targetPath is required in configuration');
   }
@@ -136,7 +135,7 @@ export async function generate(configPath?: string): Promise<void> {
     const parseResults = await parseCSharpFiles(config);
 
     if (parseResults.length === 0) {
-      console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`No C# files found with [TypeSharp] attribute\n`));
+      console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`No C# files found with [${config.targetAnnotation}] attribute\n`));
       return;
     }
 
@@ -292,8 +291,9 @@ export function createSampleConfig(format: 'ts' | 'js' | 'json'): void {
     content = `module.exports = ${formatAsJsObject(sampleConfig)};\n`;
   } else {
     fileName = 'typesharp.config.ts';
+    let namespace = '@siyavuyachagi/typesharp';
     content = [
-      `import type { TypeSharpConfig } from 'typesharp';`,
+      `import type { TypeSharpConfig } from '${namespace}';`,
       ``,
       `const config: TypeSharpConfig = ${formatAsJsObject(sampleConfig)};`,
       ``,
