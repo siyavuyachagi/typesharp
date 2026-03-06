@@ -120,7 +120,7 @@ This creates `typesharp.config.json`:
 
 ```json
 {
-  "projectFiles": [
+  "source": [
     "C:/Users/User/Desktop/MyApp/Api/Api.csproj",
     "C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"
   ],
@@ -203,7 +203,7 @@ For more advanced usage [docs/usage](docs/usage.md)
 
 | Option             | Type                                      | Default       | Description                                                   |
 | ------------------ | ----------------------------------------- | ------------- | ------------------------------------------------------------- |
-| `projectFiles`     | `string \| string[]`                      | _required_    | Full path(s) to your C# .csproj file(s)                       |
+| `source`           | `string \| string[]`                      | _required_    | Full path(s) to your C# .csproj file(s)                       |
 | `outputPath`       | `string`                                  | _required_    | Where to generate TypeScript files                            |
 | `targetAnnotation` | `string`                                  | `'TypeSharp'` | C# attribute name to look for                                 |
 | `singleOutputFile` | `boolean`                                 | `false`       | Generate one file or multiple files (see below)               |
@@ -405,7 +405,7 @@ Scan multiple C# projects at once:
 
 ```json
 {
-  "projectFiles": [
+  "source": [
     "C:/MyApp/Api/Api.csproj",
     "C:/MyApp/Domain/Domain.csproj",
     "C:/MyApp/Contracts/Contracts.csproj"
@@ -420,7 +420,7 @@ Scan multiple C# projects at once:
 
 ```typescript
 const config: TypeSharpConfig = {
-  projectFiles: "./Backend/Backend.csproj",
+  source: "./Backend/Backend.csproj",
   outputPath: "./src/types",
   singleOutputFile: true,
 };
@@ -434,7 +434,7 @@ All types will be generated in `src/types/types.ts`
 
 ```typescript
 const config: TypeSharpConfig = {
-  projectFiles: "./Backend/Backend.csproj",
+  source: "./Backend/Backend.csproj",
   outputPath: "./src/types",
   namingConvention: {
     dir: "kebab", // ./src/types/my-feature/
