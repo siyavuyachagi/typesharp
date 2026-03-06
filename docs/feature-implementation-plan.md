@@ -19,48 +19,72 @@
 
 ---
 
-### 1. Attribute Customization
+### 1. `TypeSharp.AspNetCore` NuGet Package
 
-**Why first:** Attributes define generation rules — all other features build on top of this.
+**Why first:** Attributes define generation rules — all other features build on top of this. Rather than requiring users to define custom attributes in their own codebase, all attributes are shipped as a versioned NuGet package.
 
-#### `[TypeIgnore]` — Exclude a property
+#### Installation
+
+```bash
+dotnet add package TypeSharp.AspNetCore
+```
+
+#### Package Structure
+
+```
+TypeSharp.AspNetCore
+ └── Attributes/
+      ├── TypeIgnoreAttribute.cs
+      ├── TypeNameAttribute.cs
+      └── TypeAsAttribute.cs
+```
+
+#### Usage
 
 ```csharp
-[TypeIgnore]
-public string PasswordHash { get; set; }
+using TypeSharp.AspNetCore;
+
+public class UserDto
+{
+    [TypeIgnore]
+    public string PasswordHash { get; set; }
+
+    [TypeName("created_at")]
+    public DateTime CreatedAt { get; set; }
+
+    [TypeAs("Date")]
+    public DateTime UpdatedAt { get; set; }
+
+    public string? Bio { get; set; } // nullable → optional automatically
+}
 ```
+
+#### Generated Output
 
 ```ts
-// property omitted
+export interface UserDto {
+  created_at: string;
+  updatedAt: Date;
+  bio?: string;
+}
 ```
 
----
+#### Attributes
 
-#### `[TypeName("...")]` — Rename a property
+| Attribute | Purpose |
+|---|---|
+| `[TypeIgnore]` | Exclude property from output |
+| `[TypeName("...")]` | Rename property in generated TypeScript |
+| `[TypeAs("...")]` | Override inferred TypeScript type |
 
-```csharp
-[TypeName("created_at")]
-public DateTime CreatedAt { get; set; }
-```
+> Nullable (`?`) on a C# property automatically produces an optional (`?`) TypeScript property — no attribute needed.
 
-```ts
-created_at: string;
-```
+#### Why a Separate Package
 
----
-
-#### `[TypeAs("...")]` — Override inferred TypeScript type
-
-```csharp
-[TypeAs("Date")]
-public DateTime CreatedAt { get; set; }
-```
-
-```ts
-createdAt: Date;
-```
-
----
+- No boilerplate in the user's project — just install and decorate
+- Attributes are versioned independently of the CLI
+- Enables future model-level attributes (e.g. `[TypeExport]`, `[TypePrefix("I")]`) without breaking changes
+- IntelliSense and XML docs work out of the box
 
 #### Processing Pipeline
 
@@ -180,7 +204,7 @@ typesharp-vscode/
 
 | Feature | Done When |
 |---|---|
-| Attribute Customization | `[TypeIgnore]`, `[TypeName]`, `[TypeAs]` all work end-to-end |
+| `TypeSharp.AspNetCore` NuGet | Package installs cleanly; `[TypeIgnore]`, `[TypeName]`, `[TypeAs]` all produce correct output |
 | Watch Mode | Single file save triggers only affected type regeneration within 500ms |
 | Performance | 1000+ model project generates in under 5 seconds |
 | VS Code Extension | Generate, watch, and preview all work from command palette |
@@ -191,6 +215,5 @@ typesharp-vscode/
 
 - Nuxt module (auto-imports generated types)
 - Vite plugin (HMR integration)
-- OpenAPI schema export
 - TypeScript client generation (fetch/axios)
 - AST-based transformations
