@@ -205,7 +205,6 @@ async function loadConfig(configPath) {
 function validateConfig(config) {
     // Convert single project to array for unified handling
     const projectFiles = (0, resolve_project_files_from_source_1.resolveProjectFilesFromSource)(config.source);
-    console.log("csproj files", projectFiles);
     // Validate each project file
     for (const projectFile of projectFiles) {
         if (!fs.existsSync(projectFile)) {
