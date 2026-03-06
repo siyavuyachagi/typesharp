@@ -1,25 +1,25 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
-import { createSampleConfig } from '../../src/core';
 import { TypeSharpConfig } from '../../src/types/typesharp-config.ts';
 import config from '../config/typesharp.config.ts';
 import { mergeWithDefaults } from '../../src/core/index.ts'
+import { createSampleConfig } from '../../src/core/create-sample-config.ts';
 
 
 describe("Generate default config", () => {
     it('should allow opptional fields on all config formats (.ts | .js | .json)', () => {
         const tsConfig: TypeSharpConfig = {
-            projectFiles: config.projectFiles,
+            source: config.source,
             outputPath: "./tests/.generated",
         };
 
         const jsConfig = {
-            projectFiles: config.projectFiles,
+            source: config.source,
             outputPath: "./tests/.generated",
         }
 
         const jsonConfig = {
-            "projectFiles": config.projectFiles,
+            "source": config.source,
             "outputPath": "./app/types",
         }
 
@@ -86,7 +86,6 @@ describe('createSampleConfig()', () => {
 
     it('should not overwrite an existing config of the same format', () => {
         createSampleConfig('json');
-        const originalContent = fs.readFileSync('typesharp.config.json', 'utf-8');
         fs.writeFileSync('typesharp.config.json', '{ "modified": true }');
         createSampleConfig('json');
         const afterContent = fs.readFileSync('typesharp.config.json', 'utf-8');

@@ -13,8 +13,4 @@ export declare function cleanOutputDirectory(dir: string): void;
  * Load configuration from file or use provided config
  */
 export declare function loadConfig(configPath?: string): Promise<TypeSharpConfig>;
-/**
- * Create a sample configuration file
- */
-export declare function createSampleConfig(format: 'ts' | 'js' | 'json'): void;
 //# sourceMappingURL=index.d.ts.map

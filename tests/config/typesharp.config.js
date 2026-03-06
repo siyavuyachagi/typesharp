@@ -1,9 +1,6 @@
 // tests/typesharp.config.js
 module.exports = {
-  projectFiles: [
-    "tests/test-project/AspNetCore/AspNetCore/AspNetCore.csproj",
-    "tests/test-project/AspNetCore/Domain/Domain.csproj"
-  ],
+  source: ["~../../AspNetCore/AspNetCore.slnx"],
   outputPath: "./app/types",
   targetAnnotation: "TypeSharp",
   singleOutputFile: false,

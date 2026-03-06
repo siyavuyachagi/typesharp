@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { generate, createSampleConfig } from '../core';
+import { generate } from '../core';
 import chalk from 'chalk';
 import { version, name, description } from '../../package.json';
+import { createSampleConfig } from '../core/create-sample-config';
 const program = new Command();
 
 program

@@ -5,6 +5,8 @@ import { generateTypeScriptFiles } from '../generator';
 import chalk from 'chalk';
 import { TypeSharpConfig } from '../types/typesharp-config';
 import { pathToFileURL } from 'url';
+import { createSampleConfig } from './create-sample-config';
+import { resolveProjectFilesFromSource } from '../parser/resolve-project-files-from-source';
 
 /**
  * Default configuration values
@@ -50,8 +52,17 @@ async function loadConfigFromFile(filePath: string): Promise<TypeSharpConfig> {
  * Merge user config with defaults
  */
 export const mergeWithDefaults = (config: Partial<TypeSharpConfig>): TypeSharpConfig => {
-  if (!config.projectFiles) {
-    throw new Error('targetPath is required in configuration');
+  // Deprecation warning
+  if (config.projectFiles && !config.source) {
+    console.warn(
+      chalk.yellow.bold('⚠ Deprecation:'),
+      chalk.white('`projectFiles` is deprecated. Please rename it to `source` in your config.')
+    );
+    config.source = config.projectFiles;
+  }
+
+  if (!config.source && !config.projectFiles) {
+    throw new Error('`source` is required in configuration');
   }
 
   if (!config.outputPath) {
@@ -60,35 +71,12 @@ export const mergeWithDefaults = (config: Partial<TypeSharpConfig>): TypeSharpCo
 
   return {
     ...DEFAULT_CONFIG,
-    ...config
+    ...config,
   } as TypeSharpConfig;
-}
+};
 
 
-/**
- * Format a plain object as a JS/TS object literal (no quoted keys)
- */
-function formatAsJsObject(obj: Record<string, any>, indent = 0): string {
-  const pad = ' '.repeat(indent + 2);
-  const closePad = ' '.repeat(indent);
 
-  const lines = Object.entries(obj).map(([key, value]) => {
-    let formatted: string;
-
-    if (Array.isArray(value)) {
-      const items = value.map(v => `${pad}  ${JSON.stringify(v)}`).join(',\n');
-      formatted = `[\n${items}\n${pad}]`;
-    } else if (typeof value === 'object' && value !== null) {
-      formatted = formatAsJsObject(value, indent + 2);
-    } else {
-      formatted = JSON.stringify(value);
-    }
-
-    return `${pad}${key}: ${formatted}`;
-  });
-
-  return `{\n${lines.join(',\n')}\n${closePad}}`;
-}
 
 
 export async function generate(configPath?: string): Promise<void> {
@@ -228,10 +216,9 @@ export async function loadConfig(configPath?: string): Promise<TypeSharpConfig> 
  */
 function validateConfig(config: TypeSharpConfig): void {
   // Convert single project to array for unified handling
-  const projectFiles = Array.isArray(config.projectFiles)
-    ? config.projectFiles
-    : [config.projectFiles];
+  const projectFiles = resolveProjectFilesFromSource(config.source);
 
+  console.log("csproj files",projectFiles)
   // Validate each project file
   for (const projectFile of projectFiles) {
     if (!fs.existsSync(projectFile)) {
@@ -260,55 +247,4 @@ function validateConfig(config: TypeSharpConfig): void {
       console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`remove invalid characters (space, [ or ]) from your`), chalk.bold('targetAnnotation'), `\n`);
     }
   }
-}
-
-
-/**
- * Create a sample configuration file
- */
-export function createSampleConfig(format: 'ts' | 'js' | 'json'): void {
-  const sampleConfig: TypeSharpConfig = {
-    // Show array format as example
-    projectFiles: [
-      'C:/Users/User/Desktop/MyApp/Api/Api.csproj',
-      'C:/Users/User/Desktop/MyApp/Domain/Domain.csproj'
-    ],
-    outputPath: './app/types',
-    targetAnnotation: 'TypeSharp',
-    singleOutputFile: false,
-    namingConvention: 'camel',
-    fileSuffix: ''
-  };
-
-  let fileName: string;
-  let content: string;
-
-  if (format === 'json') {
-    fileName = 'typesharp.config.json';
-    content = JSON.stringify(sampleConfig, null, 2);
-  } else if (format === 'js') {
-    fileName = 'typesharp.config.js';
-    content = `module.exports = ${formatAsJsObject(sampleConfig)};\n`;
-  } else {
-    fileName = 'typesharp.config.ts';
-    let namespace = '@siyavuyachagi/typesharp';
-    content = [
-      `import type { TypeSharpConfig } from '${namespace}';`,
-      ``,
-      `const config: TypeSharpConfig = ${formatAsJsObject(sampleConfig)};`,
-      ``,
-      `export default config;`,
-      ``
-    ].join('\n');
-  }
-
-  const allConfigFiles = ['typesharp.config.ts', 'typesharp.config.js', 'typesharp.config.json'];
-  const existingConfig = allConfigFiles.find(f => fs.existsSync(f));
-  if (existingConfig) {
-    console.log(chalk.yellow.bold('❗ Warning:'), chalk.white(`${existingConfig} already exists. Skipping creation.`));
-    return;
-  }
-
-  fs.writeFileSync(fileName, content, 'utf-8');
-  console.log(chalk.green.bold('✅ Created'), chalk.white(`./${fileName}`));
 }

@@ -19,9 +19,14 @@ Major parser improvements, expanded type support, multi-project support, and aut
 
 ### Added
 
-- **ASP.NET Core test project** — Selft contained test project
+- **ASP.NET Core test project** — Self-contained test project
+- **`.slnx` solution support** — `source` now accepts `.slnx` XML solution files, automatically extracting all referenced `.csproj` paths
+- **`.sln` solution support** — `source` now accepts Visual Studio `.sln` files, automatically extracting all referenced `.csproj` paths
 
 ### Changed
+
+- **`projectFiles` deprecated** — Renamed to `source`. `projectFiles` still works but logs a deprecation warning. Will be removed in a future version.
+- **`source` config option** — Replaces `projectFiles`. Accepts `.csproj`, `.sln`, or `.slnx` paths as a single string or array
 
 ### Fixed
 

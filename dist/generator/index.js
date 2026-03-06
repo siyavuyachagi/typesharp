@@ -45,8 +45,6 @@ const chalk_1 = __importDefault(require("chalk"));
  */
 function generateTypeScriptFiles(config, parseResults) {
     const outputPath = config.outputPath;
-    // Convention output type
-    const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath, { recursive: true });
     }

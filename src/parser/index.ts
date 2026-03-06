@@ -3,6 +3,7 @@ import * as path from 'path';
 import { glob } from 'glob';
 import { CSharpClass, CSharpProperty, ParseResult } from '../types';
 import { TypeSharpConfig } from '../types/typesharp-config';
+import { resolveProjectFilesFromSource } from './resolve-project-files-from-source';
 
 
 
@@ -15,9 +16,7 @@ export async function parseCSharpFiles(config: TypeSharpConfig): Promise<ParseRe
   const targetAnnotation = config.targetAnnotation ?? 'TypeSharp';
 
   // Convert single project to array for unified handling
-  const projectFiles = Array.isArray(config.projectFiles)
-    ? config.projectFiles
-    : [config.projectFiles];
+  const projectFiles = resolveProjectFilesFromSource(config.source!);
 
   const allResults: ParseResult[] = [];
 

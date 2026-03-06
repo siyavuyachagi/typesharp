@@ -37,15 +37,14 @@ exports.parseCSharpFiles = parseCSharpFiles;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const glob_1 = require("glob");
+const resolve_project_files_from_source_1 = require("./resolve-project-files-from-source");
 /**
  * Parse C# files in the target project(s)
  */
 async function parseCSharpFiles(config) {
     const targetAnnotation = config.targetAnnotation ?? 'TypeSharp';
     // Convert single project to array for unified handling
-    const projectFiles = Array.isArray(config.projectFiles)
-        ? config.projectFiles
-        : [config.projectFiles];
+    const projectFiles = (0, resolve_project_files_from_source_1.resolveProjectFilesFromSource)(config.source);
     const allResults = [];
     // Process each project
     for (const projectFile of projectFiles) {

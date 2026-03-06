@@ -2,10 +2,7 @@
 import type { TypeSharpConfig } from '../../src';
 
 const config: TypeSharpConfig = {
-  projectFiles: [
-    "tests/test-project/AspNetCore/AspNetCore/AspNetCore.csproj",
-    "tests/test-project/AspNetCore/Domain/Domain.csproj"
-  ],
+  source: ["~../../AspNetCore/AspNetCore.slnx"],
   outputPath: "./tests/.generated",
   targetAnnotation: "TypeSharp",
   singleOutputFile: false,

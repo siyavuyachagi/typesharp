@@ -8,6 +8,7 @@ const commander_1 = require("commander");
 const core_1 = require("../core");
 const chalk_1 = __importDefault(require("chalk"));
 const package_json_1 = require("../../package.json");
+const create_sample_config_1 = require("../core/create-sample-config");
 const program = new commander_1.Command();
 program
     .name(package_json_1.name)
@@ -40,7 +41,7 @@ program
             console.error(chalk_1.default.red.bold('❌ Invalid format.') + ' Use: ' + chalk_1.default.yellow('json, ts, ') + 'or' + chalk_1.default.yellow(' js'));
             process.exit(1);
         }
-        (0, core_1.createSampleConfig)(format);
+        (0, create_sample_config_1.createSampleConfig)(format);
         process.exit(0);
     }
     catch (error) {

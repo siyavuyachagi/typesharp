@@ -6,7 +6,6 @@ import { generate } from "../../src/core/index.ts";
 import config from "../config/typesharp.config.ts";
 
 const CONFIG_PATH = path.resolve(__dirname, '../config/typesharp.config.ts')
-
 describe('TypeSharp - Real Project Integration', () => {
 
     // ─── Generation ───────────────────────────────────────────────────────────

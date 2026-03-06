@@ -12,8 +12,6 @@ export function generateTypeScriptFiles(
   parseResults: ParseResult[],
 ): void {
   const outputPath = config.outputPath;
-  // Convention output type
-  const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
 
   if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath, { recursive: true });

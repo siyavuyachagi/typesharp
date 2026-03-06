@@ -6,19 +6,21 @@ import { NamingConventionConfig } from "./naming-convention-config";
  */
 export interface TypeSharpConfig {
     /**
-     * Full path(s) to the C# .csproj file(s).
-     * Can be a single path or an array of paths.
-     * Example (Windows):
-     * ```
-     *   `C:\\Users\\User\\Desktop\\MyApp\\Api\\Api.csproj`
+     * Path(s) to C# source(s): `.csproj` file(s) or a `.sln` solution file.
+     * When a `.sln` is provided, TypeSharp automatically discovers all projects within it.
+     *
+     * Replaces the deprecated `projectFiles` option.
+     * @example
+     *   source: "C:/MyApp/MyApp.sln"
      *   // or
-     *   [
-     *     `C:\\Users\\User\\Desktop\\MyApp\\Api\\Api.csproj`,
-     *     `C:\\Users\\User\\Desktop\\MyApp\\Domain\\Domain.csproj`
-     *   ]
-     * ```
+     *   source: ["C:/MyApp/Api/Api.csproj", "C:/MyApp/Domain/Domain.csproj"]
      */
-    projectFiles: string | string[];
+    source: string | string[];
+    /**
+     * @deprecated Use `source` instead. Will be removed in a future version.
+     * @see source
+     */
+    projectFiles?: string | string[];
     /**
      * Path where TypeScript files will be generated
      */
