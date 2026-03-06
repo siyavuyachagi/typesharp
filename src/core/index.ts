@@ -218,7 +218,6 @@ function validateConfig(config: TypeSharpConfig): void {
   // Convert single project to array for unified handling
   const projectFiles = resolveProjectFilesFromSource(config.source);
 
-  console.log("csproj files",projectFiles)
   // Validate each project file
   for (const projectFile of projectFiles) {
     if (!fs.existsSync(projectFile)) {
