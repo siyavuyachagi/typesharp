@@ -193,25 +193,32 @@ function extractClassBody(content: string): string | null {
 
 
 
-/**
- * Extract obsolete/deprecated info from annotations preceding a property match
- * @param classBody - full class body text
- * @param matchIndex - index of the property match in classBody
- */
 function extractObsoleteInfo(classBody: string, matchIndex: number): { isDeprecated: boolean; deprecationMessage?: string } {
-  // Get the text before the match
   const before = classBody.substring(0, matchIndex);
-
-  // Look at up to 5 lines back for [Obsolete] or [ObsoleteAttribute]
   const lines = before.split('\n');
-  const recentLines = lines.slice(-5).join('\n');
 
-  const obsoleteMatch = recentLines.match(/\[Obsolete(?:Attribute)?\s*(?:\(\s*"([^"]*)"\s*(?:,\s*(?:true|false))?\s*\))?\]/i);
-  if (obsoleteMatch) {
-    return {
-      isDeprecated: true,
-      deprecationMessage: obsoleteMatch[1] ?? undefined
-    };
+  // Walk backwards, only through attribute lines and whitespace
+  // Stop as soon as we hit a line that isn't an attribute or blank
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i]!.trim();
+
+    if (line === '') continue;
+
+    // If it's an attribute line, check for Obsolete
+    if (line.startsWith('[')) {
+      const obsoleteMatch = line.match(/\[Obsolete(?:Attribute)?\s*(?:\(\s*"([^"]*)"\s*(?:,\s*(?:true|false))?\s*\))?\]/i);
+      if (obsoleteMatch) {
+        return {
+          isDeprecated: true,
+          deprecationMessage: obsoleteMatch[1] ?? undefined
+        };
+      }
+      // It's a different attribute — keep walking back (stacked attributes)
+      continue;
+    }
+
+    // Hit a non-attribute, non-blank line — stop looking
+    break;
   }
 
   return { isDeprecated: false };
