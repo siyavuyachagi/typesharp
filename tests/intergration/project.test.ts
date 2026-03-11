@@ -148,6 +148,13 @@ describe('TypeSharp - Real Project Integration', () => {
             expect(content).toContain('id: number')
             expect(content).toContain('department: string')
         })
+
+        it('deprecated properties have @deprecated JSDoc comment', () => {
+            const file = findFileContaining(config.outputPath, 'export interface Employee');
+            if (!file) return;
+            const content = fs.readFileSync(file, 'utf-8');
+            expect(content).toContain('@deprecated');
+          });
     })
 
     // ─── Type correctness ─────────────────────────────────────────────────────

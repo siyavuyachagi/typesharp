@@ -348,7 +348,6 @@ function generateProperty(prop: CSharpProperty): string {
   const propertyName = convertPropertyName(prop.name);
   let type = prop.type;
 
-  // Handle arrays: append [] only when prop.isArray is true and the type does not already look like a Record or an array
   const alreadyArrayLike = /\[\]$/.test(type);
   const isRecordType = /^Record<.*>$/.test(type);
 
@@ -356,9 +355,14 @@ function generateProperty(prop: CSharpProperty): string {
     type = `${type}[]`;
   }
 
-  // Handle nullable
   if (prop.isNullable) {
     type = `${type} | null`;
+  }
+
+  // Add @deprecated JSDoc if marked obsolete
+  if (prop.isDeprecated) {
+    const msg = prop.deprecationMessage ? ` ${prop.deprecationMessage}` : '';
+    return `  /** @deprecated${msg} */\n  ${propertyName}: ${type};`;
   }
 
   return `  ${propertyName}: ${type};`;

@@ -22,6 +22,7 @@ Major parser improvements, expanded type support, multi-project support, and aut
 - **ASP.NET Core test project** — Self-contained test project
 - **`.slnx` solution support** — `source` now accepts `.slnx` XML solution files, automatically extracting all referenced `.csproj` paths
 - **`.sln` solution support** — `source` now accepts Visual Studio `.sln` files, automatically extracting all referenced `.csproj` paths
+- **`[Obsolete]` support** — properties decorated with `[Obsolete]` or `[Obsolete("message")]` are emitted with `/** @deprecated [message] */` JSDoc in the generated TypeScript output. Supported on all three property styles: `{ get; set; }`, expression-bodied (`=>`), and block getter (`{ get { return ...; } }`)
 
 ### Changed
 

@@ -11,6 +11,10 @@ export interface CSharpProperty {
   isNullable: boolean;
   isArray: boolean;
   isGeneric: boolean;
+  /** Whether the property is marked as obsolete/deprecated */
+  isDeprecated: boolean;
+  /** Optional message from [Obsolete("...")] */
+  deprecationMessage?: string;
   genericType?: string;
 }
 

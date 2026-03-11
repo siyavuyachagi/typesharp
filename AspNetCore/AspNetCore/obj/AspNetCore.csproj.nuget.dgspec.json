@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\tests\\test-project\\AspNetCore\\AspNetCore\\AspNetCore.csproj": {}
+    "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\AspNetCore\\AspNetCore\\AspNetCore.csproj": {}
   },
   "projects": {
-    "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\tests\\test-project\\AspNetCore\\AspNetCore\\AspNetCore.csproj": {
+    "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\AspNetCore\\AspNetCore\\AspNetCore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\tests\\test-project\\AspNetCore\\AspNetCore\\AspNetCore.csproj",
+        "projectUniqueName": "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\AspNetCore\\AspNetCore\\AspNetCore.csproj",
         "projectName": "AspNetCore",
-        "projectPath": "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\tests\\test-project\\AspNetCore\\AspNetCore\\AspNetCore.csproj",
+        "projectPath": "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\AspNetCore\\AspNetCore\\AspNetCore.csproj",
         "packagesPath": "C:\\Users\\siyavuyachagi\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\tests\\test-project\\AspNetCore\\AspNetCore\\obj\\",
+        "outputPath": "C:\\Users\\siyavuyachagi\\Desktop\\typesharp\\AspNetCore\\AspNetCore\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

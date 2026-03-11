@@ -162,6 +162,26 @@ function extractClassBody(content) {
     return null;
 }
 /**
+ * Extract obsolete/deprecated info from annotations preceding a property match
+ * @param classBody - full class body text
+ * @param matchIndex - index of the property match in classBody
+ */
+function extractObsoleteInfo(classBody, matchIndex) {
+    // Get the text before the match
+    const before = classBody.substring(0, matchIndex);
+    // Look at up to 5 lines back for [Obsolete] or [ObsoleteAttribute]
+    const lines = before.split('\n');
+    const recentLines = lines.slice(-5).join('\n');
+    const obsoleteMatch = recentLines.match(/\[Obsolete(?:Attribute)?\s*(?:\(\s*"([^"]*)"\s*(?:,\s*(?:true|false))?\s*\))?\]/i);
+    if (obsoleteMatch) {
+        return {
+            isDeprecated: true,
+            deprecationMessage: obsoleteMatch[1] ?? undefined
+        };
+    }
+    return { isDeprecated: false };
+}
+/**
  * Parse properties from class body
  */
 function parseProperties(classBody) {
@@ -172,19 +192,22 @@ function parseProperties(classBody) {
     while ((match = propertyRegex.exec(classBody)) !== null) {
         const type = match[1];
         const name = match[2];
-        properties.push(parsePropertyType(name, type));
+        const obs = extractObsoleteInfo(classBody, match.index);
+        properties.push({ ...parsePropertyType(name, type), ...obs });
     }
     // Also match computed/expression-bodied properties (with =>)
     const computedPropertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*=>/g;
     while ((match = computedPropertyRegex.exec(classBody)) !== null) {
         const type = match[1];
         const name = match[2];
-        properties.push(parsePropertyType(name, type));
+        const obs = extractObsoleteInfo(classBody, match.index);
+        properties.push({ ...parsePropertyType(name, type), ...obs });
     }
     // { get { return ...; } }
     const getBlockRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*get\s*\{[^}]*\}\s*\}/g;
     while ((match = getBlockRegex.exec(classBody)) !== null) {
-        properties.push(parsePropertyType(match[2], match[1]));
+        const obs2 = extractObsoleteInfo(classBody, match.index);
+        properties.push({ ...parsePropertyType(match[2], match[1]), ...obs2 });
     }
     // { get; set; } and { get; init; }
     // const autoPropertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*get;\s*(?:set|init);\s*\}/g;
@@ -310,7 +333,9 @@ function parsePropertyType(name, csType) {
         isNullable,
         isArray: resolved.isArray,
         isGeneric: false,
-        genericType: undefined
+        genericType: undefined,
+        isDeprecated: false,
+        deprecationMessage: undefined,
     };
 }
 /**

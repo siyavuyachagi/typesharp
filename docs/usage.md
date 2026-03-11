@@ -541,6 +541,34 @@ export interface User {
 }
 ```
 
+## Obsolete Properties
+
+Properties marked with `[Obsolete]` or `[Obsolete("message")]` are automatically emitted with a `/** @deprecated */` JSDoc comment in the generated TypeScript output. This gives IDE tooling (VS Code, WebStorm, etc.) full strikethrough and warning support when the property is referenced.
+```csharp
+[TypeSharp]
+public class UserDto
+{
+    public string Email { get; set; }
+
+    [Obsolete("Use Email instead.")]
+    public string? Username { get; set; }
+
+    [Obsolete]
+    public string? LegacyId { get; set; }
+}
+```
+```typescript
+export interface UserDto {
+  email: string;
+  /** @deprecated Use Email instead. */
+  username: string | null;
+  /** @deprecated */
+  legacyId: string | null;
+}
+```
+
+> `[Obsolete]` is a standard .NET attribute — no extra packages or TypeSharp-specific setup required. TypeSharp detects it automatically on `{ get; set; }`, expression-bodied (`=>`), and block getter properties.
+
 ## Generic Types Support
 
 TypeSharp fully supports C# generic types and preserves them in TypeScript output.

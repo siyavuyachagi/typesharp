@@ -28,6 +28,7 @@ Project structure: [docs/project-structure](docs/project-structure.md)
 🗂️ **File Grouping** – Preserves C# file organization (multiple classes per file stay together)  
 🔗 **Auto Imports** – Automatically generates `import type` statements between output files  
 🏢 **Multi-Project** – Scan multiple `.csproj` files in a single run
+🚫 **Obsolete Support** – `[Obsolete]` / `[Obsolete("...")]` → `/** @deprecated ... */` JSDoc
 
 ## How TypeSharp Compares
 
@@ -399,7 +400,37 @@ export interface PermissionMap {
 }
 ```
 
-### 4. Multi-Project
+### 4. Obsolete / Deprecated Properties
+
+**C#:**
+```csharp
+[TypeSharp]
+public class Employee
+{
+    public int Id { get; set; }
+    public string Department { get; set; }
+
+    [Obsolete("Use Department instead.")]
+    public string? DepartmentName { get; set; }
+
+    [Obsolete]
+    public string? LegacyCode { get; set; }
+}
+```
+
+**Generated TypeScript:**
+```typescript
+export interface Employee {
+  id: number;
+  department: string;
+  /** @deprecated Use Department instead. */
+  departmentName: string | null;
+  /** @deprecated */
+  legacyCode: string | null;
+}
+```
+
+### 5. Multi-Project
 
 Scan multiple C# projects at once:
 
@@ -414,7 +445,7 @@ Scan multiple C# projects at once:
 }
 ```
 
-### 5. Single Output File
+### 6. Single Output File
 
 **Config:**
 
@@ -428,7 +459,7 @@ const config: TypeSharpConfig = {
 
 All types will be generated in `src/types/types.ts`
 
-### 6. Custom Naming Conventions
+### 7. Custom Naming Conventions
 
 **Config:**
 
