@@ -10,16 +10,16 @@ import * as path from 'path';
 import { parseCSharpFiles } from '../../src/parser';
 
 function makeTempProject(csContent: string): { dir: string; csproj: string } {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-parser-'));
-    const csproj = path.join(dir, 'Test.csproj');
-    fs.writeFileSync(csproj, `<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>`);
-    fs.writeFileSync(path.join(dir, 'Model.cs'), csContent);
-    return { dir, csproj };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ts-parser-'));
+  const csproj = path.join(dir, 'Test.csproj');
+  fs.writeFileSync(csproj, `<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>`);
+  fs.writeFileSync(path.join(dir, 'Model.cs'), csContent);
+  return { dir, csproj };
 }
 
 describe('Parser - [Obsolete] support', () => {
-    it('marks a property with [Obsolete] as deprecated', async () => {
-        const { csproj } = makeTempProject(`
+  it('marks a property with [Obsolete] as deprecated', async () => {
+    const { csproj } = makeTempProject(`
       using System;
       namespace Test {
         [TypeSharp]
@@ -31,17 +31,17 @@ describe('Parser - [Obsolete] support', () => {
       }
     `);
 
-        const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
-        const foo = results.flatMap(r => r.classes).find(c => c.name === 'Foo');
-        expect(foo).toBeDefined();
+    const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
+    const foo = results.flatMap(r => r.classes).find(c => c.name === 'Foo');
+    expect(foo).toBeDefined();
 
-        const oldName = foo!.properties.find(p => p.name === 'OldName');
-        expect(oldName?.isDeprecated).toBe(true);
-        expect(oldName?.deprecationMessage).toBeUndefined();
-    });
+    const oldName = foo!.properties.find(p => p.name === 'OldName');
+    expect(oldName?.isDeprecated).toBe(true);
+    expect(oldName?.deprecationMessage).toBeUndefined();
+  });
 
-    it('captures the deprecation message from [Obsolete("...")]', async () => {
-        const { csproj } = makeTempProject(`
+  it('captures the deprecation message from [Obsolete("...")]', async () => {
+    const { csproj } = makeTempProject(`
       using System;
       namespace Test {
         [TypeSharp]
@@ -53,16 +53,16 @@ describe('Parser - [Obsolete] support', () => {
       }
     `);
 
-        const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
-        const bar = results.flatMap(r => r.classes).find(c => c.name === 'Bar');
-        const oldField = bar!.properties.find(p => p.name === 'OldField');
+    const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
+    const bar = results.flatMap(r => r.classes).find(c => c.name === 'Bar');
+    const oldField = bar!.properties.find(p => p.name === 'OldField');
 
-        expect(oldField?.isDeprecated).toBe(true);
-        expect(oldField?.deprecationMessage).toBe('Use NewField instead.');
-    });
+    expect(oldField?.isDeprecated).toBe(true);
+    expect(oldField?.deprecationMessage).toBe('Use NewField instead.');
+  });
 
-    it('does NOT mark a normal property as deprecated', async () => {
-        const { csproj } = makeTempProject(`
+  it('does NOT mark a normal property as deprecated', async () => {
+    const { csproj } = makeTempProject(`
       namespace Test {
         [TypeSharp]
         public class Baz {
@@ -71,15 +71,15 @@ describe('Parser - [Obsolete] support', () => {
       }
     `);
 
-        const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
-        const baz = results.flatMap(r => r.classes).find(c => c.name === 'Baz');
-        const active = baz!.properties.find(p => p.name === 'ActiveField');
+    const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
+    const baz = results.flatMap(r => r.classes).find(c => c.name === 'Baz');
+    const active = baz!.properties.find(p => p.name === 'ActiveField');
 
-        expect(active?.isDeprecated).toBe(false);
-    });
+    expect(active?.isDeprecated).toBe(false);
+  });
 
-    it('handles [Obsolete] on expression-bodied property', async () => {
-        const { csproj } = makeTempProject(`
+  it('handles [Obsolete] on expression-bodied property', async () => {
+    const { csproj } = makeTempProject(`
       namespace Test {
         [TypeSharp]
         public class Computed {
@@ -90,16 +90,16 @@ describe('Parser - [Obsolete] support', () => {
       }
     `);
 
-        const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
-        const cls = results.flatMap(r => r.classes).find(c => c.name === 'Computed');
-        const full = cls!.properties.find(p => p.name === 'Full');
+    const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
+    const cls = results.flatMap(r => r.classes).find(c => c.name === 'Computed');
+    const full = cls!.properties.find(p => p.name === 'Full');
 
-        expect(full?.isDeprecated).toBe(true);
-        expect(full?.deprecationMessage).toBe('Use First.');
-    });
+    expect(full?.isDeprecated).toBe(true);
+    expect(full?.deprecationMessage).toBe('Use First.');
+  });
 
-    it('does NOT bleed @deprecated onto properties after a deprecated one', async () => {
-        const { csproj } = makeTempProject(`
+  it('does NOT bleed @deprecated onto properties after a deprecated one', async () => {
+    const { csproj } = makeTempProject(`
           using System;
           namespace Test {
             [TypeSharp]
@@ -113,13 +113,64 @@ describe('Parser - [Obsolete] support', () => {
           }
         `);
 
-        const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
-        const cls = results.flatMap(r => r.classes).find(c => c.name === 'Bleed');
-        expect(cls).toBeDefined();
+    const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
+    const cls = results.flatMap(r => r.classes).find(c => c.name === 'Bleed');
+    expect(cls).toBeDefined();
 
-        expect(cls!.properties.find(p => p.name === 'First')?.isDeprecated).toBe(false);
-        expect(cls!.properties.find(p => p.name === 'OldField')?.isDeprecated).toBe(true);
-        expect(cls!.properties.find(p => p.name === 'AfterOld')?.isDeprecated).toBe(false);
-        expect(cls!.properties.find(p => p.name === 'AlsoAfter')?.isDeprecated).toBe(false);
+    expect(cls!.properties.find(p => p.name === 'First')?.isDeprecated).toBe(false);
+    expect(cls!.properties.find(p => p.name === 'OldField')?.isDeprecated).toBe(true);
+    expect(cls!.properties.find(p => p.name === 'AfterOld')?.isDeprecated).toBe(false);
+    expect(cls!.properties.find(p => p.name === 'AlsoAfter')?.isDeprecated).toBe(false);
+  });
+
+  describe('Parser - TypeSharp attribute overrides', () => {
+    it('[TypeIgnore] excludes the property', async () => {
+      const { csproj } = makeTempProject(`
+              namespace Test {
+                  [TypeSharp]
+                  public class Dto {
+                      public string Name { get; set; }
+                      [TypeIgnore]
+                      public string PasswordHash { get; set; }
+                  }
+              }
+          `);
+      const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
+      const cls = results.flatMap(r => r.classes).find(c => c.name === 'Dto');
+      expect(cls!.properties.find(p => p.name === 'PasswordHash')).toBeUndefined();
+      expect(cls!.properties.find(p => p.name === 'Name')).toBeDefined();
     });
+
+    it('[TypeName] overrides the property name', async () => {
+      const { csproj } = makeTempProject(`
+              namespace Test {
+                  [TypeSharp]
+                  public class Dto {
+                      [TypeName("created_at")]
+                      public DateTime CreatedAt { get; set; }
+                  }
+              }
+          `);
+      const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
+      const cls = results.flatMap(r => r.classes).find(c => c.name === 'Dto');
+      expect(cls!.properties.find(p => p.name === 'created_at')).toBeDefined();
+      expect(cls!.properties.find(p => p.name === 'CreatedAt')).toBeUndefined();
+    });
+
+    it('[TypeAs] overrides the inferred type', async () => {
+      const { csproj } = makeTempProject(`
+              namespace Test {
+                  [TypeSharp]
+                  public class Dto {
+                      [TypeAs("Date")]
+                      public DateTime UpdatedAt { get; set; }
+                  }
+              }
+          `);
+      const results = await parseCSharpFiles({ source: csproj, outputPath: '/tmp/out' });
+      const cls = results.flatMap(r => r.classes).find(c => c.name === 'Dto');
+      const prop = cls!.properties.find(p => p.name === 'UpdatedAt');
+      expect(prop?.type).toBe('Date');
+    });
+  });
 });
