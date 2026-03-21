@@ -14,34 +14,34 @@ Project structure: [docs/project-structure](docs/project-structure.md)
 
 ## Features
 
-✨ **Automatic Type Generation** – Convert C# models to TypeScript interfaces  
-🎯 **Custom Attribute Targeting** – Use `[TypeSharp]` or any custom attribute  
-🔄 **Nullable Support** – `string?` → `string | null`  
-📦 **Collection Handling** – Supports `List<T>`, `IEnumerable<T>`, arrays **and generic collections**  
-🗺️ **Dictionary Mapping** – `Dictionary<K, V>` → `Record<K, V>`  
-🧬 **Generic Types** – Preserves generic type definitions like `Response<T>` → `Response<T>`  
-🧬 **Inheritance** – Preserves class inheritance using `extends`  
-🏗️ **Computed Properties** – Expression-bodied and block getter properties are included  
-🎨 **Naming Conventions** – Convert property names (camel, pascal, snake, kebab)  
-📁 **Flexible Output** – Single file or multiple files  
-🔢 **Enum Support** – Converts C# enums to TypeScript string enums  
-🗂️ **File Grouping** – Preserves C# file organization (multiple classes per file stay together)  
-🔗 **Auto Imports** – Automatically generates `import type` statements between output files  
-🏢 **Multi-Project** – Scan multiple `.csproj` files in a single run
-🚫 **Obsolete Support** – `[Obsolete]` / `[Obsolete("...")]` → `/** @deprecated ... */` JSDoc
+- **Automatic Type Generation** – Convert C# models to TypeScript interfaces
+- **Custom Attribute Targeting** – Use `[TypeSharp]` or any custom attribute
+- **Nullable Support** – `string?` → `string | null`
+- **Collection Handling** – Supports `List<T>`, `IEnumerable<T>`, arrays **and generic collections**
+- **Dictionary Mapping** – `Dictionary<K, V>` → `Record<K, V>`
+- **Generic Types** – Preserves generic type definitions like `Response<T>` → `Response<T>`
+- **Inheritance** – Preserves class inheritance using `extends`
+- **Computed Properties** – Expression-bodied and block getter properties are included
+- **Naming Conventions** – Convert property names (camel, pascal, snake, kebab)
+- **Flexible Output** – Single file or multiple files
+- **Enum Support** – Converts C# enums to TypeScript string enums
+- **File Grouping** – Preserves C# file organization (multiple classes per file stay together)
+- **Auto Imports** – Automatically generates `import type` statements between output files
+- **Multi-Project** – Scan multiple `.csproj` files in a single run
+- **Obsolete Support** – `[Obsolete]` / `[Obsolete("...")]` → `/** @deprecated ... */` JSDoc
 
 ## How TypeSharp Compares
 
 This is not an OpenApi-based tool !
 | Feature | TypeSharp | NSwag | openapi-typescript | TypeGen |
 | --------------------- | --------- | ----- | ------------------ | ------- |
-| Direct C# parsing | ✅ | ❌ | ❌ | ✅ |
-| Attribute targeting | ✅ | ⚠️ | ❌ | ⚠️ |
-| Non-API models | ✅ | ❌ | ❌ | ✅ |
-| Generics preserved | ✅ | ⚠️ | ⚠️ | ⚠️ |
-| File grouping | ✅ | ❌ | ❌ | ❌ |
-| Naming control | ✅ | ⚠️ | ⚠️ | ❌ |
-| API client generation | ❌ | ✅ | ❌ | ❌ |
+| Direct C# parsing | ✓ | ✕ | ✕ | ✓ |
+| Attribute targeting | ✓ | ! | ✕ | ! |
+| Non-API models | ✓ | ✕ | ✕ | ✓ |
+| Generics preserved | ✓ | ! | ! | ! |
+| File grouping | ✓ | ✕ | ✕ | ✕ |
+| Naming control | ✓ | ! | ! | ✕ |
+| API client generation | ✕ | ✓ | ✕ | ✕ |
 
 Also see [docs/why-typesharp](docs/why-typesharp.md)
 
@@ -56,6 +56,7 @@ npm install -D @siyavuyachagi/typesharp
 ### 1. Install the NuGet attributes package
 
 In your C# project:
+
 ```bash
 dotnet add package TypeSharp.Attributes
 ```
@@ -400,6 +401,7 @@ export interface PermissionMap {
 ### 4. Obsolete / Deprecated Properties
 
 **C#:**
+
 ```csharp
 [TypeSharp]
 public class Employee
@@ -416,6 +418,7 @@ public class Employee
 ```
 
 **Generated TypeScript:**
+
 ```typescript
 export interface Employee {
   id: number;
@@ -432,6 +435,7 @@ export interface Employee {
 Use `[TypeSharp("name")]` to override the generated TypeScript type name. The override takes precedence over `namingConvention`.
 
 **C#:**
+
 ```csharp
 [TypeSharp("auth_response")]
 public class AuthResponse
@@ -450,6 +454,7 @@ public enum UserRole
 ```
 
 **Generated TypeScript:**
+
 ```typescript
 export interface auth_response {
   accessToken: string;
@@ -457,9 +462,9 @@ export interface auth_response {
 }
 
 export enum user_role {
-  Admin = 'Admin',
-  User = 'User',
-  Guest = 'Guest'
+  Admin = "Admin",
+  User = "User",
+  Guest = "Guest",
 }
 ```
 
