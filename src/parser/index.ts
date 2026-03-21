@@ -1,10 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
-import { CSharpClass, CSharpProperty, ParseResult } from '../types';
+import { ParseResult } from '../types';
 import { TypeSharpConfig } from '../types/typesharp-config';
 import { resolveProjectFilesFromSource } from './resolve-project-files-from-source';
-import { parseProperties } from './parse-properties';
 import { parseClassesFromFile } from './parse-classes-from-file';
 
 

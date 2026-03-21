@@ -1,1 +1,1 @@
-{"version":3,"file":"resolve-project-files-from-source.d.ts","sourceRoot":"","sources":["../../src/parser/resolve-project-files-from-source.ts"],"names":[],"mappings":"AAIA;;;;;;;;;;;;;;;;;;;;;;;;;;GA0BG;AACH,wBAAgB,6BAA6B,CAAC,MAAM,EAAE,MAAM,GAAG,MAAM,EAAE,GAAG,MAAM,EAAE,CA8BjF"}
+{"version":3,"file":"resolve-project-files-from-source.d.ts","sourceRoot":"","sources":["../../src/parser/resolve-project-files-from-source.ts"],"names":[],"mappings":"AAGA;;;;;;;;;;;;;;;;;;;;;;;;;;GA0BG;AACH,wBAAgB,6BAA6B,CAAC,MAAM,EAAE,MAAM,GAAG,MAAM,EAAE,GAAG,MAAM,EAAE,CA8BjF"}
