@@ -109,13 +109,16 @@ function parseClassesFromFile(content, targetAnnotation) {
                     ? baseGenerics.split(',').map(p => p.trim())
                     : undefined;
                 const typeNameOverride = match[1] ?? undefined;
+                const resolvedInheritsFrom = inheritsFrom && /^I[A-Z]/.test(inheritsFrom)
+                    ? undefined
+                    : inheritsFrom;
                 classes.push({
                     name: typeNameOverride ?? className,
                     properties,
-                    inheritsFrom,
+                    inheritsFrom: resolvedInheritsFrom,
                     isEnum: false,
                     genericParameters,
-                    baseClassGenerics
+                    baseClassGenerics: resolvedInheritsFrom ? baseClassGenerics : undefined
                 });
             }
         }

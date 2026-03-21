@@ -5,16 +5,6 @@
 
 ---
 
-## Current Capabilities
-
-- ✅ Nullable types
-- ✅ Enums
-- ✅ Inheritance
-- ✅ Arrays
-- ✅ Custom naming conventions
-
----
-
 ## Planned Features (Priority Order)
 
 ---

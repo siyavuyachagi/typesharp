@@ -11,13 +11,27 @@ TypeSharp is NOT an OpenAPI-based tool. It parses C# projects directly, targetin
 
 ---
 
+## [0.1.5] - YYYY-MM-DD
+
+### Summary
+
+Minor parser improvements
+
+### Added
+
+- **C# interface filtering in inheritance** — classes inheriting from C# interfaces (e.g. `IActionResult`, `IDisposable`) no longer emit an `extends` clause in the generated TypeScript output. Only concrete base classes are preserved. Interface detection follows the standard C# naming convention (`I` followed by an uppercase letter).
+
+### Changed
+
+### Fixed
+
+---
+
 ## [0.1.2] - 2026-03-21
 
 ### Summary
 
 Major parser improvements, expanded type support, multi-project support, and automatic import generation between output files.
-
-### Added
 
 ### Added
 
