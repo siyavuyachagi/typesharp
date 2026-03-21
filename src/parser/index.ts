@@ -63,7 +63,7 @@ function parseClassesFromFile(content: string, targetAnnotation: string): CSharp
 
   // Find all classes/enums with the target annotation
   const annotationRegex = new RegExp(
-    `\\[${targetAnnotation}(Attribute)?\\]`, // support 'Attribute; suffix
+    `\\[${targetAnnotation}(?:Attribute)?(?:\\(\\s*"([^"]*)"\\s*\\))?\\]`,
     'g'
   );
 
@@ -79,7 +79,8 @@ function parseClassesFromFile(content: string, targetAnnotation: string): CSharp
     );
 
     if (enumMatch) {
-      const enumClass = parseEnum(afterAnnotation, enumMatch[1]!);
+      const typeNameOverride = match[1] ?? undefined;
+      const enumClass = parseEnum(afterAnnotation, typeNameOverride ?? enumMatch[1]!);
       if (enumClass) classes.push(enumClass);
       continue;
     }
@@ -111,8 +112,9 @@ function parseClassesFromFile(content: string, targetAnnotation: string): CSharp
           ? baseGenerics.split(',').map(p => p.trim())
           : undefined;
 
+        const typeNameOverride = match[1] ?? undefined;
         classes.push({
-          name: className,
+          name: typeNameOverride ?? className,
           properties,
           inheritsFrom,
           isEnum: false,

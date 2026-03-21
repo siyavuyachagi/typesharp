@@ -11,7 +11,7 @@ TypeSharp is NOT an OpenAPI-based tool. It parses C# projects directly, targetin
 
 ---
 
-## [M.M.P] - YYYY-MM-DD
+## [0.1.2] - 2026-03-21
 
 ### Summary
 
@@ -19,10 +19,13 @@ Major parser improvements, expanded type support, multi-project support, and aut
 
 ### Added
 
+### Added
+
 - **ASP.NET Core test project** — Self-contained test project
 - **`.slnx` solution support** — `source` now accepts `.slnx` XML solution files, automatically extracting all referenced `.csproj` paths
 - **`.sln` solution support** — `source` now accepts Visual Studio `.sln` files, automatically extracting all referenced `.csproj` paths
 - **`[Obsolete]` support** — properties decorated with `[Obsolete]` or `[Obsolete("message")]` are emitted with `/** @deprecated [message] */` JSDoc in the generated TypeScript output. Supported on all three property styles: `{ get; set; }`, expression-bodied (`=>`), and block getter (`{ get { return ...; } }`)
+- **`[TypeSharp("name")]` class/enum name override** — `[TypeSharp]` now optionally accepts a string argument that overrides the generated TypeScript type name, taking precedence over any `namingConvention` setting. Works on both classes and enums. `[TypeSharp]` without an argument continues to work as before.
 
 ### Changed
 
