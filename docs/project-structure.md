@@ -1,7 +1,5 @@
 ## Project structure
 
-## Project structure
-
 ```
 typesharp/
 ├── AspNetCore/                         ✅ ASP.NET Core test project
