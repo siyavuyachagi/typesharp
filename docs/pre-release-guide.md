@@ -29,20 +29,7 @@ Decide your new version before touching any files. Everything below references i
 
 ---
 
-### 2.2 `src/cli/index.ts`
-
-```ts
-program
-  .version('X.X.X')
-```
-
-- [✓] `.version('X.X.X')` matches `package.json` exactly
-
-> This is the version shown when users run `npx typesharp --version`. It's easy to forget because it's hardcoded separately from `package.json`.
-
----
-
-### 2.3 `CHANGELOG.md`
+### 2.2 `CHANGELOG.md`
 
 Add a new section at the top (below the `## Important note` block), following the existing format:
 
@@ -73,7 +60,7 @@ One or two sentences describing the release theme.
 
 ---
 
-### 2.4 `README.md`
+### 2.3 `README.md`
 
 Go through the whole README and ask for each section:
 
@@ -89,7 +76,7 @@ Go through the whole README and ask for each section:
 
 ---
 
-### 2.5 `docs/usage.md`
+### 2.4 `docs/usage.md`
 
 - [✓] **Configuration Options table** — matches `TypeSharpConfig` interface exactly
 - [✓] **Type Mappings tables** — matches `mapCSharpTypeToTypeScript` in `src/parser/index.ts`
@@ -100,14 +87,14 @@ Go through the whole README and ask for each section:
 
 ---
 
-### 2.6 `docs/why-typesharp.md`
+### 2.5 `docs/why-typesharp.md`
 
 - [✓] **Roadmap section** — move completed items out of the roadmap; update in-progress items
 - [✓] **How TypeSharp Compares table** — keep in sync with the one in `README.md`
 
 ---
 
-### 2.7 `docs/prject-structure.md`
+### 2.6 `docs/prject-structure.md`
 
 - [✓] Structure matches the actual `src/` layout (new files or folders added?)
 - [✓] All status indicators (`✅`) are accurate
@@ -218,3 +205,8 @@ Every release touches these version strings.
 | File | Location |
 |---|---|
 | `package.json` | `"version": "X.X.X"` |
+| `CHANGELOG.md` | New `## [X.X.X] - YYYY-MM-DD` section |
+| `README.md` | Features, config table, requirements |
+| `docs/usage.md` | Config options, type mappings, CLI usage |
+| `docs/why-typesharp.md` | Roadmap, comparisons |
+| `docs/project-structure.md` | Structure and status indicators |
