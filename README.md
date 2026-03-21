@@ -53,19 +53,14 @@ npm install -D @siyavuyachagi/typesharp
 
 ## Quick Start
 
-### 1. Create an attribute to target
+### 1. Install the NuGet attributes package
 
-In your target project create the following attribute (`TypeSharp`)
-
-```cs
-namespace YourProject.Attribute
-{
-  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum)]
-  public class TypeSharpAttribute : Attribute { }
-}
+In your C# project:
+```bash
+dotnet add package TypeSharp.Attributes
 ```
 
-### 2. Decorate your C# models or DTOs
+Use `[TypeSharp]` to include a class, or `[TypeSharp("name")]` to include it with a custom TypeScript type name:
 
 ```csharp
 [TypeSharp]
@@ -263,7 +258,7 @@ TypeSharp supports multiple configuration formats:
 
 ```json
 {
-  "projectFiles": ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
+  "source": ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
   "outputPath": "./src/types"
 }
 ```
@@ -274,7 +269,7 @@ TypeSharp supports multiple configuration formats:
 import { TypeSharpConfig } from "typesharp";
 
 const config: TypeSharpConfig = {
-  projectFiles: ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
+  source: ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
   outputPath: "./src/types",
 };
 
@@ -285,7 +280,7 @@ export default config;
 
 ```javascript
 module.exports = {
-  projectFiles: ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
+  source: ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
   outputPath: "./src/types",
 };
 ```
@@ -430,7 +425,43 @@ export interface Employee {
 }
 ```
 
-### 5. Multi-Project
+### 5. Custom Type Name Override
+
+Use `[TypeSharp("name")]` to override the generated TypeScript type name. The override takes precedence over `namingConvention`.
+
+**C#:**
+```csharp
+[TypeSharp("auth_response")]
+public class AuthResponse
+{
+    public string AccessToken { get; set; }
+    public string RefreshToken { get; set; }
+}
+
+[TypeSharp("user_role")]
+public enum UserRole
+{
+    Admin,
+    User,
+    Guest
+}
+```
+
+**Generated TypeScript:**
+```typescript
+export interface auth_response {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export enum user_role {
+  Admin = 'Admin',
+  User = 'User',
+  Guest = 'Guest'
+}
+```
+
+### 6. Multi-Project
 
 Scan multiple C# projects at once:
 
@@ -445,7 +476,7 @@ Scan multiple C# projects at once:
 }
 ```
 
-### 6. Single Output File
+### 7. Single Output File
 
 **Config:**
 
@@ -459,7 +490,7 @@ const config: TypeSharpConfig = {
 
 All types will be generated in `src/types/types.ts`
 
-### 7. Custom Naming Conventions
+### 8. Custom Naming Conventions
 
 **Config:**
 
@@ -517,7 +548,7 @@ generateTypes();
 
 ## Requirements
 
-- Node.js >= 14
+- Node.js >= 20
 - TypeScript >= 4.5 (if using TypeScript config)
 
 ## License
