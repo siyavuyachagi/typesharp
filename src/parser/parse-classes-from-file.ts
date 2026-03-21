@@ -1,17 +1,14 @@
 import { CSharpClass, CSharpProperty } from "../types";
 import { parseProperties } from "./parse-properties";
 
-
-export /**
+/**
  * Parse classes from a C# file content
  */
-    function parseClassesFromFile(content: string, targetAnnotation: string): CSharpClass[] {
+export function parseClassesFromFile(content: string, targetAnnotation: string): CSharpClass[] {
     const classes: CSharpClass[] = [];
 
-    // Remove comments
     const cleanContent = removeComments(content);
 
-    // Find all classes/enums with the target annotation
     const annotationRegex = new RegExp(
         `\\[${targetAnnotation}(?:Attribute)?(?:\\(\\s*"([^"]*)"\\s*\\))?\\]`,
         'g'
@@ -35,68 +32,54 @@ export /**
             continue;
         }
 
-        // Parse as class with full generic support
-        // Matches: public class ClassName<T, U> : BaseClass<T>
-        // Now supports multiple stacked attributes before the class declaration
         const classMatch = afterAnnotation.match(
             /(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/
         );
 
         if (classMatch) {
             const className = classMatch[1]!;
-            const genericParams = classMatch[2]; // e.g., "T" or "T, U"
+            const genericParams = classMatch[2];
             const inheritsFrom = classMatch[3];
-            const baseGenerics = classMatch[4]; // e.g., "T" or "T, U"
+            const baseGenerics = classMatch[4];
+
+            // Filter out C# interfaces (I + uppercase letter)
+            const resolvedInheritsFrom = inheritsFrom && /^I[A-Z]/.test(inheritsFrom)
+                ? undefined
+                : inheritsFrom;
 
             const classBody = extractClassBody(afterAnnotation);
 
-            if (classMatch) {
-                const className = classMatch[1]!;
-                const genericParams = classMatch[2];
-                const inheritsFrom = classMatch[3];
-                const baseGenerics = classMatch[4];
+            if (classBody) {
+                const { cleanedBody, injectedProperties } = stripNestedAnnotatedClasses(classBody, targetAnnotation);
 
-                // Filter out C# interfaces (I + uppercase letter)
-                const resolvedInheritsFrom = inheritsFrom && /^I[A-Z]/.test(inheritsFrom)
-                    ? undefined
-                    : inheritsFrom;
+                const properties = [
+                    ...parseProperties(cleanedBody),
+                    ...injectedProperties
+                ];
 
-                const classBody = extractClassBody(afterAnnotation);
+                const genericParameters = genericParams
+                    ? genericParams.split(',').map(p => p.trim())
+                    : undefined;
 
-                if (classBody) {
-                    const { cleanedBody, injectedProperties } = stripNestedAnnotatedClasses(classBody, targetAnnotation);
+                const baseClassGenerics = baseGenerics
+                    ? baseGenerics.split(',').map(p => p.trim())
+                    : undefined;
 
-                    const properties = [
-                        ...parseProperties(cleanedBody),
-                        ...injectedProperties
-                    ];
-
-                    const genericParameters = genericParams
-                        ? genericParams.split(',').map(p => p.trim())
-                        : undefined;
-
-                    const baseClassGenerics = baseGenerics
-                        ? baseGenerics.split(',').map(p => p.trim())
-                        : undefined;
-
-                    const typeNameOverride = match[1] ?? undefined;
-                    classes.push({
-                        name: typeNameOverride ?? className,
-                        properties,
-                        inheritsFrom: resolvedInheritsFrom,
-                        isEnum: false,
-                        genericParameters,
-                        baseClassGenerics: resolvedInheritsFrom ? baseClassGenerics : undefined
-                    });
-                }
+                const typeNameOverride = match[1] ?? undefined;
+                classes.push({
+                    name: typeNameOverride ?? className,
+                    properties,
+                    inheritsFrom: resolvedInheritsFrom,
+                    isEnum: false,
+                    genericParameters,
+                    baseClassGenerics: resolvedInheritsFrom ? baseClassGenerics : undefined
+                });
             }
         }
     }
 
     return classes;
 }
-
-
 
 /**
  * Parse enum from C# content
@@ -110,7 +93,7 @@ function parseEnum(content: string, enumName: string): CSharpClass | null {
         .split(',')
         .map(v => v.trim())
         .filter(v => v.length > 0)
-        .map(v => v.split('=')[0]!.trim()); // Remove value assignments
+        .map(v => v.split('=')[0]!.trim());
 
     return {
         name: enumName,
@@ -142,61 +125,68 @@ function extractClassBody(content: string): string | null {
     return null;
 }
 
-
-
-
 /**
  * Remove single-line and multi-line comments
  */
 function removeComments(content: string): string {
-    // Remove multi-line comments
     let result = content.replace(/\/\*[\s\S]*?\*\//g, '');
-
-    // Remove single-line comments
     result = result.replace(/\/\/.*/g, '');
-
     return result;
 }
 
-
-
-
-
+/**
+ * Strip nested annotated classes from a class body and inject reference properties.
+ * Uses brace-counting instead of regex replacement for reliable block extraction.
+ */
 function stripNestedAnnotatedClasses(
     classBody: string,
     targetAnnotation: string
 ): { cleanedBody: string; injectedProperties: CSharpProperty[] } {
     const injectedProperties: CSharpProperty[] = [];
+    const regionsToRemove: Array<{ start: number; end: number }> = [];
 
     const annotationRegex = new RegExp(
         `\\[${targetAnnotation}(?:Attribute)?(?:\\(\\s*"([^"]*)"\\s*\\))?\\]\\s*public\\s+class\\s+(\\w+)`,
         'g'
     );
 
-    let cleanedBody = classBody;
     const matches = [...classBody.matchAll(annotationRegex)];
 
-    // Process in reverse so index positions stay valid after replacements
-    for (const match of matches.reverse()) {
+    for (const match of matches) {
         const typeNameOverride = match[1] ?? undefined;
         const nestedClassName = match[2]!;
         const resolvedName = typeNameOverride ?? nestedClassName;
 
         const fromIndex = match.index!;
         const afterMatch = classBody.substring(fromIndex);
-        const nestedBody = extractClassBody(afterMatch);
 
-        if (!nestedBody) continue;
+        // Find the opening brace of the nested class
+        const braceStart = afterMatch.indexOf('{');
+        if (braceStart === -1) continue;
 
-        // Find the full block including annotation, class declaration and body
-        const fullBlockLength = afterMatch.indexOf(nestedBody) + nestedBody.length + 1;
-        const fullBlock = afterMatch.substring(0, fullBlockLength + 1);
+        // Walk braces to find the exact closing brace
+        let depth = 0;
+        let end = -1;
+        for (let i = braceStart; i < afterMatch.length; i++) {
+            if (afterMatch[i] === '{') depth++;
+            else if (afterMatch[i] === '}') {
+                depth--;
+                if (depth === 0) {
+                    end = i;
+                    break;
+                }
+            }
+        }
 
-        cleanedBody = cleanedBody.replace(fullBlock, '');
+        if (end === -1) continue;
 
-        // Inject a reference property named after the nested class (camelCase)
+        regionsToRemove.push({
+            start: fromIndex,
+            end: fromIndex + braceStart + end + 1
+        });
+
         const propName = nestedClassName.charAt(0).toLowerCase() + nestedClassName.slice(1);
-        injectedProperties.unshift({
+        injectedProperties.push({
             name: propName,
             type: resolvedName,
             isNullable: false,
@@ -204,6 +194,12 @@ function stripNestedAnnotatedClasses(
             isGeneric: false,
             isDeprecated: false,
         });
+    }
+
+    // Remove regions in reverse order to preserve character positions
+    let cleanedBody = classBody;
+    for (const region of regionsToRemove.reverse()) {
+        cleanedBody = cleanedBody.substring(0, region.start) + cleanedBody.substring(region.end);
     }
 
     return { cleanedBody, injectedProperties };
