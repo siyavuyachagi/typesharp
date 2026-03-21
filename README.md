@@ -60,6 +60,8 @@ In your C# project:
 dotnet add package TypeSharp.Attributes
 ```
 
+### 2. Decorate your C# models or DTOs
+
 Use `[TypeSharp]` to include a class, or `[TypeSharp("name")]` to include it with a custom TypeScript type name:
 
 ```csharp
