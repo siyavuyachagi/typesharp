@@ -19,16 +19,18 @@ export interface CSharpProperty {
 }
 
 /**
- * Parsed C# class/interface
+ * Parsed C# class, record, or enum
  */
 export interface CSharpClass {
   name: string;
   properties: CSharpProperty[];
   inheritsFrom?: string;
   isEnum: boolean;
+  /** Whether the source type was a C# record (record class / record struct / positional record) */
+  isRecord: boolean;
   enumValues?: string[];
-  genericParameters?: string[]; // NEW: e.g., ['T'] or ['T', 'U']
-  baseClassGenerics?: string[]; // NEW: e.g., ['T'] for ApiResponse<T>
+  genericParameters?: string[];
+  baseClassGenerics?: string[];
 }
 
 /**

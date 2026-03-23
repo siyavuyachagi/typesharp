@@ -17,13 +17,15 @@ export interface CSharpProperty {
     genericType?: string;
 }
 /**
- * Parsed C# class/interface
+ * Parsed C# class, record, or enum
  */
 export interface CSharpClass {
     name: string;
     properties: CSharpProperty[];
     inheritsFrom?: string;
     isEnum: boolean;
+    /** Whether the source type was a C# record (record class / record struct / positional record) */
+    isRecord: boolean;
     enumValues?: string[];
     genericParameters?: string[];
     baseClassGenerics?: string[];

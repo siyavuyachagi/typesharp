@@ -20,10 +20,23 @@ Minor parser improvements
 ### Added
 
 - **C# interface filtering in inheritance** — classes inheriting from C# interfaces (e.g. `IActionResult`, `IDisposable`) no longer emit an `extends` clause in the generated TypeScript output. Only concrete base classes are preserved. Interface detection follows the standard C# naming convention (`I` followed by an uppercase letter).
+- **C# record support** — all record forms are now parsed and emitted as TypeScript interfaces:
+
+- Positional records: public record Point(int X, int Y)
+record class and record struct explicit keyword variants
+Body-only records (no primary constructor) — parsed identically to classes
+Generic records: public record PagedResult<T>(IEnumerable<T> Items, int TotalCount)
+Record inheritance: base record is preserved as an extends clause; C# interfaces (I-prefixed) are filtered out the same as for classes
+
+- Per-parameter attribute overrides on record primary constructors — [property: TypeIgnore], [property: TypeName("x")], [property: TypeAs("y")], and [property: Obsolete("msg")] are all supported. The property: attribute target is required by C# for primary constructor parameters; TypeSharp accepts both [property: Attr] and [Attr] forms (the latter is valid for [Obsolete] which targets all by default)
+isRecord field on CSharpClass — distinguishes parsed records from classes in programmatic usage
+parseRecordParameters exported from parser — available for programmatic and advanced usage
 
 ### Changed
 
 ### Fixed
+
+- Primary constructor parameter extraction now uses paren-depth balancing instead of a [^)]* regex group, preventing early truncation when attribute arguments contain parentheses (e.g. [property: TypeAs("Date")])
 
 ---
 

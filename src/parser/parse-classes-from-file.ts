@@ -1,8 +1,9 @@
 import { CSharpClass, CSharpProperty } from "../types";
 import { parseProperties } from "./parse-properties";
+import { parseRecordParameters } from "./parse-properties";
 
 /**
- * Parse classes from a C# file content
+ * Parse classes and records from a C# file content
  */
 export function parseClassesFromFile(content: string, targetAnnotation: string): CSharpClass[] {
     const classes: CSharpClass[] = [];
@@ -32,6 +33,77 @@ export function parseClassesFromFile(content: string, targetAnnotation: string):
             continue;
         }
 
+        // Check if it's a record (positional or with body)
+        // NOTE: we do NOT capture ctor params in the regex — attributes inside params
+        // contain `()` which would break a [^)]* capture group.
+        // Use paren-balanced extraction instead.
+        const recordMatch = afterAnnotation.match(
+            /(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+(?:sealed\s+|abstract\s+)?record\s+(?:class\s+|struct\s+)?(\w+)(?:<([^>]+)>)?/
+        );
+
+        if (recordMatch) {
+            const className = recordMatch[1]!;
+            const genericParams = recordMatch[2];
+
+            // Extract primary ctor params with paren-depth balancing so that
+            // attributes like [property: TypeAs("Date")] don't truncate the capture
+            const primaryCtorParams = extractPrimaryCtorParams(afterAnnotation);
+
+            // After the ctor (if any), look for `: BaseType<Generics>`
+            const ctorOpenIdx = afterAnnotation.indexOf('(');
+            const afterCtor = (primaryCtorParams !== undefined && ctorOpenIdx !== -1)
+                ? afterAnnotation.slice(ctorOpenIdx + primaryCtorParams.length + 2)
+                : afterAnnotation.slice(recordMatch[0].length);
+            const inheritMatch = afterCtor.match(/^\s*:\s*(\w+)(?:<([^>]+)>)?/);
+            const inheritsFrom = inheritMatch?.[1];
+            const baseGenerics = inheritMatch?.[2];
+
+            const resolvedInheritsFrom = inheritsFrom && /^I[A-Z]/.test(inheritsFrom)
+                ? undefined
+                : inheritsFrom;
+
+            const genericParameters = genericParams
+                ? genericParams.split(',').map(p => p.trim())
+                : undefined;
+
+            const baseClassGenerics = baseGenerics
+                ? baseGenerics.split(',').map(p => p.trim())
+                : undefined;
+
+            const typeNameOverride = match[1] ?? undefined;
+
+            // Parse positional primary constructor parameters
+            const positionalProperties: CSharpProperty[] = primaryCtorParams
+                ? parseRecordParameters(primaryCtorParams)
+                : [];
+
+            // Also parse any body properties (records can have both)
+            const classBody = extractClassBody(afterAnnotation);
+            const bodyProperties: CSharpProperty[] = classBody
+                ? parseProperties(classBody)
+                : [];
+
+            // Deduplicate: body props take priority if name clashes
+            const bodyPropNames = new Set(bodyProperties.map(p => p.name));
+            const mergedProperties = [
+                ...positionalProperties.filter(p => !bodyPropNames.has(p.name)),
+                ...bodyProperties,
+            ];
+
+            classes.push({
+                name: typeNameOverride ?? className,
+                properties: mergedProperties,
+                inheritsFrom: resolvedInheritsFrom,
+                isEnum: false,
+                isRecord: true,
+                genericParameters,
+                baseClassGenerics: resolvedInheritsFrom ? baseClassGenerics : undefined,
+            });
+
+            continue;
+        }
+
+        // Regular class
         const classMatch = afterAnnotation.match(
             /(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/
         );
@@ -42,7 +114,6 @@ export function parseClassesFromFile(content: string, targetAnnotation: string):
             const inheritsFrom = classMatch[3];
             const baseGenerics = classMatch[4];
 
-            // Filter out C# interfaces (I + uppercase letter)
             const resolvedInheritsFrom = inheritsFrom && /^I[A-Z]/.test(inheritsFrom)
                 ? undefined
                 : inheritsFrom;
@@ -71,6 +142,7 @@ export function parseClassesFromFile(content: string, targetAnnotation: string):
                     properties,
                     inheritsFrom: resolvedInheritsFrom,
                     isEnum: false,
+                    isRecord: false,
                     genericParameters,
                     baseClassGenerics: resolvedInheritsFrom ? baseClassGenerics : undefined
                 });
@@ -99,6 +171,7 @@ function parseEnum(content: string, enumName: string): CSharpClass | null {
         name: enumName,
         properties: [],
         isEnum: true,
+        isRecord: false,
         enumValues
     };
 }
@@ -126,6 +199,61 @@ function extractClassBody(content: string): string | null {
 }
 
 /**
+ * Extract the primary constructor parameter string from a record declaration,
+ * using paren-depth balancing so attribute parens like `[property: TypeAs("Date")]`
+ * don't cause early termination.
+ *
+ * Returns the raw content between the outermost `(` and its matching `)`,
+ * or undefined if no primary constructor is present (body-only record).
+ *
+ * The search starts after the class/record name so that attribute parens on
+ * the annotation itself are skipped.
+ */
+function extractPrimaryCtorParams(content: string): string | undefined {
+    // Find the record name first so we skip annotation parens
+    const nameIdx = content.search(/\brecord\b/);
+    if (nameIdx === -1) return undefined;
+
+    // Scan forward from the record keyword for the first `(` that isn't preceded
+    // by a `[` sequence (i.e. belongs to the ctor, not an attribute)
+    let i = nameIdx;
+    // Skip past the record keyword and name (and optional generics)
+    // by looking for the first `(` or `{` at the top paren-depth
+    let bracketDepth = 0; // tracks [] depth to ignore attr parens
+
+    while (i < content.length) {
+        const ch = content[i]!;
+
+        if (ch === '[') { bracketDepth++; i++; continue; }
+        if (ch === ']') { bracketDepth--; i++; continue; }
+
+        // Only treat `(` as ctor open when we're not inside a `[...]`
+        if (ch === '(' && bracketDepth === 0) {
+            // Found the ctor opening paren — walk to the matching `)`
+            let depth = 0;
+            let start = i;
+            for (let j = i; j < content.length; j++) {
+                if (content[j] === '(') depth++;
+                else if (content[j] === ')') {
+                    depth--;
+                    if (depth === 0) {
+                        return content.slice(start + 1, j);
+                    }
+                }
+            }
+            return undefined; // unmatched paren
+        }
+
+        // A `{` at bracket-depth 0 means we hit the body before a ctor — body-only record
+        if (ch === '{' && bracketDepth === 0) return undefined;
+
+        i++;
+    }
+
+    return undefined;
+}
+
+/**
  * Remove single-line and multi-line comments
  */
 function removeComments(content: string): string {
@@ -136,7 +264,6 @@ function removeComments(content: string): string {
 
 /**
  * Strip nested annotated classes from a class body and inject reference properties.
- * Uses brace-counting instead of regex replacement for reliable block extraction.
  */
 function stripNestedAnnotatedClasses(
     classBody: string,
@@ -160,11 +287,9 @@ function stripNestedAnnotatedClasses(
         const fromIndex = match.index!;
         const afterMatch = classBody.substring(fromIndex);
 
-        // Find the opening brace of the nested class
         const braceStart = afterMatch.indexOf('{');
         if (braceStart === -1) continue;
 
-        // Walk braces to find the exact closing brace
         let depth = 0;
         let end = -1;
         for (let i = braceStart; i < afterMatch.length; i++) {
@@ -196,7 +321,6 @@ function stripNestedAnnotatedClasses(
         });
     }
 
-    // Remove regions in reverse order to preserve character positions
     let cleanedBody = classBody;
     for (const region of regionsToRemove.reverse()) {
         cleanedBody = cleanedBody.substring(0, region.start) + cleanedBody.substring(region.end);

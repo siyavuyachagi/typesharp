@@ -1,6 +1,6 @@
 # TypeSharp Usage Guide
 
-Complete guide to using TypeSharp for generating TypeScript types from C# models.
+Complete guide to using TypeSharp for generating TypeScript types from C# models and records.
 
 ## Table of Contents
 
@@ -10,6 +10,7 @@ Complete guide to using TypeSharp for generating TypeScript types from C# models
 - [CLI Usage](#cli-usage)
 - [C# Attribute Setup](#c-attribute-setup)
 - [Type Mappings](#type-mappings)
+- [Records](#records)
 - [Generic Types Support](#generic-types-support)
 - [Naming Conventions](#naming-conventions)
 - [Advanced Usage](#advanced-usage)
@@ -93,7 +94,7 @@ npx typesharp
 
 #### `source`
 
-Accepts a single path or array. Supports `.csproj`, `.sln`, and `.slnx` files. When a solution file is provided, TypeSharp automatically discovers all referenced `.csproj` files.
+Accepts a single path or array. Supports `.csproj`, `.sln`, and `.slnx` files.
 ```json
 { "source": "C:/MyApp/MyApp.sln" }
 ```
@@ -108,7 +109,6 @@ Accepts a single path or array. Supports `.csproj`, `.sln`, and `.slnx` files. W
 
 #### `namingConvention`
 
-Accepts a simple string or a config object for separate control over directories and files:
 ```json
 { "namingConvention": "kebab" }
 ```
@@ -125,7 +125,6 @@ Available values: `"camel"` | `"kebab"` | `"pascal"` | `"snake"`
 
 #### `fileSuffix`
 
-Appends a formatted suffix to generated file names:
 ```json
 { "fileSuffix": "dto" }
 ```
@@ -218,6 +217,12 @@ public class Product
 }
 ```
 
+### On Records
+```csharp
+[TypeSharp]
+public record ProductSummary(int Id, string Name, decimal Price);
+```
+
 ### On Enums
 ```csharp
 [TypeSharp]
@@ -233,7 +238,6 @@ public enum OrderStatus
 
 ### Custom Type Name Override
 
-Use `[TypeSharp("name")]` to override the generated TypeScript type name:
 ```csharp
 [TypeSharp("auth_response")]
 public class AuthResponse
@@ -250,8 +254,6 @@ export interface auth_response {
 ```
 
 ### Property Attribute Overrides
-
-TypeSharp supports per-property attribute overrides for fine-grained control:
 
 **`[TypeIgnore]`** — excludes the property from the generated output:
 ```csharp
@@ -328,67 +330,152 @@ export interface User {
 }
 ```
 
-### Dictionary Types
+## Records
+
+TypeSharp supports all C# record forms. Records are emitted as TypeScript interfaces, identical to classes.
+
+### Positional Records
+
 ```csharp
 [TypeSharp]
-public class PermissionMap
+public record ProductSummary(int Id, string Name, decimal Price, bool IsActive);
+```
+```typescript
+export interface ProductSummary {
+  id: number;
+  name: string;
+  price: number;
+  isActive: boolean;
+}
+```
+
+Nullable and collection parameters are fully supported:
+
+```csharp
+[TypeSharp]
+public record UserRecord(int Id, string? DisplayName, DateOnly? DateOfBirth, List<string> Tags);
+```
+```typescript
+export interface UserRecord {
+  id: number;
+  displayName: string | null;
+  dateOfBirth: string | null;
+  tags: string[];
+}
+```
+
+### `record class` and `record struct`
+
+Both explicit record keywords are supported:
+
+```csharp
+[TypeSharp]
+public record class AddressRecord(string Street, string City, string PostalCode);
+
+[TypeSharp]
+public record struct CoordRecord(double Lat, double Lng);
+```
+
+### Body-Only Records
+
+Records without a primary constructor are parsed the same way as classes:
+
+```csharp
+[TypeSharp]
+public record PersonRecord
 {
-    public Dictionary<string, bool> Flags { get; set; }
-    public IReadOnlyDictionary<string, List<string>> RolePermissions { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public int Age { get; set; }
 }
 ```
 ```typescript
-export interface PermissionMap {
-  flags: Record<string, boolean>;
-  rolePermissions: Record<string, string[]>;
+export interface PersonRecord {
+  firstName: string;
+  lastName: string;
+  age: number;
 }
 ```
 
-### Enums
+### Generic Records
+
 ```csharp
 [TypeSharp]
-public enum Status
-{
-    Active,
-    Inactive,
-    Pending
-}
+public record PagedResult<T>(IEnumerable<T> Items, int TotalCount, int PageSize);
 ```
 ```typescript
-export enum Status {
-  Active = "Active",
-  Inactive = "Inactive",
-  Pending = "Pending",
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageSize: number;
 }
 ```
 
-### Obsolete / Deprecated Properties
+### Record Inheritance
 
-Properties marked with `[Obsolete]` or `[Obsolete("message")]` are emitted with a `/** @deprecated */` JSDoc comment:
 ```csharp
 [TypeSharp]
-public class UserDto
-{
-    public string Email { get; set; }
+public record BaseEvent(Guid Id, DateTime OccurredAt);
 
-    [Obsolete("Use Email instead.")]
-    public string? Username { get; set; }
-
-    [Obsolete]
-    public string? LegacyId { get; set; }
-}
+[TypeSharp]
+public record UserCreatedEvent(Guid Id, DateTime OccurredAt, string Email) : BaseEvent(Id, OccurredAt);
 ```
 ```typescript
-export interface UserDto {
+export interface BaseEvent {
+  id: string;
+  occurredAt: string;
+}
+
+export interface UserCreatedEvent extends BaseEvent {
+  id: string;
+  occurredAt: string;
   email: string;
-  /** @deprecated Use Email instead. */
-  username: string | null;
-  /** @deprecated */
-  legacyId: string | null;
 }
 ```
 
-> Supported on `{ get; set; }`, expression-bodied (`=>`), and block getter properties.
+C# interfaces in the inheritance chain are automatically filtered out, the same as for classes:
+
+```csharp
+[TypeSharp]
+public record MyRecord(int Id) : IEquatable<MyRecord>; // IEquatable is ignored
+```
+
+### Per-Parameter Attribute Overrides
+
+`[TypeIgnore]`, `[TypeName]`, `[TypeAs]`, and `[Obsolete]` are supported on primary constructor parameters. C# requires the `property:` attribute target so the compiler knows the attribute applies to the generated property, not the constructor parameter itself.
+
+```csharp
+[TypeSharp]
+public record SecureRecord(
+    string Name,
+    [property: TypeIgnore] string Secret,
+    [property: TypeAs("Date")] DateTime CreatedAt,
+    [property: Obsolete("Use Name instead")] string LegacyAlias
+);
+```
+```typescript
+export interface SecureRecord {
+  name: string;
+  /** @deprecated Use Name instead */
+  legacyAlias: string;
+  createdAt: Date;
+}
+```
+
+> Note: `[Obsolete]` targets all by default in C# so it also works without the `property:` prefix — `[property: Obsolete("...")]` and `[Obsolete("...")]` are both accepted.
+
+### `[TypeSharp("name")]` on Records
+
+```csharp
+[TypeSharp("point_dto")]
+public record Point(int X, int Y);
+```
+```typescript
+export interface point_dto {
+  x: number;
+  y: number;
+}
+```
 
 ## Generic Types Support
 
@@ -496,7 +583,7 @@ export interface PagedApiResponse<T> extends ApiResponse<T> {
 
 ### Inheritance
 
-TypeSharp preserves class inheritance using `extends`:
+TypeSharp preserves class and record inheritance using `extends`:
 ```csharp
 [TypeSharp]
 public class Entity
@@ -536,7 +623,7 @@ export interface User extends AuditableEntity {
 
 ### C# Interface Inheritance
 
-TypeSharp automatically filters out C# interfaces from the inheritance chain. Any base type matching the standard C# interface naming convention (`I` followed by an uppercase letter) is ignored — only concrete base classes are preserved.
+TypeSharp automatically filters out C# interfaces from the inheritance chain for both classes and records. Any base type matching the standard C# interface naming convention (`I` followed by an uppercase letter) is ignored.
 ```csharp
 [TypeSharp]
 public class PaymentResult : BaseResult, IActionResult, IDisposable
@@ -549,8 +636,6 @@ export interface PaymentResult extends BaseResult {
   paid: boolean;
 }
 ```
-
-> `IActionResult`, `IDisposable`, `IEquatable<T>` and any other `I`-prefixed types will never appear as `extends` clauses. You can freely implement C# interfaces on your DTOs without affecting the generated output.
 
 ### Computed Properties
 
@@ -577,6 +662,33 @@ export interface UserDto {
   initials: string;
 }
 ```
+
+### Obsolete / Deprecated Properties
+
+```csharp
+[TypeSharp]
+public class UserDto
+{
+    public string Email { get; set; }
+
+    [Obsolete("Use Email instead.")]
+    public string? Username { get; set; }
+
+    [Obsolete]
+    public string? LegacyId { get; set; }
+}
+```
+```typescript
+export interface UserDto {
+  email: string;
+  /** @deprecated Use Email instead. */
+  username: string | null;
+  /** @deprecated */
+  legacyId: string | null;
+}
+```
+
+> Supported on `{ get; set; }`, expression-bodied (`=>`), block getter properties, and record primary constructor parameters (with `[property: Obsolete]`).
 
 ### Multi-Project
 ```json
@@ -608,16 +720,6 @@ Or using a solution file:
 ```
 
 All types are written to `src/types/types.ts`.
-
-### Multiple Output Files (File Grouping)
-```
-Backend/                           src/types/
-├── DTOs/                         └── DTOs/
-│   ├── UserDtos.cs               │   ├── user-dtos.ts
-│   └── ProductDtos.cs            │   └── product-dtos.ts
-```
-
-Classes declared in the same C# file stay together in the generated TypeScript file.
 
 ### Programmatic Usage
 ```typescript
@@ -678,6 +780,7 @@ export default config;
 <script setup lang="ts">
 import type { User } from '~/types/user';
 import type { ApiResponse } from '~/types/apiResponse';
+import type { ProductSummary } from '~/types/productSummary';
 
 const fetchUser = async (id: number) => {
   const response = await $fetch<ApiResponse<User>>(`/api/users/${id}`);
@@ -715,7 +818,7 @@ jobs:
 
 ### No types generated
 
-- Verify `[TypeSharp]` attribute is on your C# classes
+- Verify `[TypeSharp]` attribute is on your C# classes or records
 - Check that `source` points to the correct `.csproj`, `.sln`, or `.slnx` file
 - Ensure C# files are not in `bin/` or `obj/` folders
 - Verify the attribute name matches `targetAnnotation` in your config
@@ -725,23 +828,19 @@ jobs:
 - Use absolute paths on Windows: `C:/Users/User/Desktop/MyApp/MyApp.sln`
 - Use absolute paths on Mac/Linux: `/home/user/projects/MyApp/MyApp.sln`
 
-### Types not updating
+### Record parameters not appearing
 
-The output directory is cleaned automatically on each run. If types still appear stale, re-run manually:
-```bash
-npx typesharp
-```
+- Ensure you are using `[TypeSharp]` on the record itself
+- For attribute overrides on primary constructor parameters, use the `property:` target: `[property: TypeIgnore]`, `[property: TypeAs("Date")]`
+- Body-only records (no primary constructor) are parsed from their `{ get; set; }` properties as normal
 
 ### Import errors in generated files
 
-Ensure all types referenced by a decorated class are also decorated with `[TypeSharp]`. When using `singleOutputFile: false`, TypeSharp generates imports between files automatically — if a type is missing its attribute, the import won't be generated.
+Ensure all types referenced by a decorated class or record are also decorated with `[TypeSharp]`. When using `singleOutputFile: false`, TypeSharp generates imports between files automatically.
 
 ### C# interfaces appearing in extends
 
-This should no longer happen as of `v0.1.2`. TypeSharp automatically strips any base type matching the C# interface naming convention (`I` + uppercase letter). If you are seeing this, ensure you are on the latest version:
-```bash
-npm install @siyavuyachagi/typesharp@latest --save-dev
-```
+This should not happen as of `v0.1.2`. TypeSharp automatically strips any base type matching the C# interface naming convention (`I` + uppercase letter) for both classes and records.
 
 ### Getting Help
 
@@ -766,15 +865,17 @@ npm install @siyavuyachagi/typesharp@latest --save-dev
 
 ### Commit Generated Types
 
-Committing generated types means they are always available without a build step, and changes are reviewable in PRs. If you prefer not to commit them, add the output path to `.gitignore`.
+Committing generated types means they are always available without a build step, and changes are reviewable in PRs.
 
-### Only Decorate DTOs
+### Only Decorate DTOs and Records Used by the Frontend
 ```csharp
 [TypeSharp]
-public class UserDto { }         // ✅ shared with frontend
+public class UserDto { }              // ✅ shared with frontend
+[TypeSharp]
+public record ProductSummary(...) { } // ✅ shared with frontend
 
-public class UserEntity { }      // ❌ EF Core entity — keep internal
-public class InternalConfig { }  // ❌ internal — keep internal
+public class UserEntity { }           // ❌ EF Core entity — keep internal
+public record InternalEvent(...) { }  // ❌ internal domain event — keep internal
 ```
 
 ### Use Generic Types for API Responses
@@ -788,15 +889,11 @@ public class ApiResponse<T>
 }
 
 [TypeSharp]
-public class PagedApiResponse<T> : ApiResponse<T>
-{
-    public int PageNumber { get; set; }
-    public int TotalPages { get; set; }
-}
+public record PagedResult<T>(IEnumerable<T> Items, int TotalCount);
 ```
 ```typescript
 const userResponse = await $fetch<ApiResponse<User>>('/api/users/1');
-const productsResponse = await $fetch<PagedApiResponse<Product[]>>('/api/products');
+const productsResponse = await $fetch<PagedResult<ProductSummary>>('/api/products');
 ```
 
 ---
