@@ -11,7 +11,7 @@ TypeSharp is NOT an OpenAPI-based tool. It parses C# projects directly, targetin
 
 ---
 
-## [0.1.5] - YYYY-MM-DD
+## [0.1.5] - 2026-04-07
 
 ### Summary
 
