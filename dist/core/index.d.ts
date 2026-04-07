@@ -3,7 +3,7 @@ import { TypeSharpConfig } from '../types/typesharp-config';
  * Merge user config with defaults
  */
 export declare const mergeWithDefaults: (config: Partial<TypeSharpConfig>) => TypeSharpConfig;
-export declare function generate(configPath?: string): Promise<void>;
+export declare function generate(configPath?: string, incremental?: boolean): Promise<void>;
 /**
  * Deletes all contents of a directory but keeps the directory itself.
  * @param dir Path to the directory to clean

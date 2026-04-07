@@ -15,7 +15,8 @@ TypeSharp is NOT an OpenAPI-based tool. It parses C# projects directly, targetin
 
 ### Summary
 
-Minor parser improvements
+- Minor parser improvements
+- Minor parser improvements and CLI update
 
 ### Added
 
@@ -34,9 +35,12 @@ parseRecordParameters exported from parser — available for programmatic and ad
 
 ### Changed
 
+- --no-incremental flag — forces full clean generation
+
 ### Fixed
 
 - Primary constructor parameter extraction now uses paren-depth balancing instead of a [^)]* regex group, preventing early truncation when attribute arguments contain parentheses (e.g. [property: TypeAs("Date")])
+- Correct parsing of constructor parameters with nested parentheses in attributes
 
 ---
 

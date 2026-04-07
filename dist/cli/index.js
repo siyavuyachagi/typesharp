@@ -20,9 +20,10 @@ program
     .command('generate', { isDefault: true })
     .description('Generate TypeScript types from C# files')
     .option('-c, --config <path>', 'Path to configuration file')
+    .option('--no-incremental', 'Disable incremental generation (full clean)')
     .action(async (options) => {
     try {
-        await (0, core_1.generate)(options.config);
+        await (0, core_1.generate)(options.config, options.incremental !== false);
         process.exit(0);
     }
     catch (error) {

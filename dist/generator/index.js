@@ -37,6 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateTypeScriptFiles = generateTypeScriptFiles;
+exports.convertFileName = convertFileName;
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const chalk_1 = __importDefault(require("chalk"));
@@ -73,53 +74,55 @@ function generateSingleFile(classes, outputPath) {
     console.log(chalk_1.default.whiteBright(` - Generated:`), chalk_1.default.blue(filePath));
 }
 /**
- * Generate multiple files - one TypeScript file per C# source file.
+ * Generate multiple files - with incremental writing
  * This preserves the original grouping of classes
  */
 function generateMultipleFiles(outputPath, config, parseResults) {
-    // Convention output type
     const dirConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.dir ?? 'snake';
     const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
-    // Build a map of class names to their file paths for import resolution
     const classToFileMap = buildClassToFileMap(parseResults, config, outputPath, fileConvention);
-    // Sort results by path - Asc order
     const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
     for (const result of parseResultsSorted) {
-        // Generate content for all classes in this C# file
-        const content = result.classes
-            .map(cls => generateTypeScriptClass(cls))
-            .join('\n\n');
-        // Preserve folder structure
+        const content = result.classes.map(cls => generateTypeScriptClass(cls)).join('\n\n');
         const relativeDir = path.dirname(result.relativePath);
         const appDir = path.join(outputPath, relativeDir);
-        // Convert dir with configued conventions
         const targetDir = convertDirName(appDir, dirConvention);
-        // Create directory if needed
         if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true });
         }
-        // Get the original C# filename without extension
         const originalFileName = path.basename(result.relativePath, '.cs');
-        // Apply file suffix if configured
         let baseName = originalFileName;
         if (config.fileSuffix) {
-            // Capitalize the 1st character for better convention
             const suffix = config.fileSuffix.charAt(0).toUpperCase() + config.fileSuffix.slice(1);
             baseName = `${baseName}${suffix}`;
         }
-        // Apply naming convention to the filename
         const fileName = convertFileName(baseName, fileConvention);
         const filePath = path.join(targetDir, `${fileName}.ts`);
-        // Generate imports for this file
         const currentClassNames = result.classes.map(c => c.name);
         const imports = generateImports(result.classes, classToFileMap, filePath, currentClassNames, dirConvention);
         const header = generateFileHeader();
         const fullContent = imports
             ? `${imports}\n\n${header}\n\n${content}\n`
             : `${header}\n\n${content}\n`;
-        fs.writeFileSync(filePath, fullContent, 'utf-8');
-        console.log(chalk_1.default.blue(` ↳`), chalk_1.default.blue(filePath));
+        // NEW: Only write if content changed
+        if (shouldWriteFile(filePath, fullContent)) {
+            fs.writeFileSync(filePath, fullContent, 'utf-8');
+            console.log(chalk_1.default.blue(` ↳`), chalk_1.default.green('Updated:'), chalk_1.default.blue(filePath));
+        }
+        else {
+            console.log(chalk_1.default.blue(` ↳`), chalk_1.default.gray('Unchanged:'), chalk_1.default.blue(filePath));
+        }
     }
+}
+/**
+ * Check if file content changed before writing
+ */
+function shouldWriteFile(filePath, newContent) {
+    if (!fs.existsSync(filePath)) {
+        return true; // New file, write it
+    }
+    const existingContent = fs.readFileSync(filePath, 'utf-8');
+    return existingContent !== newContent; // Write only if different
 }
 /**
  * Build a map of class names to their output file paths

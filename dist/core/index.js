@@ -88,7 +88,7 @@ const mergeWithDefaults = (config) => {
     // Deprecation warning
     if (config.projectFiles && !config.source) {
         console.warn(chalk_1.default.yellow.bold('⚠ Deprecation:'), chalk_1.default.white('`projectFiles` is deprecated. Please rename it to `source` in your config.'));
-        config.source = config.projectFiles;
+        config.source = config.source || config.projectFiles;
     }
     if (!config.source && !config.projectFiles) {
         throw new Error('`source` is required in configuration');
@@ -102,61 +102,116 @@ const mergeWithDefaults = (config) => {
     };
 };
 exports.mergeWithDefaults = mergeWithDefaults;
-async function generate(configPath) {
+async function generate(configPath, incremental = true) {
     try {
         console.log(chalk_1.default.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
-        // Load configuration
         const config = await loadConfig(configPath);
         console.log(chalk_1.default.green.bold('\n✓ Configuration loaded'));
-        // Display project files
-        const projectFiles = Array.isArray(config.projectFiles)
-            ? config.projectFiles
-            : [config.projectFiles];
-        if (projectFiles.length === 1) {
-            console.log(chalk_1.default.cyan(`->  Target:`), chalk_1.default.white(projectFiles[0]));
-        }
-        else {
-            console.log(chalk_1.default.cyan(`->  Targets (${projectFiles.length} projects):`));
-            projectFiles.forEach((file, index) => {
-                console.log(chalk_1.default.cyan(`    ${index + 1}.`), chalk_1.default.white(file));
-            });
-        }
-        console.log(chalk_1.default.cyan(`->  Output:`), chalk_1.default.white(config.outputPath));
-        console.log(chalk_1.default.cyan(`->  Annotation:`), chalk_1.default.white(`[${config.targetAnnotation}]`));
-        console.log(chalk_1.default.cyan(`->  Single file:`), chalk_1.default.white(config.singleOutputFile));
-        if (config.fileSuffix) {
-            console.log(chalk_1.default.cyan(`->  File suffix:`), chalk_1.default.white(config.fileSuffix));
-        }
-        // Validate configuration
-        console.log(chalk_1.default.cyan('\n⧖ Configuration validation...'));
-        validateConfig(config);
-        console.log(chalk_1.default.green.bold('✓ Configuration validated'));
-        // Clean output directory
-        cleanOutputDirectory(config.outputPath);
-        // Parse C# files from all projects
+        // [... existing code ...]
+        // Parse C# files
         console.log(chalk_1.default.cyan('\n⧖ Parsing C# files...'));
         const parseResults = await (0, parser_1.parseCSharpFiles)(config);
         if (parseResults.length === 0) {
             console.warn(chalk_1.default.yellow.bold('❗ Warning:'), chalk_1.default.white(`No C# files found with [${config.targetAnnotation}] attribute\n`));
             return;
         }
-        // Collect all classes
+        // NEW: Incremental cleanup
+        if (incremental) {
+            await cleanOnlyChangedOutputFiles(config, parseResults);
+        }
+        else {
+            cleanOutputDirectory(config.outputPath); // Full clean (old behavior)
+        }
         const allClasses = parseResults.flatMap(result => result.classes);
         console.log(chalk_1.default.green.bold(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute`));
-        // Generate TypeScript files
         console.log(chalk_1.default.blue.cyan('\n⧖ Generating TypeScript files...'));
         (0, generator_1.generateTypeScriptFiles)(config, parseResults);
         console.log(chalk_1.default.green.bold('✅ Generation completed successfully!\n'));
     }
     catch (error) {
-        if (error instanceof Error) {
-            console.error(chalk_1.default.red.bold(`\n❌ Error:`), chalk_1.default.white(error.message));
-        }
-        else {
-            console.error(chalk_1.default.red.bold(`\n❌ An unknown error occurred`));
-        }
-        throw error;
+        // [... error handling ...]
     }
+}
+// export async function generate(configPath?: string): Promise<void> {
+//   try {
+//     console.log(chalk.cyan.bold('\n🚀 TypeSharp - Starting generation...'));
+//     // Load configuration
+//     const config = await loadConfig(configPath);
+//     console.log(chalk.green.bold('\n✓ Configuration loaded'));
+//     // Display project files
+//     const projectFiles = Array.isArray(config.projectFiles)
+//       ? config.projectFiles
+//       : [config.projectFiles];
+//     if (projectFiles.length === 1) {
+//       console.log(chalk.cyan(`->  Target:`), chalk.white(projectFiles[0]));
+//     } else {
+//       console.log(chalk.cyan(`->  Targets (${projectFiles.length} projects):`));
+//       projectFiles.forEach((file, index) => {
+//         console.log(chalk.cyan(`    ${index + 1}.`), chalk.white(file));
+//       });
+//     }
+//     console.log(chalk.cyan(`->  Output:`), chalk.white(config.outputPath));
+//     console.log(chalk.cyan(`->  Annotation:`), chalk.white(`[${config.targetAnnotation}]`));
+//     console.log(chalk.cyan(`->  Single file:`), chalk.white(config.singleOutputFile));
+//     if (config.fileSuffix) {
+//       console.log(chalk.cyan(`->  File suffix:`), chalk.white(config.fileSuffix));
+//     }
+//     // Validate configuration
+//     console.log(chalk.cyan('\n⧖ Configuration validation...'));
+//     validateConfig(config);
+//     console.log(chalk.green.bold('✓ Configuration validated'));
+//     // Clean output directory
+//     cleanOutputDirectory(config.outputPath);
+//     // Parse C# files from all projects
+//     console.log(chalk.cyan('\n⧖ Parsing C# files...'));
+//     const parseResults = await parseCSharpFiles(config);
+//     if (parseResults.length === 0) {
+//       console.warn(chalk.yellow.bold('❗ Warning:'), chalk.white(`No C# files found with [${config.targetAnnotation}] attribute\n`));
+//       return;
+//     }
+//     // Collect all classes
+//     const allClasses = parseResults.flatMap(result => result.classes);
+//     console.log(chalk.green.bold(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute`));
+//     // Generate TypeScript files
+//     console.log(chalk.blue.cyan('\n⧖ Generating TypeScript files...'));
+//     generateTypeScriptFiles(config, parseResults);
+//     console.log(chalk.green.bold('✅ Generation completed successfully!\n'));
+//   } catch (error) {
+//     if (error instanceof Error) {
+//       console.error(chalk.red.bold(`\n❌ Error:`), chalk.white(error.message));
+//     } else {
+//       console.error(chalk.red.bold(`\n❌ An unknown error occurred`));
+//     }
+//     throw error;
+//   }
+// }
+/**
+ * Clean only output files corresponding to changed C# files
+ */
+async function cleanOnlyChangedOutputFiles(config, parseResults) {
+    const { loadPreviousHashes, savePreviousHashes, getChangedFiles, computeFileHash } = await Promise.resolve().then(() => __importStar(require('../helpers/change-tracker')));
+    const csharpFiles = parseResults.map(r => r.filePath);
+    const previousHashes = loadPreviousHashes();
+    const { changed, deleted } = getChangedFiles(csharpFiles, previousHashes);
+    console.log('\n🔍 Change Detection:');
+    if (changed.length > 0) {
+        console.log(chalk_1.default.yellow(`  Changed files: ${changed.length}`));
+        changed.forEach(f => console.log(chalk_1.default.yellow(`    ↳ ${f}`)));
+    }
+    if (deleted.length > 0) {
+        console.log(chalk_1.default.red(`  Deleted files: ${deleted.length}`));
+        deleted.forEach(f => console.log(chalk_1.default.red(`    ↳ ${f}`)));
+    }
+    // Remove TS files for deleted C# files
+    for (const deletedFile of deleted) {
+        removeCorrespondingTsFile(config, deletedFile);
+    }
+    // Save current hashes for next run
+    const currentHashes = new Map();
+    for (const file of csharpFiles) {
+        currentHashes.set(file, computeFileHash(file));
+    }
+    savePreviousHashes(currentHashes);
 }
 /**
  * Deletes all contents of a directory but keeps the directory itself.
@@ -177,6 +232,27 @@ function cleanOutputDirectory(dir) {
         else {
             fs.unlinkSync(fullPath);
         }
+    }
+}
+/**
+ * Remove TypeScript output file(s) for a deleted C# source file
+ */
+function removeCorrespondingTsFile(config, csharpFilePath) {
+    const outputPath = config.outputPath;
+    const relativePath = path.relative(config.source, csharpFilePath);
+    const fileName = path.basename(relativePath, '.cs');
+    const fileConvention = typeof config.namingConvention === 'string'
+        ? config.namingConvention
+        : config.namingConvention?.file ?? 'camel';
+    let baseName = fileName;
+    if (config.fileSuffix) {
+        baseName = `${baseName}${config.fileSuffix}`;
+    }
+    const tsFileName = (0, generator_1.convertFileName)(baseName, fileConvention) + '.ts';
+    const tsFilePath = path.join(outputPath, path.dirname(relativePath), tsFileName);
+    if (fs.existsSync(tsFilePath)) {
+        fs.unlinkSync(tsFilePath);
+        console.log(chalk_1.default.red(`  Removed: ${tsFilePath}`));
     }
 }
 /**

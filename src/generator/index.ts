@@ -64,7 +64,7 @@ function generateSingleFile(
 
 
 /**
- * Generate multiple files - one TypeScript file per C# source file.
+ * Generate multiple files - with incremental writing
  * This preserves the original grouping of classes
  */
 function generateMultipleFiles(
@@ -72,50 +72,33 @@ function generateMultipleFiles(
   config: TypeSharpConfig,
   parseResults: ParseResult[]
 ): void {
-  // Convention output type
   const dirConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.dir ?? 'snake';
   const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
 
-  // Build a map of class names to their file paths for import resolution
   const classToFileMap = buildClassToFileMap(parseResults, config, outputPath, fileConvention);
-
-
-  // Sort results by path - Asc order
   const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
-  for (const result of parseResultsSorted) {
-    // Generate content for all classes in this C# file
-    const content = result.classes
-      .map(cls => generateTypeScriptClass(cls))
-      .join('\n\n');
 
-    // Preserve folder structure
+  for (const result of parseResultsSorted) {
+    const content = result.classes.map(cls => generateTypeScriptClass(cls)).join('\n\n');
+
     const relativeDir = path.dirname(result.relativePath);
     const appDir = path.join(outputPath, relativeDir);
-
-    // Convert dir with configued conventions
     const targetDir = convertDirName(appDir, dirConvention);
 
-    // Create directory if needed
     if (!fs.existsSync(targetDir)) {
       fs.mkdirSync(targetDir, { recursive: true });
     }
 
-    // Get the original C# filename without extension
     const originalFileName = path.basename(result.relativePath, '.cs');
-
-    // Apply file suffix if configured
     let baseName = originalFileName;
     if (config.fileSuffix) {
-      // Capitalize the 1st character for better convention
       const suffix = config.fileSuffix.charAt(0).toUpperCase() + config.fileSuffix.slice(1);
       baseName = `${baseName}${suffix}`;
     }
 
-    // Apply naming convention to the filename
     const fileName = convertFileName(baseName, fileConvention);
     const filePath = path.join(targetDir, `${fileName}.ts`);
 
-    // Generate imports for this file
     const currentClassNames = result.classes.map(c => c.name);
     const imports = generateImports(result.classes, classToFileMap, filePath, currentClassNames, dirConvention);
     const header = generateFileHeader();
@@ -123,13 +106,27 @@ function generateMultipleFiles(
       ? `${imports}\n\n${header}\n\n${content}\n`
       : `${header}\n\n${content}\n`;
 
-    fs.writeFileSync(filePath, fullContent, 'utf-8');
-    console.log(chalk.blue(` ↳`), chalk.blue(filePath));
+    // NEW: Only write if content changed
+    if (shouldWriteFile(filePath, fullContent)) {
+      fs.writeFileSync(filePath, fullContent, 'utf-8');
+      console.log(chalk.blue(` ↳`), chalk.green('Updated:'), chalk.blue(filePath));
+    } else {
+      console.log(chalk.blue(` ↳`), chalk.gray('Unchanged:'), chalk.blue(filePath));
+    }
   }
 }
 
+/**
+ * Check if file content changed before writing
+ */
+function shouldWriteFile(filePath: string, newContent: string): boolean {
+  if (!fs.existsSync(filePath)) {
+    return true; // New file, write it
+  }
 
-
+  const existingContent = fs.readFileSync(filePath, 'utf-8');
+  return existingContent !== newContent; // Write only if different
+}
 
 
 
@@ -397,7 +394,7 @@ function convertPropertyName(name: string): string {
 /**
  * Convert file name to specified convention
  */
-function convertFileName(name: string, convention: NamingConvention): string {
+export function convertFileName(name: string, convention: NamingConvention): string {
   switch (convention) {
     case 'camel':
       return toCamelCase(name);
