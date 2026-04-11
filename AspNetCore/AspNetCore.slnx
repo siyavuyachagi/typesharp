@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="AspNetCore/AspNetCore.csproj" />
-  <Project Path="Domain/Domain.csproj" />
-</Solution>

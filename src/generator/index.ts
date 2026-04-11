@@ -10,6 +10,7 @@ import chalk from 'chalk';
 export function generateTypeScriptFiles(
   config: TypeSharpConfig,
   parseResults: ParseResult[],
+  changedFiles?: Set<string>
 ): void {
   const outputPath = config.outputPath;
 
@@ -21,8 +22,7 @@ export function generateTypeScriptFiles(
     const allClasses = parseResults.flatMap(r => r.classes);
     generateSingleFile(allClasses, outputPath);
   } else {
-    // Generate one TypeScript file per C# file (preserves grouping)
-    generateMultipleFiles(outputPath, config, parseResults);
+    generateMultipleFiles(outputPath, config, parseResults, changedFiles)
   }
 }
 
@@ -70,7 +70,8 @@ function generateSingleFile(
 function generateMultipleFiles(
   outputPath: string,
   config: TypeSharpConfig,
-  parseResults: ParseResult[]
+  parseResults: ParseResult[],
+  changedFiles?: Set<string>
 ): void {
   const dirConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.dir ?? 'snake';
   const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
@@ -79,6 +80,11 @@ function generateMultipleFiles(
   const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
 
   for (const result of parseResultsSorted) {
+    // Skip if this C# file hasn't changed
+    if (changedFiles && !changedFiles.has(result.filePath)) {
+      console.log(chalk.blue(` ↳`), chalk.gray('Skipped:'), chalk.blue(result.filePath))
+      continue
+    }
     const content = result.classes.map(cls => generateTypeScriptClass(cls)).join('\n\n');
 
     const relativeDir = path.dirname(result.relativePath);
@@ -127,12 +133,6 @@ function shouldWriteFile(filePath: string, newContent: string): boolean {
   const existingContent = fs.readFileSync(filePath, 'utf-8');
   return existingContent !== newContent; // Write only if different
 }
-
-
-
-
-
-
 
 
 

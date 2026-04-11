@@ -44,7 +44,7 @@ const chalk_1 = __importDefault(require("chalk"));
 /**
  * Generate TypeScript files from parsed C# classes
  */
-function generateTypeScriptFiles(config, parseResults) {
+function generateTypeScriptFiles(config, parseResults, changedFiles) {
     const outputPath = config.outputPath;
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath, { recursive: true });
@@ -54,8 +54,7 @@ function generateTypeScriptFiles(config, parseResults) {
         generateSingleFile(allClasses, outputPath);
     }
     else {
-        // Generate one TypeScript file per C# file (preserves grouping)
-        generateMultipleFiles(outputPath, config, parseResults);
+        generateMultipleFiles(outputPath, config, parseResults, changedFiles);
     }
 }
 /**
@@ -77,12 +76,17 @@ function generateSingleFile(classes, outputPath) {
  * Generate multiple files - with incremental writing
  * This preserves the original grouping of classes
  */
-function generateMultipleFiles(outputPath, config, parseResults) {
+function generateMultipleFiles(outputPath, config, parseResults, changedFiles) {
     const dirConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.dir ?? 'snake';
     const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
     const classToFileMap = buildClassToFileMap(parseResults, config, outputPath, fileConvention);
     const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
     for (const result of parseResultsSorted) {
+        // Skip if this C# file hasn't changed
+        if (changedFiles && !changedFiles.has(result.filePath)) {
+            console.log(chalk_1.default.blue(` ↳`), chalk_1.default.gray('Skipped:'), chalk_1.default.blue(result.filePath));
+            continue;
+        }
         const content = result.classes.map(cls => generateTypeScriptClass(cls)).join('\n\n');
         const relativeDir = path.dirname(result.relativePath);
         const appDir = path.join(outputPath, relativeDir);
