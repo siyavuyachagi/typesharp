@@ -1,5 +1,5 @@
-import { NamingConvention } from '../types';
-import type { ParseResult, TypeSharpConfig } from '../types';
+import { NamingConvention } from '../types/index.js';
+import type { ParseResult, TypeSharpConfig } from '../types/index.js';
 /**
  * Generate TypeScript files from parsed C# classes
  */

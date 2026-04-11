@@ -1,6 +1,6 @@
-import { CSharpClass, CSharpProperty } from "../types";
-import { parseProperties } from "./parse-properties";
-import { parseRecordParameters } from "./parse-properties";
+import { CSharpClass, CSharpProperty } from "../types/index.js";
+import { parseProperties } from "./parse-properties.js";
+import { parseRecordParameters } from "./parse-properties.js";
 
 /**
  * Parse classes and records from a C# file content

@@ -1,4 +1,4 @@
-import { CSharpClass } from "../types";
+import { CSharpClass } from "../types/index.js";
 /**
  * Parse classes and records from a C# file content
  */

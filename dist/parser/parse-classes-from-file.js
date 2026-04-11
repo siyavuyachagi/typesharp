@@ -1,5 +1,5 @@
-import { parseProperties } from "./parse-properties";
-import { parseRecordParameters } from "./parse-properties";
+import { parseProperties } from "./parse-properties.js";
+import { parseRecordParameters } from "./parse-properties.js";
 /**
  * Parse classes and records from a C# file content
  */

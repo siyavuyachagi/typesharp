@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { CSharpClass, CSharpProperty, NamingConvention } from '../types';
-import type { ParseResult, TypeSharpConfig } from '../types';
+import { CSharpClass, CSharpProperty, NamingConvention } from '../types/index.js';
+import type { ParseResult, TypeSharpConfig } from '../types/index.js';
 import chalk from 'chalk';
 
 /**

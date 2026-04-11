@@ -1,5 +1,5 @@
-import { ParseResult } from '../types';
-import { TypeSharpConfig } from '../types/typesharp-config';
+import { ParseResult } from '../types/index.js';
+import { TypeSharpConfig } from '../types/typesharp-config.js';
 /**
  * Parse C# files in the target project(s)
  */

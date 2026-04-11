@@ -1,4 +1,4 @@
-import { TypeSharpConfig } from '../types/typesharp-config';
+import { TypeSharpConfig } from '../types/typesharp-config.js';
 /**
  * Merge user config with defaults
  */

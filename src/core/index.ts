@@ -1,12 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseCSharpFiles } from '../parser';
-import { convertFileName, generateTypeScriptFiles } from '../generator';
+import { parseCSharpFiles } from '../parser/index.js';
+import { convertFileName, generateTypeScriptFiles } from '../generator/index.js';
 import chalk from 'chalk';
-import { TypeSharpConfig } from '../types/typesharp-config';
+import { TypeSharpConfig } from '../types/typesharp-config.js';
 import { pathToFileURL } from 'url';
-import { resolveProjectFilesFromSource } from '../parser/resolve-project-files-from-source';
-import { ParseResult } from '../types';
+import { resolveProjectFilesFromSource } from '../parser/resolve-project-files-from-source.js';
+import { ParseResult } from '../types/index.js';
 
 /**
  * Default configuration values

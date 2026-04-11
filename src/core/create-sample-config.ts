@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import chalk from "chalk";
-import { TypeSharpConfig } from "../types";
+import { TypeSharpConfig } from "../types/index.js";
 
 
 /**

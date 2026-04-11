@@ -1,4 +1,4 @@
-import { CSharpProperty } from "../types";
+import { CSharpProperty } from "../types/index.js";
 
 
 /**

@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
-import { resolveProjectFilesFromSource } from './resolve-project-files-from-source';
-import { parseClassesFromFile } from './parse-classes-from-file';
+import { resolveProjectFilesFromSource } from './resolve-project-files-from-source.js';
+import { parseClassesFromFile } from './parse-classes-from-file.js';
 /**
  * Parse C# files in the target project(s)
  */

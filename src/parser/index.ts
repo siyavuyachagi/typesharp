@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { glob } from 'glob';
-import { ParseResult } from '../types';
-import { TypeSharpConfig } from '../types/typesharp-config';
-import { resolveProjectFilesFromSource } from './resolve-project-files-from-source';
-import { parseClassesFromFile } from './parse-classes-from-file';
+import { ParseResult } from '../types/index.js';
+import { TypeSharpConfig } from '../types/typesharp-config.js';
+import { resolveProjectFilesFromSource } from './resolve-project-files-from-source.js';
+import { parseClassesFromFile } from './parse-classes-from-file.js';
 
 
 
