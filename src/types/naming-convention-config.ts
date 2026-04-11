@@ -1,4 +1,4 @@
-import { NamingConvention } from "./naming-convention";
+import { NamingConvention } from "./naming-convention.js";
 
 /**
  * More specific naming convension configuration

@@ -3,8 +3,10 @@
 import { Command } from 'commander';
 import { generate } from '../core/index.js';
 import chalk from 'chalk';
-import { version, name, description } from '../../package.json';
+import pkg from '../../package.json' with { type: 'json' };
 import { createSampleConfig } from '../core/create-sample-config.js';
+
+const { version, name, description } = pkg;
 const program = new Command();
 
 program

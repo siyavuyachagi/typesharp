@@ -137,7 +137,7 @@ async function cleanOnlyChangedOutputFiles(
   parseResults: ParseResult[]
 ): Promise<Set<string>> {
   const { loadPreviousHashes, savePreviousHashes, getChangedFiles, computeFileHash } =
-    await import('../helpers/change-tracker');
+    await import('../helpers/change-tracker.js');
 
   const csharpFiles = parseResults.map(r => r.filePath);
   const previousHashes = loadPreviousHashes();
@@ -146,12 +146,12 @@ async function cleanOnlyChangedOutputFiles(
   console.log('\n🔍 Change Detection:');
   if (changed.length > 0) {
     console.log(chalk.yellow(`  Changed files: ${changed.length}`));
-    changed.forEach(f => console.log(chalk.yellow(`    ↳ ${f}`)));
+    changed.forEach((f: string) => console.log(chalk.yellow(`    ↳ ${f}`)));
   }
 
   if (deleted.length > 0) {
     console.log(chalk.red(`  Deleted files: ${deleted.length}`));
-    deleted.forEach(f => console.log(chalk.red(`    ↳ ${f}`)));
+    deleted.forEach((f: string) => console.log(chalk.red(`    ↳ ${f}`)));
   }
 
   for (const deletedFile of deleted) {

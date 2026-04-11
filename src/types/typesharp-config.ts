@@ -1,5 +1,5 @@
-import { NamingConvention } from "./naming-convention";
-import { NamingConventionConfig } from "./naming-convention-config";
+import { NamingConvention } from "./naming-convention.js";
+import { NamingConventionConfig } from "./naming-convention-config.js";
 
 /**
  * TypeSharp configuration file
