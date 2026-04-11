@@ -29,8 +29,11 @@ function generateSingleFile(classes, outputPath) {
     const fullContent = `${header}\n\n${content}\n`;
     const fileName = 'types.ts';
     const filePath = path.join(outputPath, fileName);
+    const isNewFile = !fs.existsSync(filePath);
     fs.writeFileSync(filePath, fullContent, 'utf-8');
-    console.log(chalk.whiteBright(` - Generated:`), chalk.blue(filePath));
+    const status = isNewFile ? chalk.cyan('Created') : chalk.green('Updated');
+    console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
+    console.log(chalk.blue(`\n  Created: ${isNewFile ? 1 : 0} | Updated: ${!isNewFile ? 1 : 0} | Total files: 1\n`));
 }
 /**
  * Generate multiple files - with incremental writing
@@ -41,10 +44,11 @@ function generateMultipleFiles(outputPath, config, parseResults, changedFiles) {
     const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
     const classToFileMap = buildClassToFileMap(parseResults, config, outputPath, fileConvention);
     const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+    let createdCount = 0;
+    let updatedCount = 0;
     for (const result of parseResultsSorted) {
         // Skip if this C# file hasn't changed
         if (changedFiles && !changedFiles.has(result.filePath)) {
-            console.log(chalk.blue(` ↳`), chalk.gray('Skipped:'), chalk.blue(result.filePath));
             continue;
         }
         const content = result.classes.map(cls => generateTypeScriptClass(cls)).join('\n\n');
@@ -71,15 +75,26 @@ function generateMultipleFiles(outputPath, config, parseResults, changedFiles) {
         const fullContent = imports
             ? `${imports}\n\n${header}\n\n${content}\n`
             : `${header}\n\n${content}\n`;
-        // NEW: Only write if content changed
-        if (shouldWriteFile(filePath, fullContent)) {
+        // Check if file is new or updated
+        const isNewFile = !fs.existsSync(filePath);
+        // Only write if content changed or file is new
+        if (isNewFile || shouldWriteFile(filePath, fullContent)) {
             fs.writeFileSync(filePath, fullContent, 'utf-8');
-            console.log(chalk.blue(` ↳`), chalk.green('Updated:'), chalk.blue(filePath));
-        }
-        else {
-            console.log(chalk.blue(` ↳`), chalk.gray('Unchanged:'), chalk.blue(filePath));
+            if (isNewFile) {
+                createdCount++;
+                const status = chalk.cyan('Created');
+                console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
+            }
+            else {
+                updatedCount++;
+                const status = chalk.green('Updated');
+                console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
+            }
         }
     }
+    // Log metrics inline
+    const totalFiles = createdCount + updatedCount;
+    console.log(chalk.blue(`\n  Created: ${createdCount} | Updated: ${updatedCount} | Total files: ${totalFiles}\n`));
 }
 /**
  * Check if file content changed before writing
