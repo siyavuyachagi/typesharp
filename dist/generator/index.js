@@ -1,50 +1,10 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateTypeScriptFiles = generateTypeScriptFiles;
-exports.convertFileName = convertFileName;
-const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
-const chalk_1 = __importDefault(require("chalk"));
+import * as fs from 'fs';
+import * as path from 'path';
+import chalk from 'chalk';
 /**
  * Generate TypeScript files from parsed C# classes
  */
-function generateTypeScriptFiles(config, parseResults, changedFiles) {
+export function generateTypeScriptFiles(config, parseResults, changedFiles) {
     const outputPath = config.outputPath;
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath, { recursive: true });
@@ -70,7 +30,7 @@ function generateSingleFile(classes, outputPath) {
     const fileName = 'types.ts';
     const filePath = path.join(outputPath, fileName);
     fs.writeFileSync(filePath, fullContent, 'utf-8');
-    console.log(chalk_1.default.whiteBright(` - Generated:`), chalk_1.default.blue(filePath));
+    console.log(chalk.whiteBright(` - Generated:`), chalk.blue(filePath));
 }
 /**
  * Generate multiple files - with incremental writing
@@ -84,7 +44,7 @@ function generateMultipleFiles(outputPath, config, parseResults, changedFiles) {
     for (const result of parseResultsSorted) {
         // Skip if this C# file hasn't changed
         if (changedFiles && !changedFiles.has(result.filePath)) {
-            console.log(chalk_1.default.blue(` ↳`), chalk_1.default.gray('Skipped:'), chalk_1.default.blue(result.filePath));
+            console.log(chalk.blue(` ↳`), chalk.gray('Skipped:'), chalk.blue(result.filePath));
             continue;
         }
         const content = result.classes.map(cls => generateTypeScriptClass(cls)).join('\n\n');
@@ -111,10 +71,10 @@ function generateMultipleFiles(outputPath, config, parseResults, changedFiles) {
         // NEW: Only write if content changed
         if (shouldWriteFile(filePath, fullContent)) {
             fs.writeFileSync(filePath, fullContent, 'utf-8');
-            console.log(chalk_1.default.blue(` ↳`), chalk_1.default.green('Updated:'), chalk_1.default.blue(filePath));
+            console.log(chalk.blue(` ↳`), chalk.green('Updated:'), chalk.blue(filePath));
         }
         else {
-            console.log(chalk_1.default.blue(` ↳`), chalk_1.default.gray('Unchanged:'), chalk_1.default.blue(filePath));
+            console.log(chalk.blue(` ↳`), chalk.gray('Unchanged:'), chalk.blue(filePath));
         }
     }
 }
@@ -303,7 +263,7 @@ function convertPropertyName(name) {
 /**
  * Convert file name to specified convention
  */
-function convertFileName(name, convention) {
+export function convertFileName(name, convention) {
     switch (convention) {
         case 'camel':
             return toCamelCase(name);

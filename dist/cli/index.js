@@ -1,19 +1,14 @@
 #!/usr/bin/env node
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const commander_1 = require("commander");
-const core_1 = require("../core");
-const chalk_1 = __importDefault(require("chalk"));
-const package_json_1 = require("../../package.json");
-const create_sample_config_1 = require("../core/create-sample-config");
-const program = new commander_1.Command();
+import { Command } from 'commander';
+import { generate } from '../core';
+import chalk from 'chalk';
+import { version, name, description } from '../../package.json';
+import { createSampleConfig } from '../core/create-sample-config';
+const program = new Command();
 program
-    .name(package_json_1.name)
-    .description(package_json_1.description)
-    .version(package_json_1.version)
+    .name(name)
+    .description(description)
+    .version(version)
     .usage('[command] [options]');
 // Generate command (default)
 program
@@ -23,7 +18,7 @@ program
     .option('--no-incremental', 'Disable incremental generation (full clean)')
     .action(async (options) => {
     try {
-        await (0, core_1.generate)(options.config, options.incremental !== false);
+        await generate(options.config, options.incremental !== false);
         process.exit(0);
     }
     catch (error) {
@@ -39,15 +34,15 @@ program
     try {
         const format = options.format;
         if (!['ts', 'js', 'json'].includes(format)) {
-            console.error(chalk_1.default.red.bold('❌ Invalid format.') + ' Use: ' + chalk_1.default.yellow('json, ts, ') + 'or' + chalk_1.default.yellow(' js'));
+            console.error(chalk.red.bold('❌ Invalid format.') + ' Use: ' + chalk.yellow('json, ts, ') + 'or' + chalk.yellow(' js'));
             process.exit(1);
         }
-        (0, create_sample_config_1.createSampleConfig)(format);
+        createSampleConfig(format);
         process.exit(0);
     }
     catch (error) {
         if (error instanceof Error) {
-            console.error(chalk_1.default.red.bold(`❌ Error:`), chalk_1.default.white(error.message));
+            console.error(chalk.red.bold(`❌ Error:`), chalk.white(error.message));
         }
         process.exit(1);
     }

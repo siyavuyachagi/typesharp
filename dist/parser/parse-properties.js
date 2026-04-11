@@ -1,11 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseProperties = parseProperties;
-exports.parseRecordParameters = parseRecordParameters;
 /**
  * Parse properties from class body
  */
-function parseProperties(classBody) {
+export function parseProperties(classBody) {
     const properties = [];
     let match;
     // Match property declarations with get/set
@@ -70,7 +66,7 @@ function parseProperties(classBody) {
  *
  * @param raw - The raw text between the record's primary constructor parentheses
  */
-function parseRecordParameters(raw) {
+export function parseRecordParameters(raw) {
     const properties = [];
     // Split on top-level commas (skip commas inside angle brackets or square brackets)
     const params = splitTopLevelParams(raw);

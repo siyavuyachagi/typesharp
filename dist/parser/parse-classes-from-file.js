@@ -1,12 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseClassesFromFile = parseClassesFromFile;
-const parse_properties_1 = require("./parse-properties");
-const parse_properties_2 = require("./parse-properties");
+import { parseProperties } from "./parse-properties";
+import { parseRecordParameters } from "./parse-properties";
 /**
  * Parse classes and records from a C# file content
  */
-function parseClassesFromFile(content, targetAnnotation) {
+export function parseClassesFromFile(content, targetAnnotation) {
     const classes = [];
     const cleanContent = removeComments(content);
     const annotationRegex = new RegExp(`\\[${targetAnnotation}(?:Attribute)?(?:\\(\\s*"([^"]*)"\\s*\\))?\\]`, 'g');
@@ -54,12 +51,12 @@ function parseClassesFromFile(content, targetAnnotation) {
             const typeNameOverride = match[1] ?? undefined;
             // Parse positional primary constructor parameters
             const positionalProperties = primaryCtorParams
-                ? (0, parse_properties_2.parseRecordParameters)(primaryCtorParams)
+                ? parseRecordParameters(primaryCtorParams)
                 : [];
             // Also parse any body properties (records can have both)
             const classBody = extractClassBody(afterAnnotation);
             const bodyProperties = classBody
-                ? (0, parse_properties_1.parseProperties)(classBody)
+                ? parseProperties(classBody)
                 : [];
             // Deduplicate: body props take priority if name clashes
             const bodyPropNames = new Set(bodyProperties.map(p => p.name));
@@ -92,7 +89,7 @@ function parseClassesFromFile(content, targetAnnotation) {
             if (classBody) {
                 const { cleanedBody, injectedProperties } = stripNestedAnnotatedClasses(classBody, targetAnnotation);
                 const properties = [
-                    ...(0, parse_properties_1.parseProperties)(cleanedBody),
+                    ...parseProperties(cleanedBody),
                     ...injectedProperties
                 ];
                 const genericParameters = genericParams
