@@ -2,19 +2,33 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import * as fs from 'fs'
 import * as path from 'path'
-import { generate } from "../../src/core/index.ts";
+import { parseCSharpFiles } from "../../src/parser/index.ts";
+import { generateTypeScriptFiles } from "../../src/generator/index.ts";
 import config from "../config/typesharp.config.ts";
 
-const CONFIG_PATH = path.resolve(__dirname, '../config/typesharp.config.ts')
+let generationError: Error | null = null;
 describe('TypeSharp - Real Project Integration', () => {
+    beforeAll(async () => {
+        try {
+            if (fs.existsSync(config.outputPath)) {
+                fs.rmSync(config.outputPath, { recursive: true, force: true });
+            }
+
+            const results = await parseCSharpFiles(config);
+            if (results.length === 0) {
+                throw new Error(`No C# files found with [${config.targetAnnotation}] attribute`);
+            }
+
+            generateTypeScriptFiles(config, results);
+        } catch (error) {
+            generationError = error instanceof Error ? error : new Error(String(error));
+        }
+    });
 
     // ─── Generation ───────────────────────────────────────────────────────────
     describe('Generation', () => {
-        it('runs without throwing', async () => {
-            // SKIP: This test requires a real C# project with .csproj or .sln files.
-            // Since this typesharp project doesn't include a sample C# project,
-            // we skip the actual generation test but still validate the other assertions.
-            // await expect(generate(CONFIG_PATH)).resolves.not.toThrow()
+        it('runs without throwing', () => {
+            expect(generationError).toBeNull()
         })
 
         it('creates the output directory', () => {

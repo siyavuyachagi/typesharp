@@ -2,9 +2,6 @@
 
 ```
 typesharp/
-├── AspNetCore/                         ✅ ASP.NET Core test project
-│   ├── AspNetCore.Domain/              ✅ Domain models
-│   └── AspNetCore.Api/                 ✅ API project
 ├── bin/
 │   └── typesharp.js                    ✅ CLI executable
 ├── dist/                               ✅ Compiled output (committed)
