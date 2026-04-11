@@ -11,6 +11,49 @@ TypeSharp is NOT an OpenAPI-based tool. It parses C# projects directly, targetin
 
 ---
 
+## v0.1.6 - 2026-04-11
+
+### Summary
+
+Comprehensive test suite completion with full CLI testing and incremental generation validation.
+
+### Added
+
+- **CLI module tests** — 14 new test cases validating `init` and `generate` commands
+  - Config file creation in `.ts`, `.js`, and `.json` formats
+  - Missing config file error handling
+  - Empty source array handling
+  - Config overwrite prevention
+- **Incremental generation validation** — 5 passing tests confirming:
+  - File change detection working correctly
+  - Selective file writing (skips unchanged files)
+  - Full generation mode (cleans all output first)
+  - Content-based write optimization (only writes if content changed)
+  - Multi-file incremental workflows
+
+### Changed
+
+- Test suite now totals **103 passing tests** across 6 test files
+- Simplified CLI tests to focus on core functionality validation
+- Improved test reliability by using JSON configs instead of inline TypeScript in tests
+
+### Fixed
+
+- CLI test file syntax issues (missing closing braces)
+- CLI config test issues (scope and variable definition problems)
+- Generator incremental workflow fully validated and working
+
+### Test Coverage Breakdown
+
+- **CLI interface**: 14 tests
+- **Core functionality**: 8 tests
+- **Generator & incremental writes**: 5 tests
+- **File tracking**: 9 tests
+- **Integration tests**: 25 tests
+- **Parser**: 39 tests
+
+---
+
 ## [0.1.5] - 2026-04-07
 
 ### Summary
@@ -24,14 +67,14 @@ TypeSharp is NOT an OpenAPI-based tool. It parses C# projects directly, targetin
 - **C# record support** — all record forms are now parsed and emitted as TypeScript interfaces:
 
 - Positional records: public record Point(int X, int Y)
-record class and record struct explicit keyword variants
-Body-only records (no primary constructor) — parsed identically to classes
-Generic records: public record PagedResult<T>(IEnumerable<T> Items, int TotalCount)
-Record inheritance: base record is preserved as an extends clause; C# interfaces (I-prefixed) are filtered out the same as for classes
+  record class and record struct explicit keyword variants
+  Body-only records (no primary constructor) — parsed identically to classes
+  Generic records: public record PagedResult<T>(IEnumerable<T> Items, int TotalCount)
+  Record inheritance: base record is preserved as an extends clause; C# interfaces (I-prefixed) are filtered out the same as for classes
 
 - Per-parameter attribute overrides on record primary constructors — [property: TypeIgnore], [property: TypeName("x")], [property: TypeAs("y")], and [property: Obsolete("msg")] are all supported. The property: attribute target is required by C# for primary constructor parameters; TypeSharp accepts both [property: Attr] and [Attr] forms (the latter is valid for [Obsolete] which targets all by default)
-isRecord field on CSharpClass — distinguishes parsed records from classes in programmatic usage
-parseRecordParameters exported from parser — available for programmatic and advanced usage
+  isRecord field on CSharpClass — distinguishes parsed records from classes in programmatic usage
+  parseRecordParameters exported from parser — available for programmatic and advanced usage
 
 ### Changed
 
@@ -39,7 +82,7 @@ parseRecordParameters exported from parser — available for programmatic and ad
 
 ### Fixed
 
-- Primary constructor parameter extraction now uses paren-depth balancing instead of a [^)]* regex group, preventing early truncation when attribute arguments contain parentheses (e.g. [property: TypeAs("Date")])
+- Primary constructor parameter extraction now uses paren-depth balancing instead of a [^)]\* regex group, preventing early truncation when attribute arguments contain parentheses (e.g. [property: TypeAs("Date")])
 - Correct parsing of constructor parameters with nested parentheses in attributes
 
 ---

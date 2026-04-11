@@ -10,8 +10,12 @@ import type { ParseResult, TypeSharpConfig } from '../../src/types'
 let outputDir: string
 let tmpDir: string
 
+// ─── Helpers ───────────────────────────────────────────────────────
+
 function makeParseResult(fileName: string, className: string): ParseResult {
     const filePath = path.join(tmpDir, fileName)
+    // Create the file so that changedFiles detection works properly
+    fs.writeFileSync(filePath, `// Dummy C# file\npublic class ${className} {}`, 'utf-8')
     return {
         filePath,
         relativePath: fileName, // just 'User.cs' — no subdirs
