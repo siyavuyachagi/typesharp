@@ -37,12 +37,23 @@ async function loadConfigFromFile(filePath: string): Promise<TypeSharpConfig> {
   }
 
   if (ext === '.ts') {
-    // Use tsx to load TypeScript config files at runtime
-    const tsxPath = require.resolve('tsx/cjs');
-    require(tsxPath);
-    const module = require(path.resolve(filePath));
-    const exportedConfig = module.default || module;
-    return mergeWithDefaults(exportedConfig);
+    // In ESM mode, .ts config files need special handling
+    // Try to import directly (works if tsx is registered as a loader)
+    try {
+      const fileUrl = pathToFileURL(path.resolve(filePath)).href;
+      const module = await import(fileUrl);
+      const exportedConfig = module.default || module;
+      return mergeWithDefaults(exportedConfig);
+    } catch (error) {
+      throw new Error(
+        `Failed to load TypeScript config file: ${filePath}\n` +
+        `In ESM mode, you have two options:\n` +
+        `1. Use a .json config file instead\n` +
+        `2. Use a .js config file (compile your TypeScript first)\n` +
+        `3. Run TypeSharp with: node --loader tsx/cjs ./bin/typesharp.js\n` +
+        `Original error: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   }
 
   throw new Error(`Unsupported config file format: ${ext}`);

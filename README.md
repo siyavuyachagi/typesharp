@@ -193,7 +193,7 @@ TypeSharp preserves your C# file organization. Here's how it works:
 
 TypeSharp supports multiple configuration formats:
 
-**JSON** (`typesharp.config.json`): (recommended)
+**JSON** (`typesharp.config.json`): ⭐ **recommended**
 
 ```json
 {
@@ -202,12 +202,10 @@ TypeSharp supports multiple configuration formats:
 }
 ```
 
-**TypeScript** (`typesharp.config.ts`):
+**JavaScript** (`typesharp.config.js`):
 
-```typescript
-import { TypeSharpConfig } from "typesharp";
-
-const config: TypeSharpConfig = {
+```javascript
+const config = {
   source: ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
   outputPath: "./src/types",
 };
@@ -215,14 +213,25 @@ const config: TypeSharpConfig = {
 export default config;
 ```
 
-**JavaScript** (`typesharp.config.js`):
+**TypeScript** (`typesharp.config.ts`): ⚠️ **requires special setup**
 
-```javascript
-module.exports = {
-  source: ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
-  outputPath: "./src/types",
-};
-```
+TypeScript config files require one of the following approaches:
+
+1. Convert to JavaScript first (recommended):
+
+   ```bash
+   tsc typesharp.config.ts --module nodenext
+   ```
+
+2. Run with tsx loader:
+
+   ```bash
+   node --loader tsx/cjs ./node_modules/@siyavuyachagi/typesharp/bin/typesharp.js
+   ```
+
+3. Or use a `.js` config file instead (simplest)
+
+If you prefer TypeScript configs, JSON format is the easiest alternative that provides type safety through JSDoc in most editors.
 
 ## Usage in package.json
 
