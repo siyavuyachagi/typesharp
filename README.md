@@ -129,7 +129,6 @@ This creates `typesharp.config.json`:
     "C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"
   ],
   "outputPath": "./app/types",
-  "targetAnnotation": "TypeSharp",
   "singleOutputFile": false,
   "namingConvention": "camel"
 }
@@ -153,14 +152,13 @@ For more advanced usage [docs/usage](docs/usage.md)
 
 ### 1. Configuration Options
 
-| Option             | Type                                      | Default       | Description                                                   |
-| ------------------ | ----------------------------------------- | ------------- | ------------------------------------------------------------- |
-| `source`           | `string \| string[]`                      | _required_    | Full path(s) to your C# .csproj file(s)                       |
-| `outputPath`       | `string`                                  | _required_    | Where to generate TypeScript files                            |
-| `targetAnnotation` | `string`                                  | `'TypeSharp'` | C# attribute name to look for                                 |
-| `singleOutputFile` | `boolean`                                 | `false`       | Generate one file or multiple files (see below)               |
-| `namingConvention` | `string \| { dir: string, file: string }` | `'camel'`     | Property/file/dir naming: `kebab`, `camel`, `pascal`, `snake` |
-| `fileSuffix`       | `string`                                  | _optional_    | Suffix appended to generated file names: `user-dto.ts`        |
+| Option             | Type                                      | Default    | Description                                                   |
+| ------------------ | ----------------------------------------- | ---------- | ------------------------------------------------------------- |
+| `source`           | `string \| string[]`                      | _required_ | Full path(s) to your C# .csproj file(s)                       |
+| `outputPath`       | `string`                                  | _required_ | Where to generate TypeScript files                            |
+| `singleOutputFile` | `boolean`                                 | `false`    | Generate one file or multiple files (see below)               |
+| `namingConvention` | `string \| { dir: string, file: string }` | `'camel'`  | Property/file/dir naming: `kebab`, `camel`, `pascal`, `snake` |
+| `fileSuffix`       | `string`                                  | _optional_ | Suffix appended to generated file names: `user-dto.ts`        |
 
 ### 2. Naming Convention
 

@@ -314,7 +314,7 @@ function parsePropertyType(name: string, csType: string): CSharpProperty {
             return { tsType: resolved.tsType, isArray: true };
         }
 
-        if (/^(?:[\w\.]+\.)?(?:Dictionary|IDictionary|IReadOnlyDictionary)\s*</.test(t)) {
+        if (/^(?:[\w.]+\.)?(?:Dictionary|IDictionary|IReadOnlyDictionary)\s*</.test(t)) {
             const firstAngle = t.indexOf('<');
             const lastAngle = findMatchingAngleBracket(t, firstAngle);
             if (firstAngle !== -1 && lastAngle !== -1) {

@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -56,6 +57,8 @@ export function resolveProjectFilesFromSource(source: string | string[]): string
         }
     }
 
-    console.log('csproj files', csprojFiles)
+    console.log(' csproj files [');
+    csprojFiles.forEach(file => console.log(chalk.green(`  '${file}'`)));
+    console.log(' ]');
     return csprojFiles;
 }

@@ -1,7 +1,7 @@
 {
   "name": "@siyavuyachagi/typesharp",
   "description": "Generate TypeScript types from C# models with TypeSharp attribute",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "license": "MIT",
   "author": "Siyavuya Chagi <syavuya08@gmail.com>",
   "repository": {
@@ -36,12 +36,21 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "npx vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "preuninstall": "node dist/scripts/pre-uninstall.js"
   },
   "devDependencies": {
+    "@eslint/js": "^8.56.0",
     "@types/node": "^25.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "@vitest/coverage-v8": "^4.0.18",
     "@vitest/ui": "^4.0.18",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },

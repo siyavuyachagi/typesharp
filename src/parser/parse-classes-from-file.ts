@@ -231,7 +231,7 @@ function extractPrimaryCtorParams(content: string): string | undefined {
         if (ch === '(' && bracketDepth === 0) {
             // Found the ctor opening paren — walk to the matching `)`
             let depth = 0;
-            let start = i;
+            const start = i;
             for (let j = i; j < content.length; j++) {
                 if (content[j] === '(') depth++;
                 else if (content[j] === ')') {

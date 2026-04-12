@@ -3,7 +3,11 @@ import type { ParseResult, TypeSharpConfig } from '../types/index.js';
 /**
  * Generate TypeScript files from parsed C# classes
  */
-export declare function generateTypeScriptFiles(config: TypeSharpConfig, parseResults: ParseResult[], changedFiles?: Set<string>): void;
+export declare function generateTypeScriptFiles(config: TypeSharpConfig, parseResults: ParseResult[], changedFiles?: Set<string>): {
+    created: number;
+    updated: number;
+    total: number;
+};
 /**
  * Convert file name to specified convention
  */

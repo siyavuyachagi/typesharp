@@ -2,7 +2,6 @@
 module.exports = {
   source: ["~../../AspNetCore/AspNetCore.slnx"],
   outputPath: "./app/types",
-  targetAnnotation: "TypeSharp",
   singleOutputFile: false,
   namingConvention: "camel",
   fileSuffix: ""

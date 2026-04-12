@@ -12,7 +12,6 @@ export const createSampleConfig = (format: 'ts' | 'js' | 'json'): void => {
             'C:/Users/User/Desktop/MyApp/MyApp.sln',
         ],
         outputPath: './app/types',
-        targetAnnotation: 'TypeSharp',
         singleOutputFile: false,
         namingConvention: 'camel',
         fileSuffix: ''
@@ -29,7 +28,7 @@ export const createSampleConfig = (format: 'ts' | 'js' | 'json'): void => {
         content = `module.exports = ${formatAsJsObject(sampleConfig)};\n`;
     } else {
         fileName = 'typesharp.config.ts';
-        let namespace = '@siyavuyachagi/typesharp';
+        const namespace = '@siyavuyachagi/typesharp';
         content = [
             `import type { TypeSharpConfig } from '${namespace}';`,
             ``,
@@ -48,7 +47,7 @@ export const createSampleConfig = (format: 'ts' | 'js' | 'json'): void => {
     }
 
     fs.writeFileSync(fileName, content, 'utf-8');
-    console.log(chalk.green.bold('✅ Created'), chalk.white(`./${fileName}`));
+    console.log(chalk.gray('└── ') + chalk.blue(`./${fileName}`));
 }
 
 
@@ -57,6 +56,7 @@ export const createSampleConfig = (format: 'ts' | 'js' | 'json'): void => {
 /**
  * Format a plain object as a JS/TS object literal (no quoted keys)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const formatAsJsObject = (obj: Record<string, any>, indent = 0): string => {
     const pad = ' '.repeat(indent + 2);
     const closePad = ' '.repeat(indent);

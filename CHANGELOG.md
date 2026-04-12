@@ -7,7 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## Important note
 
-TypeSharp is NOT an OpenAPI-based tool. It parses C# projects directly, targeting classes and enums decorated with a `[TypeSharp]` (or other configured) attribute. It preserves generics, inheritance, file grouping, and supports multiple collection types and naming conventions — see the README for details.
+TypeSharp parses C# projects directly, targeting classes and enums decorated with the `[TypeSharp]` attribute. It preserves generics, inheritance, file grouping, and supports multiple collection types and naming conventions — see the README for details.
+
+---
+
+## v0.2.0 - 2026-04-DD
+
+### Summary
+
+Improved output logging and cleaner CLI experience with optimized metrics reporting, silent change detection, and automatic cleanup on uninstall.
+
+### Added
+
+- **ESLint integration** — Project-wide code quality checks with TypeScript support
+- **Prettier formatting** — Automatic code formatting for consistency
+- **Lint scripts** — `npm run lint`, `npm run lint:fix`, and `npm run format` commands
+- **Pre-uninstall cleanup** — Automatically removes `.typesharp` folder when the package is uninstalled via `npm uninstall`
+- **Tree-style file logging** — CLI output now uses `├──` / `└──` tree structure for created, updated, and deleted files
+
+### Changed
+
+- **Removed custom annotation support** — `targetAnnotation` config option removed; developers must use `[TypeSharp]` attribute only
+- **Updated documentation** — All examples and guides updated to reflect hardcoded TypeSharp annotation
+
+### Fixed
+
+- **Duplicate metrics logging** — Fixed duplicate call to `generateTypeScriptFiles()` that was causing metrics to display twice
+- **Removed verbose change detection logs** — Silent change tracking for cleaner output
+- **Missing total files count** — Added "Total files" to single-file generation metrics output
+- **Improved project discovery output** — Formatted `.csproj` file list with proper indentation for readability
+
+### Test Coverage Breakdown
 
 ---
 

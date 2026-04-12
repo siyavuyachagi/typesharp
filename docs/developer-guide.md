@@ -67,17 +67,17 @@ typesharp/
 
 TypeSharp uses a trunk-based branching model.
 
-| Branch | Purpose | Merges into |
-|---|---|---|
-| `main` | Stable, releasable. Protected. | — |
-| `dev` | Active development integration branch | `main` |
-| `feat/<n>` | New features | `dev` |
-| `fix/<n>` | Bug fixes | `dev` |
-| `chore/<n>` | Maintenance, deps, tooling | `dev` |
-| `docs/<n>` | Documentation only | `dev` |
-| `test/<n>` | Adding or fixing tests only | `dev` |
-| `refactor/<n>` | Code restructuring, no behaviour change | `dev` |
-| `release/<version>` | Release preparation | `main` |
+| Branch              | Purpose                                 | Merges into |
+| ------------------- | --------------------------------------- | ----------- |
+| `main`              | Stable, releasable. Protected.          | —           |
+| `dev`               | Active development integration branch   | `main`      |
+| `feat/<n>`          | New features                            | `dev`       |
+| `fix/<n>`           | Bug fixes                               | `dev`       |
+| `chore/<n>`         | Maintenance, deps, tooling              | `dev`       |
+| `docs/<n>`          | Documentation only                      | `dev`       |
+| `test/<n>`          | Adding or fixing tests only             | `dev`       |
+| `refactor/<n>`      | Code restructuring, no behaviour change | `dev`       |
+| `release/<version>` | Release preparation                     | `main`      |
 
 > **Rule:** Never commit directly to `main`. All work goes through `dev` or a feature branch.
 
@@ -113,19 +113,19 @@ TypeSharp follows [Conventional Commits](https://www.conventionalcommits.org/).
 
 ### Types
 
-| Type | When to use |
-|---|---|
-| `feat` | A new feature or capability |
-| `fix` | A bug fix |
-| `chore` | Maintenance, dependency updates, tooling config |
-| `docs` | Documentation changes only |
-| `test` | Adding or updating tests (no production code change) |
-| `refactor` | Code change that is neither a fix nor a feature |
-| `perf` | Performance improvement |
-| `style` | Formatting, whitespace — no logic change |
-| `ci` | CI/CD pipeline changes |
-| `build` | Build system or external dependency changes |
-| `revert` | Reverts a previous commit |
+| Type       | When to use                                          |
+| ---------- | ---------------------------------------------------- |
+| `feat`     | A new feature or capability                          |
+| `fix`      | A bug fix                                            |
+| `chore`    | Maintenance, dependency updates, tooling config      |
+| `docs`     | Documentation changes only                           |
+| `test`     | Adding or updating tests (no production code change) |
+| `refactor` | Code change that is neither a fix nor a feature      |
+| `perf`     | Performance improvement                              |
+| `style`    | Formatting, whitespace — no logic change             |
+| `ci`       | CI/CD pipeline changes                               |
+| `build`    | Build system or external dependency changes          |
+| `revert`   | Reverts a previous commit                            |
 
 ### Scopes
 
@@ -175,38 +175,38 @@ chore(release): bump version to 1.2.0
 
 ### 5.1 Files & Directories
 
-| Context | Convention | Example |
-|---|---|---|
-| Source files | `kebab-case` | `resolve-project-files-from-source.ts` |
-| Test files | `kebab-case` + `.test` | `parser.test.ts` |
-| Type files | `kebab-case` | `naming-convention-config.ts` |
-| Config files | `kebab-case` | `typesharp.config.ts` |
-| Directories | `kebab-case` | `src/parser/` |
+| Context      | Convention             | Example                                |
+| ------------ | ---------------------- | -------------------------------------- |
+| Source files | `kebab-case`           | `resolve-project-files-from-source.ts` |
+| Test files   | `kebab-case` + `.test` | `parser.test.ts`                       |
+| Type files   | `kebab-case`           | `naming-convention-config.ts`          |
+| Config files | `kebab-case`           | `typesharp.config.ts`                  |
+| Directories  | `kebab-case`           | `src/parser/`                          |
 
 ### 5.2 TypeScript Source Code
 
-| Item | Convention | Example |
-|---|---|---|
-| Variables & parameters | `camelCase` | `projectFiles`, `targetAnnotation` |
-| Functions | `camelCase` | `parseCSharpFiles()`, `mergeWithDefaults()` |
-| Classes | `PascalCase` | `TypeSharpConfig` |
-| Interfaces | `PascalCase` | `CSharpClass`, `ParseResult` |
-| Type aliases | `PascalCase` | `NamingConventionConfig` |
-| Enums | `PascalCase` | `NamingConvention` |
-| Enum members (string literals) | `camelCase` | `'kebab'`, `'snake'`, `'camel'` |
-| Constants | `SCREAMING_SNAKE_CASE` | `DEFAULT_CONFIG` |
-| Module-level private helpers | `camelCase` | `formatAsJsObject()` |
+| Item                           | Convention             | Example                                     |
+| ------------------------------ | ---------------------- | ------------------------------------------- |
+| Variables & parameters         | `camelCase`            | `projectFiles`, `outputPath`                |
+| Functions                      | `camelCase`            | `parseCSharpFiles()`, `mergeWithDefaults()` |
+| Classes                        | `PascalCase`           | `TypeSharpConfig`                           |
+| Interfaces                     | `PascalCase`           | `CSharpClass`, `ParseResult`                |
+| Type aliases                   | `PascalCase`           | `NamingConventionConfig`                    |
+| Enums                          | `PascalCase`           | `NamingConvention`                          |
+| Enum members (string literals) | `camelCase`            | `'kebab'`, `'snake'`, `'camel'`             |
+| Constants                      | `SCREAMING_SNAKE_CASE` | `DEFAULT_CONFIG`                            |
+| Module-level private helpers   | `camelCase`            | `formatAsJsObject()`                        |
 
 ### 5.3 Generated Output Files
 
 Controlled by the `namingConvention` config option:
 
-| Convention | Output filename |
-|---|---|
-| `camel` (default) | `userProfile.ts` |
-| `kebab` | `user-profile.ts` |
-| `pascal` | `UserProfile.ts` |
-| `snake` | `user_profile.ts` |
+| Convention        | Output filename   |
+| ----------------- | ----------------- |
+| `camel` (default) | `userProfile.ts`  |
+| `kebab`           | `user-profile.ts` |
+| `pascal`          | `UserProfile.ts`  |
+| `snake`           | `user_profile.ts` |
 
 When using `NamingConventionConfig` (object form), `dir` and `file` can differ:
 
@@ -221,15 +221,14 @@ namingConvention: {
 
 ## 6. Configuration Reference
 
-| Field | Type | Required | Default | Notes |
-|---|---|---|---|---|
-| `source` | `string \| string[]` | ✅ | — | Path(s) to `.csproj`, `.sln`, or `.slnx` |
-| `outputPath` | `string` | ✅ | — | Where generated `.ts` files go |
-| `targetAnnotation` | `string` | No | `"TypeSharp"` | C# attribute name to scan for |
-| `singleOutputFile` | `boolean` | No | `false` | Merge all types into `types.ts` |
-| `namingConvention` | `NamingConvention \| NamingConventionConfig` | No | `"camel"` | File and directory naming |
-| `fileSuffix` | `string` | No | `""` | Suffix appended to output filenames |
-| `projectFiles` | `string \| string[]` | No | — | ⚠️ Deprecated — use `source` |
+| Field              | Type                                         | Required | Default       | Notes                                    |
+| ------------------ | -------------------------------------------- | -------- | ------------- | ---------------------------------------- |
+| `source`           | `string \| string[]`                         | ✅       | —             | Path(s) to `.csproj`, `.sln`, or `.slnx` |
+| `outputPath`       | `string`                                     | ✅       | —             | Where generated `.ts` files go           |
+| `singleOutputFile` | `boolean`                                    | No       | `false`       | Merge all types into `types.ts`          |
+| `namingConvention` | `NamingConvention \| NamingConventionConfig` | No       | `"camel"`     | File and directory naming                |
+| `fileSuffix`       | `string`                                     | No       | `""`          | Suffix appended to output filenames      |
+| `projectFiles`     | `string \| string[]`                         | No       | —             | ⚠️ Deprecated — use `source`             |
 
 > ⚠️ **Deprecated:** `projectFiles` is deprecated. Rename it to `source`. It will be removed in a future major version.
 
@@ -247,12 +246,12 @@ namingConvention: {
 
 2. **Implement in the correct layer:**
 
-   | Change type | Location |
-   |---|---|
-   | Config field | `src/types/typesharp-config.ts` + `src/core/index.ts` |
-   | Parsing logic | `src/parser/` |
-   | Output/generation | `src/generator/index.ts` |
-   | CLI command or option | `src/cli/index.ts` |
+   | Change type           | Location                                              |
+   | --------------------- | ----------------------------------------------------- |
+   | Config field          | `src/types/typesharp-config.ts` + `src/core/index.ts` |
+   | Parsing logic         | `src/parser/`                                         |
+   | Output/generation     | `src/generator/index.ts`                              |
+   | CLI command or option | `src/cli/index.ts`                                    |
 
 3. **Export from `src/index.ts`** if the addition is part of the public API.
 
@@ -276,14 +275,14 @@ TypeSharp uses [Vitest](https://vitest.dev/). Tests are split into unit tests an
 
 ### 8.1 Test File Locations
 
-| Target | Test file |
-|---|---|
-| `src/core/index.ts` | `tests/core/index.test.ts` |
-| `src/core/create-sample-config.ts` | `tests/core/create-sample-config.test.ts` |
-| `src/parser/index.ts` | `tests/parser/parser.test.ts` |
+| Target                                            | Test file                                                |
+| ------------------------------------------------- | -------------------------------------------------------- |
+| `src/core/index.ts`                               | `tests/core/index.test.ts`                               |
+| `src/core/create-sample-config.ts`                | `tests/core/create-sample-config.test.ts`                |
+| `src/parser/index.ts`                             | `tests/parser/parser.test.ts`                            |
 | `src/parser/resolve-project-files-from-source.ts` | `tests/parser/resolve-project-files-from-source.test.ts` |
-| `src/generator/index.ts` | `tests/generator/generator.test.ts` |
-| Real project (`AspNetCore/`) | `tests/integration/project.test.ts` |
+| `src/generator/index.ts`                          | `tests/generator/generator.test.ts`                      |
+| Real project (`AspNetCore/`)                      | `tests/integration/project.test.ts`                      |
 
 ### 8.2 Unit Test Rules
 
@@ -368,28 +367,32 @@ TypeSharp uses [Keep a Changelog](https://keepachangelog.com/) format. Unrelease
 ## [1.2.0] - 2025-06-01
 
 ### Added
+
 - `.slnx` solution file support in `source` config
 - `.sln` solution file parsing with automatic `.csproj` extraction
 
 ### Changed
+
 - `projectFiles` deprecated in favour of `source`
 
 ### Fixed
+
 - Double `[]` appended to `Record<>` types when `isArray` is true
 
 ## [1.1.0] - 2025-04-10
+
 ...
 ```
 
 ### Section Rules
 
-| Section | What goes here |
-|---|---|
-| `Added` | New features, config fields, file type support |
-| `Changed` | Behaviour changes, deprecations, renames |
-| `Fixed` | Bug fixes |
-| `Removed` | Deleted features or fields (breaking) |
-| `Security` | Vulnerability patches |
+| Section    | What goes here                                 |
+| ---------- | ---------------------------------------------- |
+| `Added`    | New features, config fields, file type support |
+| `Changed`  | Behaviour changes, deprecations, renames       |
+| `Fixed`    | Bug fixes                                      |
+| `Removed`  | Deleted features or fields (breaking)          |
+| `Security` | Vulnerability patches                          |
 
 ---
 

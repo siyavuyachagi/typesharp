@@ -90,7 +90,6 @@ describe('CLI - Command Line Interface', () => {
             fs.writeFileSync(configPath, JSON.stringify({
                 source: [],
                 outputPath: './output',
-                targetAnnotation: 'TypeSharp',
                 singleOutputFile: false
             }), 'utf-8')
 
@@ -119,7 +118,6 @@ describe('CLI - Command Line Interface', () => {
             fs.writeFileSync(configPath, JSON.stringify({
                 source: [],
                 outputPath: './output',
-                targetAnnotation: 'TypeSharp',
                 singleOutputFile: false
             }), 'utf-8')
 
@@ -149,7 +147,6 @@ describe('CLI - Command Line Interface', () => {
             const parsed = JSON.parse(content)
             expect(parsed).toHaveProperty('source')
             expect(parsed).toHaveProperty('outputPath')
-            expect(parsed).toHaveProperty('targetAnnotation')
         })
     })
 

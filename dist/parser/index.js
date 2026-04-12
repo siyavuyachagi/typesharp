@@ -7,7 +7,8 @@ import { parseClassesFromFile } from './parse-classes-from-file.js';
  * Parse C# files in the target project(s)
  */
 export async function parseCSharpFiles(config) {
-    const targetAnnotation = config.targetAnnotation ?? 'TypeSharp';
+    // Hardcoded to TypeSharp only
+    const targetAnnotation = 'TypeSharp';
     // Convert single project to array for unified handling
     const projectFiles = resolveProjectFilesFromSource(config.source);
     const allResults = [];

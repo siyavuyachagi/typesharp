@@ -27,7 +27,6 @@ describe("Generate default config", () => {
         configFiles.forEach(config => {
             const outputConfig = mergeWithDefaults(config)
 
-            expect(outputConfig.targetAnnotation).toBeDefined()
             expect(outputConfig.singleOutputFile).toBeDefined()
             expect(outputConfig.namingConvention).toBeDefined()
         })

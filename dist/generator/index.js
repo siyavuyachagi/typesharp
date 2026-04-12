@@ -11,10 +11,10 @@ export function generateTypeScriptFiles(config, parseResults, changedFiles) {
     }
     if (config.singleOutputFile) {
         const allClasses = parseResults.flatMap(r => r.classes);
-        generateSingleFile(allClasses, outputPath);
+        return generateSingleFile(allClasses, outputPath);
     }
     else {
-        generateMultipleFiles(outputPath, config, parseResults, changedFiles);
+        return generateMultipleFiles(outputPath, config, parseResults, changedFiles);
     }
 }
 /**
@@ -33,7 +33,11 @@ function generateSingleFile(classes, outputPath) {
     fs.writeFileSync(filePath, fullContent, 'utf-8');
     const status = isNewFile ? chalk.cyan('Created') : chalk.green('Updated');
     console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
-    console.log(chalk.blue(`\n  Created: ${isNewFile ? 1 : 0} | Updated: ${!isNewFile ? 1 : 0} | Total files: 1\n`));
+    return {
+        created: isNewFile ? 1 : 0,
+        updated: !isNewFile ? 1 : 0,
+        total: 1
+    };
 }
 /**
  * Generate multiple files - with incremental writing
@@ -46,6 +50,9 @@ function generateMultipleFiles(outputPath, config, parseResults, changedFiles) {
     const parseResultsSorted = parseResults.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
     let createdCount = 0;
     let updatedCount = 0;
+    const total = parseResultsSorted.length;
+    let fileIndex = 0;
+    console.log(chalk.cyan('\n⧖ Generating TypeScript files...'));
     for (const result of parseResultsSorted) {
         // Skip if this C# file hasn't changed
         if (changedFiles && !changedFiles.has(result.filePath)) {
@@ -80,21 +87,26 @@ function generateMultipleFiles(outputPath, config, parseResults, changedFiles) {
         // Only write if content changed or file is new
         if (isNewFile || shouldWriteFile(filePath, fullContent)) {
             fs.writeFileSync(filePath, fullContent, 'utf-8');
+            fileIndex++;
+            const isLast = fileIndex === total;
+            const tree = chalk.gray(isLast ? '└──' : '├──');
             if (isNewFile) {
                 createdCount++;
-                const status = chalk.cyan('Created');
-                console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
+                console.log(tree, chalk.cyan('created'), chalk.blue(filePath));
             }
             else {
                 updatedCount++;
-                const status = chalk.green('Updated');
-                console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
+                console.log(tree, chalk.yellow('updated'), chalk.blue(filePath));
             }
         }
     }
-    // Log metrics inline
+    // Return metrics to be logged at the end
     const totalFiles = createdCount + updatedCount;
-    console.log(chalk.blue(`\n  Created: ${createdCount} | Updated: ${updatedCount} | Total files: ${totalFiles}\n`));
+    return {
+        created: createdCount,
+        updated: updatedCount,
+        total: totalFiles
+    };
 }
 /**
  * Check if file content changed before writing
@@ -155,7 +167,7 @@ function generateImports(classes, classToFileMap, currentFilePath, currentClassN
         // Check property types
         for (const prop of cls.properties) {
             // Extract base type (remove array brackets and nullable)
-            let referencedType = prop.type;
+            const referencedType = prop.type;
             // Skip primitive types
             if (isPrimitiveType(referencedType))
                 continue;

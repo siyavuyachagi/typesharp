@@ -26,10 +26,6 @@ export interface TypeSharpConfig {
      */
     outputPath: string;
     /**
-     * The C# attribute name to look for (default: "TypeSharp")
-     */
-    targetAnnotation?: string;
-    /**
      * Controls whether generated types are written to one file or multiple files. (default: `false`)
      *
      * - true  → All generated types go into a single file: "index.ts"

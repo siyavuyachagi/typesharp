@@ -2,7 +2,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import * as os from 'os';
 
 const TYPESHARP_CACHE_DIR = '.typesharp';
 const HASH_SNAPSHOT_FILE = path.join(TYPESHARP_CACHE_DIR, 'hashes.json');
@@ -14,7 +13,7 @@ export function loadPreviousHashes(): Map<string, string> {
   if (!fs.existsSync(HASH_SNAPSHOT_FILE)) {
     return new Map();
   }
-  
+
   try {
     const data = JSON.parse(fs.readFileSync(HASH_SNAPSHOT_FILE, 'utf-8'));
     return new Map(Object.entries(data));
@@ -47,23 +46,23 @@ export function getChangedFiles(
 ): { changed: string[]; deleted: string[] } {
   const changed: string[] = [];
   const currentHashes = new Map<string, string>();
-  
+
   for (const file of allCSharpFiles) {
     const hash = computeFileHash(file);
     currentHashes.set(file, hash);
-    
+
     const prevHash = previousHashes.get(file);
     if (prevHash !== hash) {
       changed.push(file);
     }
   }
-  
+
   const deleted: string[] = [];
   for (const [file] of previousHashes) {
     if (!currentHashes.has(file)) {
       deleted.push(file);
     }
   }
-  
+
   return { changed, deleted };
 }

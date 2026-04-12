@@ -11,5 +11,6 @@ export default defineConfig({
         forks: {
             execArgv: ['--import', 'tsx'],
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any
 })

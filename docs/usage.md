@@ -20,11 +20,13 @@ Complete guide to using TypeSharp for generating TypeScript types from C# models
 ## Installation
 
 ### Install as Dev Dependency
+
 ```bash
 npm install @siyavuyachagi/typesharp --save-dev
 ```
 
 ### Install Globally (Optional)
+
 ```bash
 npm install -g @siyavuyachagi/typesharp
 ```
@@ -32,72 +34,88 @@ npm install -g @siyavuyachagi/typesharp
 ## Quick Start
 
 ### Step 1: Decorate Your Models / Data Transfer Objects
+
 ```bash
 # In your C# project
 dotnet add package TypeSharp.Attributes
 ```
+
 ```csharp
 using TypeSharp.Attributes;
 
 [TypeSharp]
 public class User
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string? Email { get; set; }
-    public DateTime CreatedAt { get; set; }
+  public int Id { get; set; }
+  public string Name { get; set; }
+  public string? Email { get; set; }
+  public DateTime CreatedAt { get; set; }
 }
 ```
 
 ### Step 2: Initialize Configuration
+
 ```bash
 npx typesharp init
+# or (if installed globally)
+typesharp init
 ```
 
 This creates `typesharp.config.ts` in your project root.
 
+> **Note:** Use `npx typesharp init` if installed as a dev dependency. Use `typesharp init` if installed globally.
+
 ### Step 3: Configure Paths
 
 Edit `typesharp.config.ts`:
+
 ```typescript
-import type { TypeSharpConfig } from '@siyavuyachagi/typesharp';
+import type { TypeSharpConfig } from "@siyavuyachagi/typesharp";
 
 const config: TypeSharpConfig = {
   source: ["C:/Users/User/Desktop/MyApp/MyApp.sln"],
   outputPath: "./src/types",
-  targetAnnotation: "TypeSharp",
   singleOutputFile: false,
-  namingConvention: "camel"
+  namingConvention: "camel",
 };
 
 export default config;
 ```
 
 ### Step 4: Generate Types
+
 ```bash
 npx typesharp
+# or
+npx typesharp generate
+
+# If installed globally:
+typesharp
+# or
+typesharp generate
 ```
 
 ## Configuration
 
 ### Configuration Options
 
-| Option             | Type                                      | Default       | Description                                                   |
-| ------------------ | ----------------------------------------- | ------------- | ------------------------------------------------------------- |
-| `source`           | `string \| string[]`                      | _required_    | Path(s) to `.csproj`, `.sln`, or `.slnx` file(s)             |
-| `outputPath`       | `string`                                  | _required_    | Where to generate TypeScript files                            |
-| `targetAnnotation` | `string`                                  | `'TypeSharp'` | C# attribute name to look for                                 |
-| `singleOutputFile` | `boolean`                                 | `false`       | Generate one file or multiple files                           |
-| `namingConvention` | `string \| { dir: string, file: string }` | `'camel'`     | Property/file/dir naming: `kebab`, `camel`, `pascal`, `snake` |
-| `fileSuffix`       | `string`                                  | _optional_    | Suffix appended to generated file names: `user-dto.ts`        |
-| `projectFiles`     | `string \| string[]`                      | _deprecated_  | ⚠️ Deprecated — use `source` instead                          |
+| Option             | Type                                      | Default      | Description                                                   |
+| ------------------ | ----------------------------------------- | ------------ | ------------------------------------------------------------- |
+| `source`           | `string \| string[]`                      | _required_   | Path(s) to `.csproj`, `.sln`, or `.slnx` file(s)              |
+| `outputPath`       | `string`                                  | _required_   | Where to generate TypeScript files                            |
+| `singleOutputFile` | `boolean`                                 | `false`      | Generate one file or multiple files                           |
+| `namingConvention` | `string \| { dir: string, file: string }` | `'camel'`    | Property/file/dir naming: `kebab`, `camel`, `pascal`, `snake` |
+| `fileSuffix`       | `string`                                  | _optional_   | Suffix appended to generated file names: `user-dto.ts`        |
+| `projectFiles`     | `string \| string[]`                      | _deprecated_ | ⚠️ Deprecated — use `source` instead                          |
 
 #### `source`
 
 Accepts a single path or array. Supports `.csproj`, `.sln`, and `.slnx` files.
+
 ```json
 { "source": "C:/MyApp/MyApp.sln" }
 ```
+
 ```json
 { "source": ["C:/MyApp/Api/Api.csproj", "C:/MyApp/Domain/Domain.csproj"] }
 ```
@@ -112,6 +130,7 @@ Accepts a single path or array. Supports `.csproj`, `.sln`, and `.slnx` files.
 ```json
 { "namingConvention": "kebab" }
 ```
+
 ```json
 {
   "namingConvention": {
@@ -134,24 +153,24 @@ Available values: `"camel"` | `"kebab"` | `"pascal"` | `"snake"`
 ### Configuration File Formats
 
 #### JSON — `typesharp.config.json`
+
 ```json
 {
   "source": ["C:/Users/User/Desktop/MyApp/MyApp.sln"],
   "outputPath": "./src/types",
-  "targetAnnotation": "TypeSharp",
   "singleOutputFile": false,
   "namingConvention": "camel"
 }
 ```
 
 #### TypeScript — `typesharp.config.ts` (Recommended)
+
 ```typescript
-import type { TypeSharpConfig } from '@siyavuyachagi/typesharp';
+import type { TypeSharpConfig } from "@siyavuyachagi/typesharp";
 
 const config: TypeSharpConfig = {
   source: ["C:/Users/User/Desktop/MyApp/MyApp.sln"],
   outputPath: "./src/types",
-  targetAnnotation: "TypeSharp",
   singleOutputFile: false,
   namingConvention: "camel",
 };
@@ -160,17 +179,18 @@ export default config;
 ```
 
 #### JavaScript — `typesharp.config.js`
+
 ```javascript
 module.exports = {
   source: ["C:/Users/User/Desktop/MyApp/MyApp.sln"],
   outputPath: "./src/types",
-  targetAnnotation: "TypeSharp",
   singleOutputFile: false,
   namingConvention: "camel",
 };
 ```
 
 ### Custom Config Path
+
 ```bash
 npx typesharp generate --config ./configs/my-config.json
 ```
@@ -180,13 +200,27 @@ npx typesharp generate --config ./configs/my-config.json
 ### Commands
 
 #### Generate (Default)
+
+**Local installation (dev dependency):**
+
 ```bash
 npx typesharp
 npx typesharp generate
 npx typesharp generate --config ./my-config.json
 ```
 
+**Global installation:**
+
+```bash
+typesharp
+typesharp generate
+typesharp generate --config ./my-config.json
+```
+
 #### Init
+
+**Local installation (dev dependency):**
+
 ```bash
 # TypeScript config (default)
 npx typesharp init
@@ -198,7 +232,21 @@ npx typesharp init --format json
 npx typesharp init --format js
 ```
 
+**Global installation:**
+
+```bash
+# TypeScript config (default)
+typesharp init
+
+# JSON config
+typesharp init --format json
+
+# JavaScript config
+typesharp init --format js
+```
+
 #### Help & Version
+
 ```bash
 npx typesharp --help
 npx typesharp --version
@@ -207,6 +255,7 @@ npx typesharp --version
 ## C# Attribute Setup
 
 ### On Classes
+
 ```csharp
 [TypeSharp]
 public class Product
@@ -218,12 +267,14 @@ public class Product
 ```
 
 ### On Records
+
 ```csharp
 [TypeSharp]
 public record ProductSummary(int Id, string Name, decimal Price);
 ```
 
 ### On Enums
+
 ```csharp
 [TypeSharp]
 public enum OrderStatus
@@ -246,6 +297,7 @@ public class AuthResponse
     public string RefreshToken { get; set; }
 }
 ```
+
 ```typescript
 export interface auth_response {
   accessToken: string;
@@ -256,6 +308,7 @@ export interface auth_response {
 ### Property Attribute Overrides
 
 **`[TypeIgnore]`** — excludes the property from the generated output:
+
 ```csharp
 [TypeSharp]
 public class UserDto
@@ -267,6 +320,7 @@ public class UserDto
 ```
 
 **`[TypeName("name")]`** — overrides the generated property name:
+
 ```csharp
 [TypeSharp]
 public class UserDto
@@ -277,6 +331,7 @@ public class UserDto
 ```
 
 **`[TypeAs("type")]`** — overrides the inferred TypeScript type:
+
 ```csharp
 [TypeSharp]
 public class UserDto
@@ -302,8 +357,8 @@ public class UserDto
 
 | C# Type                                                              | TypeScript Type |
 | -------------------------------------------------------------------- | --------------- |
-| `List<T>`, `ICollection<T>`, `IEnumerable<T>`, `IList<T>`, `T[]`    | `T[]`           |
-| `Dictionary<K, V>`, `IDictionary<K, V>`, `IReadOnlyDictionary<K, V>`| `Record<K, V>`  |
+| `List<T>`, `ICollection<T>`, `IEnumerable<T>`, `IList<T>`, `T[]`     | `T[]`           |
+| `Dictionary<K, V>`, `IDictionary<K, V>`, `IReadOnlyDictionary<K, V>` | `Record<K, V>`  |
 
 ### ASP.NET / File Types
 
@@ -314,6 +369,7 @@ public class UserDto
 | `FileStream`, `MemoryStream`, `Stream` | `Blob`          |
 
 ### Nullable Types
+
 ```csharp
 [TypeSharp]
 public class User {
@@ -322,6 +378,7 @@ public class User {
   public DateOnly? DateOfBirth { get; set; }
 }
 ```
+
 ```typescript
 export interface User {
   name: string | null;
@@ -340,6 +397,7 @@ TypeSharp supports all C# record forms. Records are emitted as TypeScript interf
 [TypeSharp]
 public record ProductSummary(int Id, string Name, decimal Price, bool IsActive);
 ```
+
 ```typescript
 export interface ProductSummary {
   id: number;
@@ -355,6 +413,7 @@ Nullable and collection parameters are fully supported:
 [TypeSharp]
 public record UserRecord(int Id, string? DisplayName, DateOnly? DateOfBirth, List<string> Tags);
 ```
+
 ```typescript
 export interface UserRecord {
   id: number;
@@ -389,6 +448,7 @@ public record PersonRecord
     public int Age { get; set; }
 }
 ```
+
 ```typescript
 export interface PersonRecord {
   firstName: string;
@@ -403,6 +463,7 @@ export interface PersonRecord {
 [TypeSharp]
 public record PagedResult<T>(IEnumerable<T> Items, int TotalCount, int PageSize);
 ```
+
 ```typescript
 export interface PagedResult<T> {
   items: T[];
@@ -420,6 +481,7 @@ public record BaseEvent(Guid Id, DateTime OccurredAt);
 [TypeSharp]
 public record UserCreatedEvent(Guid Id, DateTime OccurredAt, string Email) : BaseEvent(Id, OccurredAt);
 ```
+
 ```typescript
 export interface BaseEvent {
   id: string;
@@ -453,6 +515,7 @@ public record SecureRecord(
     [property: Obsolete("Use Name instead")] string LegacyAlias
 );
 ```
+
 ```typescript
 export interface SecureRecord {
   name: string;
@@ -470,6 +533,7 @@ export interface SecureRecord {
 [TypeSharp("point_dto")]
 public record Point(int X, int Y);
 ```
+
 ```typescript
 export interface point_dto {
   x: number;
@@ -480,6 +544,7 @@ export interface point_dto {
 ## Generic Types Support
 
 ### Single Generic Parameter
+
 ```csharp
 [TypeSharp]
 public class ApiResponse<T>
@@ -490,6 +555,7 @@ public class ApiResponse<T>
     public List<string> Errors { get; set; }
 }
 ```
+
 ```typescript
 export interface ApiResponse<T> {
   success: boolean;
@@ -500,6 +566,7 @@ export interface ApiResponse<T> {
 ```
 
 ### Multiple Generic Parameters
+
 ```csharp
 [TypeSharp]
 public class Result<TData, TError>
@@ -509,6 +576,7 @@ public class Result<TData, TError>
     public TError? Error { get; set; }
 }
 ```
+
 ```typescript
 export interface Result<TData, TError> {
   isSuccess: boolean;
@@ -518,6 +586,7 @@ export interface Result<TData, TError> {
 ```
 
 ### Generic Inheritance
+
 ```csharp
 [TypeSharp]
 public class ApiResponse<T>
@@ -536,6 +605,7 @@ public class PagedApiResponse<T> : ApiResponse<T>
     public int TotalRecords { get; set; }
 }
 ```
+
 ```typescript
 export interface ApiResponse<T> {
   success: boolean;
@@ -554,11 +624,13 @@ export interface PagedApiResponse<T> extends ApiResponse<T> {
 ## Naming Conventions
 
 ### Simple Convention
+
 ```json
 { "namingConvention": "kebab" }
 ```
 
 ### Advanced Convention
+
 ```json
 {
   "namingConvention": {
@@ -584,6 +656,7 @@ export interface PagedApiResponse<T> extends ApiResponse<T> {
 ### Inheritance
 
 TypeSharp preserves class and record inheritance using `extends`:
+
 ```csharp
 [TypeSharp]
 public class Entity
@@ -605,6 +678,7 @@ public class User : AuditableEntity
     public string Email { get; set; }
 }
 ```
+
 ```typescript
 export interface Entity {
   id: number;
@@ -624,6 +698,7 @@ export interface User extends AuditableEntity {
 ### C# Interface Inheritance
 
 TypeSharp automatically filters out C# interfaces from the inheritance chain for both classes and records. Any base type matching the standard C# interface naming convention (`I` followed by an uppercase letter) is ignored.
+
 ```csharp
 [TypeSharp]
 public class PaymentResult : BaseResult, IActionResult, IDisposable
@@ -631,6 +706,7 @@ public class PaymentResult : BaseResult, IActionResult, IDisposable
     public bool Paid { get; set; }
 }
 ```
+
 ```typescript
 export interface PaymentResult extends BaseResult {
   paid: boolean;
@@ -640,6 +716,7 @@ export interface PaymentResult extends BaseResult {
 ### Computed Properties
 
 TypeSharp includes expression-bodied and block getter properties:
+
 ```csharp
 [TypeSharp]
 public class UserDto
@@ -654,6 +731,7 @@ public class UserDto
     public string Initials { get { return $"{FirstName[0]}{LastName[0]}"; } }
 }
 ```
+
 ```typescript
 export interface UserDto {
   firstName: string;
@@ -678,6 +756,7 @@ public class UserDto
     public string? LegacyId { get; set; }
 }
 ```
+
 ```typescript
 export interface UserDto {
   email: string;
@@ -691,6 +770,7 @@ export interface UserDto {
 > Supported on `{ get; set; }`, expression-bodied (`=>`), block getter properties, and record primary constructor parameters (with `[property: Obsolete]`).
 
 ### Multi-Project
+
 ```json
 {
   "source": [
@@ -703,6 +783,7 @@ export interface UserDto {
 ```
 
 Or using a solution file:
+
 ```json
 {
   "source": "C:/MyApp/MyApp.sln",
@@ -711,6 +792,7 @@ Or using a solution file:
 ```
 
 ### Single Output File
+
 ```json
 {
   "source": "./Backend/Backend.csproj",
@@ -722,22 +804,26 @@ Or using a solution file:
 All types are written to `src/types/types.ts`.
 
 ### Programmatic Usage
-```typescript
-import { generate } from '@siyavuyachagi/typesharp';
 
-await generate();                          // uses default config
-await generate('./custom-config.json');    // custom config path
+```typescript
+import { generate } from "@siyavuyachagi/typesharp";
+
+await generate(); // uses default config
+await generate("./custom-config.json"); // custom config path
 ```
 
 ### Advanced Programmatic Usage
+
 ```typescript
-import { parseCSharpFiles, generateTypeScriptFiles } from '@siyavuyachagi/typesharp';
-import type { TypeSharpConfig } from '@siyavuyachagi/typesharp';
+import {
+  parseCSharpFiles,
+  generateTypeScriptFiles,
+} from "@siyavuyachagi/typesharp";
+import type { TypeSharpConfig } from "@siyavuyachagi/typesharp";
 
 const config: TypeSharpConfig = {
   source: ["C:/Users/User/Desktop/MyApp/Api/Api.csproj"],
   outputPath: "./src/types",
-  targetAnnotation: "TypeSharp",
 };
 
 const parseResults = await parseCSharpFiles(config);
@@ -749,21 +835,22 @@ generateTypeScriptFiles(config, parseResults);
 ### Vue 3 + Nuxt 3 + ASP.NET Core
 
 **`typesharp.config.ts`:**
+
 ```typescript
-import type { TypeSharpConfig } from '@siyavuyachagi/typesharp';
+import type { TypeSharpConfig } from "@siyavuyachagi/typesharp";
 
 const config: TypeSharpConfig = {
   source: "../MyApp/MyApp.sln",
   outputPath: "./src/types",
-  targetAnnotation: "TypeSharp",
   singleOutputFile: false,
-  namingConvention: "camel"
+  namingConvention: "camel",
 };
 
 export default config;
 ```
 
 **`package.json`:**
+
 ```json
 {
   "scripts": {
@@ -776,11 +863,12 @@ export default config;
 ```
 
 **Usage in Vue:**
+
 ```vue
 <script setup lang="ts">
-import type { User } from '~/types/user';
-import type { ApiResponse } from '~/types/apiResponse';
-import type { ProductSummary } from '~/types/productSummary';
+import type { User } from "~/types/user";
+import type { ApiResponse } from "~/types/apiResponse";
+import type { ProductSummary } from "~/types/productSummary";
 
 const fetchUser = async (id: number) => {
   const response = await $fetch<ApiResponse<User>>(`/api/users/${id}`);
@@ -792,6 +880,7 @@ const fetchUser = async (id: number) => {
 ```
 
 ### CI/CD Integration
+
 ```yaml
 name: Build
 
@@ -821,7 +910,7 @@ jobs:
 - Verify `[TypeSharp]` attribute is on your C# classes or records
 - Check that `source` points to the correct `.csproj`, `.sln`, or `.slnx` file
 - Ensure C# files are not in `bin/` or `obj/` folders
-- Verify the attribute name matches `targetAnnotation` in your config
+- Verify your classes are decorated with the `[TypeSharp]` attribute
 
 ### Paths not found
 
@@ -852,6 +941,7 @@ This should not happen as of `v0.1.2`. TypeSharp automatically strips any base t
 ## Best Practices
 
 ### Run TypeSharp Before Dev/Build
+
 ```json
 {
   "scripts": {
@@ -868,6 +958,7 @@ This should not happen as of `v0.1.2`. TypeSharp automatically strips any base t
 Committing generated types means they are always available without a build step, and changes are reviewable in PRs.
 
 ### Only Decorate DTOs and Records Used by the Frontend
+
 ```csharp
 [TypeSharp]
 public class UserDto { }              // ✅ shared with frontend
@@ -879,21 +970,24 @@ public record InternalEvent(...) { }  // ❌ internal domain event — keep inte
 ```
 
 ### Use Generic Types for API Responses
+
 ```csharp
 [TypeSharp]
 public class ApiResponse<T>
 {
-    public bool Success { get; set; }
-    public string? Message { get; set; }
-    public T? Data { get; set; }
+  public bool Success { get; set; }
+  public string? Message { get; set; }
+  public T? Data { get; set; }
 }
 
 [TypeSharp]
 public record PagedResult<T>(IEnumerable<T> Items, int TotalCount);
 ```
+
 ```typescript
-const userResponse = await $fetch<ApiResponse<User>>('/api/users/1');
-const productsResponse = await $fetch<PagedResult<ProductSummary>>('/api/products');
+const userResponse = await $fetch<ApiResponse<User>>("/api/users/1");
+const productsResponse =
+  await $fetch<PagedResult<ProductSummary>>("/api/products");
 ```
 
 ---

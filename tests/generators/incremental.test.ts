@@ -41,7 +41,6 @@ function makeConfig(outputPath: string): TypeSharpConfig {
         outputPath,
         singleOutputFile: false,
         namingConvention: 'camel',
-        targetAnnotation: 'TypeSharp',
     }
 }
 

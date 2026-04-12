@@ -11,7 +11,7 @@ export function generateTypeScriptFiles(
   config: TypeSharpConfig,
   parseResults: ParseResult[],
   changedFiles?: Set<string>
-): void {
+): { created: number; updated: number; total: number } {
   const outputPath = config.outputPath;
 
   if (!fs.existsSync(outputPath)) {
@@ -20,9 +20,9 @@ export function generateTypeScriptFiles(
 
   if (config.singleOutputFile) {
     const allClasses = parseResults.flatMap(r => r.classes);
-    generateSingleFile(allClasses, outputPath);
+    return generateSingleFile(allClasses, outputPath);
   } else {
-    generateMultipleFiles(outputPath, config, parseResults, changedFiles)
+    return generateMultipleFiles(outputPath, config, parseResults, changedFiles)
   }
 }
 
@@ -41,7 +41,7 @@ export function generateTypeScriptFiles(
 function generateSingleFile(
   classes: CSharpClass[],
   outputPath: string,
-): void {
+): { created: number; updated: number; total: number } {
   const content = classes
     .sort((a, b) => (a.isEnum ? -1 : 1) - (b.isEnum ? -1 : 1) || a.name.localeCompare(b.name)) // Sort by type or name - Asc order
     .map(cls => generateTypeScriptClass(cls))
@@ -59,7 +59,11 @@ function generateSingleFile(
   const status = isNewFile ? chalk.cyan('Created') : chalk.green('Updated');
   console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
 
-  console.log(chalk.blue(`\n  Created: ${isNewFile ? 1 : 0} | Updated: ${!isNewFile ? 1 : 0} | Total files: 1\n`));
+  return {
+    created: isNewFile ? 1 : 0,
+    updated: !isNewFile ? 1 : 0,
+    total: 1
+  };
 }
 
 
@@ -77,7 +81,7 @@ function generateMultipleFiles(
   config: TypeSharpConfig,
   parseResults: ParseResult[],
   changedFiles?: Set<string>
-): void {
+): { created: number; updated: number; total: number } {
   const dirConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.dir ?? 'snake';
   const fileConvention = typeof config.namingConvention === 'string' ? config.namingConvention : config.namingConvention?.file ?? 'camel';
 
@@ -86,7 +90,10 @@ function generateMultipleFiles(
 
   let createdCount = 0;
   let updatedCount = 0;
-
+  const total = parseResultsSorted.length;
+  let fileIndex = 0;
+  
+  console.log(chalk.cyan('\n⧖ Generating TypeScript files...'));
   for (const result of parseResultsSorted) {
     // Skip if this C# file hasn't changed
     if (changedFiles && !changedFiles.has(result.filePath)) {
@@ -124,25 +131,30 @@ function generateMultipleFiles(
 
     // Check if file is new or updated
     const isNewFile = !fs.existsSync(filePath);
-
     // Only write if content changed or file is new
     if (isNewFile || shouldWriteFile(filePath, fullContent)) {
       fs.writeFileSync(filePath, fullContent, 'utf-8');
+      fileIndex++;
+      const isLast = fileIndex === total;
+      const tree = chalk.gray(isLast ? '└──' : '├──');
+
       if (isNewFile) {
         createdCount++;
-        const status = chalk.cyan('Created');
-        console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
+        console.log(tree, chalk.cyan('created'), chalk.blue(filePath));
       } else {
         updatedCount++;
-        const status = chalk.green('Updated');
-        console.log(chalk.blue(` ↳`), status + ':', chalk.blue(filePath));
+        console.log(tree, chalk.yellow('updated'), chalk.blue(filePath));
       }
     }
   }
 
-  // Log metrics inline
+  // Return metrics to be logged at the end
   const totalFiles = createdCount + updatedCount;
-  console.log(chalk.blue(`\n  Created: ${createdCount} | Updated: ${updatedCount} | Total files: ${totalFiles}\n`));
+  return {
+    created: createdCount,
+    updated: updatedCount,
+    total: totalFiles
+  };
 }
 
 
@@ -231,7 +243,7 @@ function generateImports(
     // Check property types
     for (const prop of cls.properties) {
       // Extract base type (remove array brackets and nullable)
-      let referencedType = prop.type;
+      const referencedType = prop.type;
 
       // Skip primitive types
       if (isPrimitiveType(referencedType)) continue;

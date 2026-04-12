@@ -9,7 +9,6 @@ export const createSampleConfig = (format) => {
             'C:/Users/User/Desktop/MyApp/MyApp.sln',
         ],
         outputPath: './app/types',
-        targetAnnotation: 'TypeSharp',
         singleOutputFile: false,
         namingConvention: 'camel',
         fileSuffix: ''
@@ -26,7 +25,7 @@ export const createSampleConfig = (format) => {
     }
     else {
         fileName = 'typesharp.config.ts';
-        let namespace = '@siyavuyachagi/typesharp';
+        const namespace = '@siyavuyachagi/typesharp';
         content = [
             `import type { TypeSharpConfig } from '${namespace}';`,
             ``,
@@ -43,11 +42,12 @@ export const createSampleConfig = (format) => {
         return;
     }
     fs.writeFileSync(fileName, content, 'utf-8');
-    console.log(chalk.green.bold('✅ Created'), chalk.white(`./${fileName}`));
+    console.log(chalk.gray('└── ') + chalk.blue(`./${fileName}`));
 };
 /**
  * Format a plain object as a JS/TS object literal (no quoted keys)
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const formatAsJsObject = (obj, indent = 0) => {
     const pad = ' '.repeat(indent + 2);
     const closePad = ' '.repeat(indent);

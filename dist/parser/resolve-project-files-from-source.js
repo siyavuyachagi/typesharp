@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 /**
@@ -56,7 +57,9 @@ export function resolveProjectFilesFromSource(source) {
             throw new Error(`Unsupported source file type: "${path.basename(s)}". Expected .csproj, .sln, or .slnx`);
         }
     }
-    console.log('csproj files', csprojFiles);
+    console.log(' csproj files [');
+    csprojFiles.forEach(file => console.log(chalk.green(`  '${file}'`)));
+    console.log(' ]');
     return csprojFiles;
 }
 //# sourceMappingURL=resolve-project-files-from-source.js.map

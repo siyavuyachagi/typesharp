@@ -16,7 +16,7 @@ describe('TypeSharp - Real Project Integration', () => {
 
             const results = await parseCSharpFiles(config);
             if (results.length === 0) {
-                throw new Error(`No C# files found with [${config.targetAnnotation}] attribute`);
+                throw new Error(`No C# files found with [TypeSharp] attribute`);
             }
 
             generateTypeScriptFiles(config, results);
