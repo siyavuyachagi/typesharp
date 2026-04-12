@@ -47,6 +47,16 @@ This is not an OpenApi-based tool !
 
 Also see [docs/why-typesharp](docs/why-typesharp.md)
 
+## Preview
+
+### Terminal Output
+
+![Terminal output](./public/images/terminal.png)
+
+### Test Results
+
+![Test results](./public/images/tests.png)
+
 ## Installation
 
 ```bash
@@ -204,8 +214,8 @@ TypeSharp supports multiple configuration formats:
 
 ```javascript
 const config = {
-  source: ["C:/Users/User/Desktop/MyApp/Domain/Domain.csproj"],
-  outputPath: "./src/types",
+  source: ['C:/Users/User/Desktop/MyApp/Domain/Domain.csproj'],
+  outputPath: './src/types',
 };
 
 export default config;
@@ -522,8 +532,8 @@ export interface auth_response {
 
 ```typescript
 const config: TypeSharpConfig = {
-  source: "./Backend/Backend.csproj",
-  outputPath: "./src/types",
+  source: './Backend/Backend.csproj',
+  outputPath: './src/types',
   singleOutputFile: true,
 };
 ```
@@ -532,11 +542,11 @@ const config: TypeSharpConfig = {
 
 ```typescript
 const config: TypeSharpConfig = {
-  source: "./Backend/Backend.csproj",
-  outputPath: "./src/types",
+  source: './Backend/Backend.csproj',
+  outputPath: './src/types',
   namingConvention: {
-    dir: "kebab",
-    file: "camel",
+    dir: 'kebab',
+    file: 'camel',
   },
 };
 ```
@@ -571,10 +581,10 @@ const config: TypeSharpConfig = {
 ## Programmatic Usage
 
 ```typescript
-import { generate } from "typesharp";
+import { generate } from 'typesharp';
 
 async function generateTypes() {
-  await generate("./path/to/config.ts");
+  await generate('./path/to/config.ts');
 }
 
 generateTypes();
