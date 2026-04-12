@@ -47,16 +47,6 @@ This is not an OpenApi-based tool !
 
 Also see [docs/why-typesharp](docs/why-typesharp.md)
 
-## Preview
-
-### Terminal Output
-
-![Terminal output](./public/images/terminal.png)
-
-### Test Results
-
-![Test results](./public/images/tests.png)
-
 ## Installation
 
 ```bash
@@ -589,6 +579,16 @@ async function generateTypes() {
 
 generateTypes();
 ```
+
+## Preview
+
+### Terminal Output
+
+![Terminal output](./public/images/terminal.png)
+
+### Test Results
+
+![Test results](./public/images/tests.png)
 
 ## Requirements
 
