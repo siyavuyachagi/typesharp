@@ -93,8 +93,6 @@ export async function generate(configPath, incremental = true) {
         }
         const allClasses = parseResults.flatMap(result => result.classes);
         console.log(chalk.green.bold(`✓ Found ${allClasses.length} class(es) with [${config.targetAnnotation}] attribute`));
-        console.log(chalk.blue.cyan('\n⧖ Generating TypeScript files...'));
-        generateTypeScriptFiles(config, parseResults);
         console.log(chalk.green.bold('✅ Generation completed successfully!\n'));
     }
     catch (error) {
