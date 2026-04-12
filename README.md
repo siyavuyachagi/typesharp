@@ -138,12 +138,15 @@ This creates `typesharp.config.json`:
 
 ```bash
 npx typesharp
-
-# ----- OR -------
-
+# OR
 npx typesharp generate
-# or with custom config
+
+# ----- With options -------
+
+# custom config
 npx typesharp generate --config ./custom-config.ts
+# force clean generation
+npx typesharp generate --no-incremental
 ```
 
 For more advanced usage [docs/usage](docs/usage.md)
