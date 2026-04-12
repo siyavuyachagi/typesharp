@@ -584,11 +584,11 @@ generateTypes();
 
 ### Terminal Output
 
-![Terminal output](./public/images/terminal.png)
+![Terminal output](public/images/terminal.png)
 
 ### Test Results
 
-![Test results](./public/images/tests.png)
+![Test results](public/images/tests.png)
 
 ## Requirements
 
