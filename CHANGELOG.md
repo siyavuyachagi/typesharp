@@ -11,6 +11,13 @@ TypeSharp parses C# projects directly, targeting classes and enums decorated wit
 
 ---
 
+## v0.2.1 - YYYY-MM-DD
+
+### Added
+- **Logo** — Added a logo in documentation(readme)
+
+---
+
 ## v0.2.0 - 2026-04-12
 
 ### Summary
