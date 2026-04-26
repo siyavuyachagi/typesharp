@@ -1,5 +1,6 @@
 # TypeSharp
 
+![Logo]()
 <p align="center">
   <img src="https://raw.githubusercontent.com/siyavuyachagi/typesharp/main/public/images/banner-transparent.png" alt="TypeSharp" height="120" />
 </p>
@@ -595,7 +596,7 @@ generateTypes();
 
 ### Terminal Output
 
-  <img src="https://raw.githubusercontent.com/siyavuyachagi/typesharp/main/public/images/terminal.png" alt="TypeSharp" />
+  <img src="https://github.com/siyavuyachagi/typesharp/blob/main/public/images/terminal.png?raw=true" alt="TypeSharp" />
 
 ### Test Results
 
