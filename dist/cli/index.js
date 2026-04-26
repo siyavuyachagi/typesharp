@@ -11,21 +11,6 @@ program
     .description(description)
     .version(version)
     .usage('[command] [options]');
-// Generate command (default)
-program
-    .command('generate', { isDefault: true })
-    .description('Generate TypeScript types from C# files')
-    .option('-c, --config <path>', 'Path to configuration file')
-    .option('--no-incremental', 'Disable incremental generation (full clean)')
-    .action(async (options) => {
-    try {
-        await generate(options.config, options.incremental !== false);
-        process.exit(0);
-    }
-    catch (error) {
-        process.exit(1);
-    }
-});
 // Init command
 program
     .command('init')
@@ -45,6 +30,21 @@ program
         if (error instanceof Error) {
             console.error(chalk.red.bold(`❌ Error:`), chalk.white(error.message));
         }
+        process.exit(1);
+    }
+});
+// Generate command (default)
+program
+    .command('generate', { isDefault: true })
+    .description('Generate TypeScript types from C# files')
+    .option('-c, --config <path>', 'Path to configuration file')
+    .option('--no-incremental', 'Disable incremental generation (full clean)')
+    .action(async (options) => {
+    try {
+        await generate(options.config, options.incremental !== false);
+        process.exit(0);
+    }
+    catch (error) {
         process.exit(1);
     }
 });

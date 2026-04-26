@@ -1,5 +1,11 @@
 # TypeSharp
 
+<p align="center">
+  <img src="./public/images/banner-transparent.png" alt="TypeSharp" height="120" />
+</p>
+
+<p align='center'>
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://img.shields.io/npm/v/@siyavuyachagi/typesharp.svg?label=Version)](https://www.npmjs.com/package/@siyavuyachagi/typesharp)
 [![npm downloads](https://img.shields.io/npm/dm/@siyavuyachagi/typesharp.svg?label=Downloads)](https://www.npmjs.com/package/@siyavuyachagi/typesharp)
@@ -7,6 +13,8 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/siyavuyachagi/typesharp?label=Last+commit)](https://github.com/siyavuyachagi/typesharp/commits/main)
 [![GitHub stars](https://img.shields.io/github/stars/siyavuyachagi/typesharp?label=Stars)](https://github.com/siyavuyachagi/typesharp/stargazers)
 [![Sponsor](https://img.shields.io/badge/Sponsor-💖-ff69b4)](https://github.com/sponsors/siyavuyachagi)
+
+</p>
 
 Generate TypeScript types from C# models with ease! TypeSharp scans your ASP.NET Core projects and automatically generates TypeScript interfaces from your C# classes and records decorated with the `[TypeSharp]` attribute.
 
@@ -587,11 +595,15 @@ generateTypes();
 
 ### Terminal Output
 
-![Terminal output](public/images/terminal.png)
+<p align="center">
+  <img src="./public/images/terminal.png" alt="TypeSharp" />
+</p>
 
 ### Test Results
 
-![Test results](public/images/tests.png)
+<p align="center">
+  <img src="./public/images/tests.png" alt="TypeSharp" />
+</p>
 
 ## Requirements
 
