@@ -1,7 +1,7 @@
 # TypeSharp
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/siyavuyachagi/typesharp/main/public/images/banner-transparent.png" alt="TypeSharp" width="400" height="120" />
+  <img src="https://raw.githubusercontent.com/siyavuyachagi/typesharp/main/public/images/banner-transparent.png" alt="TypeSharp" height="120" />
 </p>
 
 <p align='center'>
@@ -595,15 +595,11 @@ generateTypes();
 
 ### Terminal Output
 
-<p align="center">
-  <img src="./public/images/terminal.png" alt="TypeSharp" />
-</p>
+  <img src="https://raw.githubusercontent.com/siyavuyachagi/typesharp/main/public/images/terminal.png" alt="TypeSharp" />
 
 ### Test Results
 
-<p align="center">
   <img src="./public/images/tests.png" alt="TypeSharp" />
-</p>
 
 ## Requirements
 
