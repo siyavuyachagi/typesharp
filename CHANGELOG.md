@@ -13,8 +13,16 @@ TypeSharp parses C# projects directly, targeting classes and enums decorated wit
 
 ## v0.2.1 - YYYY-MM-DD
 
+### Summary
+
+Added `[Union]` attribute support for enums, generating a `const` object and derived union type instead of a standard TypeScript enum.
+
 ### Added
-- **Logo** — Added a logo in documentation(readme)
+
+- **`[Union]` enum support** — Enums decorated with `[TypeSharp]` and `[Union]` now generate a `const` object with `as const` and a union type derived from it, instead of a standard `export enum`
+- **Comma-syntax attribute support** — `[TypeSharp, Union]` single-bracket comma syntax is now supported alongside `[TypeSharp][Union]` and stacked `[Union]\n[TypeSharp]` forms
+- **`[TypeSharp("name"), Union]` support** — Name overrides work correctly with union enums
+- **Union enum tests** — Parser tests covering all attribute orderings and generator tests covering const/type output correctness
 
 ---
 
@@ -91,7 +99,7 @@ Comprehensive test suite completion with full CLI testing and incremental genera
 
 ---
 
-## [0.1.5] - 2026-04-07
+## v0.1.5 - 2026-04-07
 
 ### Summary
 
@@ -124,7 +132,7 @@ Comprehensive test suite completion with full CLI testing and incremental genera
 
 ---
 
-## [0.1.2] - 2026-03-21
+## v0.1.2 - 2026-03-21
 
 ### Summary
 
@@ -149,7 +157,7 @@ Major parser improvements, expanded type support, multi-project support, and aut
 
 ---
 
-## [0.1.1] - 2026-02-19
+## v0.1.1 - 2026-02-19
 
 ### Summary
 
@@ -183,7 +191,7 @@ Major parser improvements, expanded type support, multi-project support, and aut
 
 ---
 
-## [0.1.0] - 2025-12-19
+## v0.1.0 - 2025-12-19
 
 ### Summary
 

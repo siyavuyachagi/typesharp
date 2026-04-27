@@ -3,6 +3,7 @@ import * as path from 'path';
 import { CSharpClass, CSharpProperty, NamingConvention } from '../types/index.js';
 import type { ParseResult, TypeSharpConfig } from '../types/index.js';
 import chalk from 'chalk';
+import { generateUnionEnum } from './generate-union-enum.js';
 
 /**
  * Generate TypeScript files from parsed C# classes
@@ -335,10 +336,14 @@ function generateTypeScriptClass(cls: CSharpClass): string {
  * Generate TypeScript enum
  */
 function generateEnum(cls: CSharpClass): string {
+  if (cls.isUnion) {
+      return generateUnionEnum(cls);
+  }
+
   const values = cls.enumValues || [];
   const enumValues = values
-    .map(v => `  ${v} = '${v}'`)
-    .join(',\n');
+      .map(v => `  ${v} = '${v}'`)
+      .join(',\n');
 
   return `export enum ${cls.name} {\n${enumValues}\n}`;
 }

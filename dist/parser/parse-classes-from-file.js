@@ -6,7 +6,7 @@ import { parseRecordParameters } from "./parse-properties.js";
 export function parseClassesFromFile(content, targetAnnotation) {
     const classes = [];
     const cleanContent = removeComments(content);
-    const annotationRegex = new RegExp(`\\[${targetAnnotation}(?:Attribute)?(?:\\(\\s*"([^"]*)"\\s*\\))?\\]`, 'g');
+    const annotationRegex = new RegExp(`\\[${targetAnnotation}(?:Attribute)?(?:\\(\\s*"([^"]*)"\\s*\\))?(?:\\s*,\\s*[^\\]]+)?\\]`, 'g');
     const matches = [...cleanContent.matchAll(annotationRegex)];
     for (const match of matches) {
         const startIndex = match.index;
@@ -16,8 +16,10 @@ export function parseClassesFromFile(content, targetAnnotation) {
         if (enumMatch) {
             const typeNameOverride = match[1] ?? undefined;
             const enumClass = parseEnum(afterAnnotation, typeNameOverride ?? enumMatch[1]);
-            if (enumClass)
+            if (enumClass) {
+                enumClass.isUnion = hasUnionAttribute(cleanContent, startIndex, afterAnnotation, match[0]);
                 classes.push(enumClass);
+            }
             continue;
         }
         // Check if it's a record (positional or with body)
@@ -112,6 +114,34 @@ export function parseClassesFromFile(content, targetAnnotation) {
         }
     }
     return classes;
+}
+/**
+ * Checks if [Union] attribute is present near the [TypeSharp] annotation.
+ * Looks both after [TypeSharp] (up to the enum keyword) and on lines before it.
+ */
+function hasUnionAttribute(cleanContent, startIndex, afterAnnotation, matchText) {
+    // [TypeSharp, Union] — Union inside the same bracket
+    if (/\bUnion\b/.test(matchText))
+        return true;
+    // [TypeSharp][Union] — Union in afterAnnotation before the enum keyword
+    const enumIdx = afterAnnotation.search(/\benum\b/);
+    if (enumIdx !== -1 && /\[Union\]/.test(afterAnnotation.substring(0, enumIdx))) {
+        return true;
+    }
+    // [Union] on lines before [TypeSharp]
+    const lines = cleanContent.substring(0, startIndex).split('\n');
+    for (let i = lines.length - 1; i >= 0; i--) {
+        const line = lines[i].trim();
+        if (line === '')
+            continue;
+        if (line.startsWith('[')) {
+            if (/\[Union\]/.test(line))
+                return true;
+            continue;
+        }
+        break;
+    }
+    return false;
 }
 /**
  * Parse enum from C# content

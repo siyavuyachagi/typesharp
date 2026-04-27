@@ -28,6 +28,8 @@ export interface CSharpClass {
   isEnum: boolean;
   /** Whether the source type was a C# record (record class / record struct / positional record) */
   isRecord: boolean;
+  /** Whether the enum should be generated as a const + union type instead of a TS enum */
+  isUnion?: boolean;
   enumValues?: string[];
   genericParameters?: string[];
   baseClassGenerics?: string[];

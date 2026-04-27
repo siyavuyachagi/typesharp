@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
+import { generateUnionEnum } from './generate-union-enum.js';
 /**
  * Generate TypeScript files from parsed C# classes
  */
@@ -230,6 +231,9 @@ function generateTypeScriptClass(cls) {
  * Generate TypeScript enum
  */
 function generateEnum(cls) {
+    if (cls.isUnion) {
+        return generateUnionEnum(cls);
+    }
     const values = cls.enumValues || [];
     const enumValues = values
         .map(v => `  ${v} = '${v}'`)
