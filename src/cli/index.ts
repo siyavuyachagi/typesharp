@@ -31,6 +31,7 @@ program
       }
 
       createSampleConfig(format);
+
       process.exit(0);
     } catch (error) {
       if (error instanceof Error) {
@@ -50,13 +51,13 @@ program
   .action(async (options) => {
     try {
       const incremental = options.incremental !== false;
-  
+
       if (options.watch) {
         await startWatch(options.config, incremental);
       } else {
         await generate(options.config, incremental);
       }
-  
+
       process.exit(0);
     } catch (error) {
       process.exit(1);
