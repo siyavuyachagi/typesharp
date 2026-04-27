@@ -6,6 +6,7 @@ import * as path from 'path'
 import * as os from 'os'
 import { createSampleConfig } from '../../src/core/create-sample-config'
 import { generate } from '../../src/core'
+import { vi, type MockedFunction } from 'vitest'
 
 describe('CLI - Command Line Interface', () => {
     let tmpDir: string
@@ -172,4 +173,45 @@ describe('CLI - Command Line Interface', () => {
             }).rejects.toThrow()
         })
     })
+
+    describe('--watch flag', () => {
+        it('calls startWatch when --watch is passed', async () => {
+            const { startWatch } = await import('../../src/core/watch.js')
+            
+            const configPath = path.join(tmpDir, 'typesharp.config.json')
+            fs.writeFileSync(configPath, JSON.stringify({
+                source: [],
+                outputPath: './output',
+            }), 'utf-8')
+    
+            await startWatch(configPath, true)
+            expect(startWatch).toHaveBeenCalledWith(configPath, true)
+        })
+    
+        it('passes incremental=true by default with --watch', async () => {
+            const { startWatch } = await import('../../src/core/watch.js')
+        
+            // tmpDir is cwd — give it a config so loadConfig doesn't throw
+            fs.writeFileSync(path.join(tmpDir, 'typesharp.config.json'), JSON.stringify({
+                source: [],
+                outputPath: './output',
+            }), 'utf-8')
+        
+            await startWatch(undefined, true)
+            expect(startWatch).toHaveBeenCalledWith(undefined, true)
+        })
+        
+        it('passes incremental=false when --no-incremental --watch', async () => {
+            const { startWatch } = await import('../../src/core/watch.js')
+        
+            fs.writeFileSync(path.join(tmpDir, 'typesharp.config.json'), JSON.stringify({
+                source: [],
+                outputPath: './output',
+            }), 'utf-8')
+        
+            await startWatch(undefined, false)
+            expect(startWatch).toHaveBeenCalledWith(undefined, false)
+        })
+    })
 })
+
