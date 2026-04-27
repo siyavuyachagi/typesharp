@@ -4,6 +4,7 @@ import { generate } from '../core/index.js';
 import chalk from 'chalk';
 import pkg from '../../package.json' with { type: 'json' };
 import { createSampleConfig } from '../core/create-sample-config.js';
+import { startWatch } from '../core/watch.js';
 const { version, name, description } = pkg;
 const program = new Command();
 program
@@ -39,9 +40,16 @@ program
     .description('Generate TypeScript types from C# files')
     .option('-c, --config <path>', 'Path to configuration file')
     .option('--no-incremental', 'Disable incremental generation (full clean)')
+    .option('-w, --watch', 'Watch for file changes and re-run generation')
     .action(async (options) => {
     try {
-        await generate(options.config, options.incremental !== false);
+        const incremental = options.incremental !== false;
+        if (options.watch) {
+            await startWatch(options.config, incremental);
+        }
+        else {
+            await generate(options.config, incremental);
+        }
         process.exit(0);
     }
     catch (error) {
