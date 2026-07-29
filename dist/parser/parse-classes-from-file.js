@@ -12,7 +12,7 @@ export function parseClassesFromFile(content, targetAnnotation) {
         const startIndex = match.index;
         const afterAnnotation = cleanContent.substring(startIndex);
         // Check if it's an enum
-        const enumMatch = afterAnnotation.match(/(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+enum\s+(\w+)/);
+        const enumMatch = afterAnnotation.match(/^(?:\[[\w]+(?:\([^)]*\))?(?:\s*,\s*[^\]]+)?\]\s*)*public\s+enum\s+(\w+)/);
         if (enumMatch) {
             const typeNameOverride = match[1] ?? undefined;
             const enumClass = parseEnum(afterAnnotation, typeNameOverride ?? enumMatch[1]);
@@ -26,7 +26,7 @@ export function parseClassesFromFile(content, targetAnnotation) {
         // NOTE: we do NOT capture ctor params in the regex — attributes inside params
         // contain `()` which would break a [^)]* capture group.
         // Use paren-balanced extraction instead.
-        const recordMatch = afterAnnotation.match(/(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+(?:sealed\s+|abstract\s+)?record\s+(?:class\s+|struct\s+)?(\w+)(?:<([^>]+)>)?/);
+        const recordMatch = afterAnnotation.match(/^(?:\[[\w]+(?:\([^)]*\))?(?:\s*,\s*[^\]]+)?\]\s*)*public\s+(?:sealed\s+|abstract\s+)?record\s+(?:class\s+|struct\s+)?(\w+)(?:<([^>]+)>)?/);
         if (recordMatch) {
             const className = recordMatch[1];
             const genericParams = recordMatch[2];
@@ -78,7 +78,7 @@ export function parseClassesFromFile(content, targetAnnotation) {
             continue;
         }
         // Regular class
-        const classMatch = afterAnnotation.match(/(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/);
+        const classMatch = afterAnnotation.match(/^(?:\[[\w]+(?:\([^)]*\))?(?:\s*,\s*[^\]]+)?\]\s*)*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/);
         if (classMatch) {
             const className = classMatch[1];
             const genericParams = classMatch[2];

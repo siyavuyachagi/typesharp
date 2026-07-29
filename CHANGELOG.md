@@ -11,6 +11,17 @@ TypeSharp parses C# projects directly, targeting classes and enums decorated wit
 
 ---
 
+## v0.2.5 - 2026-07-29
+
+### Fixed
+
+- **Default values on positional record parameters** — `record Foo(string? Name = default)` no longer fails to parse; default-value expressions are stripped before type/name resolution
+- **Annotation misattribution** — an unanchored regex could let a later class/record/enum "steal" an earlier declaration's `[TypeSharp]` annotation when multiple types appeared in the same file, causing dropped types and duplicate output
+- **`[TypeSharp, Union]` / `[TypeSharp("name"), Union]` comma syntax** — regression from the annotation-anchoring fix above; comma-separated attributes on the same bracket are now recognized again alongside the existing `[TypeSharp][Union]` two-bracket form
+- **Test temp-dir cleanup race** — parallel test files sharing a single global cleanup routine could hit `EPERM` deleting each other's temp directories; each test file now tracks and removes only the directories it created
+
+---
+
 ## v0.2.4 - 2026-07-04
 
 ### Changed

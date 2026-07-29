@@ -109,7 +109,7 @@ export function parseRecordParameters(raw) {
         // This handles both inline attrs ([TypeAs("x")] DateTime CreatedAt)
         // and multiline attrs (separate lines with \n between them).
         const { attrTokens, remainder } = extractLeadingAttributes(trimmed);
-        const typeAndName = remainder.trim();
+        const typeAndName = stripDefaultValue(remainder.trim());
         if (!typeAndName)
             continue;
         // Check [TypeIgnore] — supports [property: TypeIgnore]
@@ -416,5 +416,26 @@ function mapCSharpTypeToTypeScript(csType) {
         'TimeSpan': 'number',
     };
     return typeMap[csType] || csType;
+}
+/**
+ * Strip a trailing "= <expression>" default value from a record parameter's
+ * "type name" tail, so `string? ProvinceName = default` becomes `string? ProvinceName`.
+ * Only splits on '=' at bracket/paren/angle depth 0 (ignores '=>' lambdas).
+ */
+function stripDefaultValue(s) {
+    let depth = 0;
+    for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === '<' || ch === '(' || ch === '[')
+            depth++;
+        else if (ch === '>' || ch === ')' || ch === ']')
+            depth--;
+        else if (ch === '=' && depth === 0) {
+            if (s[i + 1] === '>')
+                continue; // skip '=>'
+            return s.slice(0, i).trim();
+        }
+    }
+    return s;
 }
 //# sourceMappingURL=parse-properties.js.map

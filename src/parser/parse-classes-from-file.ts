@@ -23,7 +23,7 @@ export function parseClassesFromFile(content: string, targetAnnotation: string):
 
         // Check if it's an enum
         const enumMatch = afterAnnotation.match(
-            /(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+enum\s+(\w+)/
+            /^(?:\[[\w]+(?:\([^)]*\))?(?:\s*,\s*[^\]]+)?\]\s*)*public\s+enum\s+(\w+)/
         );
 
         if (enumMatch) {
@@ -41,7 +41,7 @@ export function parseClassesFromFile(content: string, targetAnnotation: string):
         // contain `()` which would break a [^)]* capture group.
         // Use paren-balanced extraction instead.
         const recordMatch = afterAnnotation.match(
-            /(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+(?:sealed\s+|abstract\s+)?record\s+(?:class\s+|struct\s+)?(\w+)(?:<([^>]+)>)?/
+            /^(?:\[[\w]+(?:\([^)]*\))?(?:\s*,\s*[^\]]+)?\]\s*)*public\s+(?:sealed\s+|abstract\s+)?record\s+(?:class\s+|struct\s+)?(\w+)(?:<([^>]+)>)?/
         );
 
         if (recordMatch) {
@@ -108,7 +108,7 @@ export function parseClassesFromFile(content: string, targetAnnotation: string):
 
         // Regular class
         const classMatch = afterAnnotation.match(
-            /(?:\[[\w]+(?:\([^)]*\))?\]\s*)*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/
+            /^(?:\[[\w]+(?:\([^)]*\))?(?:\s*,\s*[^\]]+)?\]\s*)*public\s+class\s+(\w+)(?:<([^>]+)>)?(?:\s*:\s*(\w+)(?:<([^>]+)>)?)?/
         );
 
         if (classMatch) {
