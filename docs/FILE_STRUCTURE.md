@@ -53,8 +53,8 @@ typesharp/
 │   ├── generators/                                     ✅ Unit tests: generateTypeScriptFiles
 │   ├── helpers/
 │   ├── integration/                                    ✅ Real project integration tests
-│   └── parsers/                                        ✅ Unit tests: parser, resolve-project-files
-├── .eslintignore
+│   ├── parsers/                                        ✅ Unit tests: parser, resolve-project-files
+│   └── unit/                                           ✅ Unit tests: region documentation
 ├── .eslintrc.json
 ├── .gitattributes
 ├── .gitignore                                          ✅ Git ignore

@@ -26,6 +26,7 @@ Project structure: [docs/FILE_STRUCTURE](docs/FILE_STRUCTURE.md)
 - **Nullable Support** – `string?` → `string | null`
 - **Collection Handling** – Supports `List<T>`, `IEnumerable<T>`, arrays **and generic collections**
 - **Dictionary Mapping** – `Dictionary<K, V>` → `Record<K, V>`
+- **Tuple Support** – Named/unnamed tuples and `ValueTuple<T1, T2>` → inline object types
 - **Generic Types** – Preserves generic type definitions like `Response<T>` → `Response<T>`
 - **Inheritance** – Preserves class and record inheritance using `extends`
 - **Computed Properties** – Expression-bodied and block getter properties are included
@@ -464,7 +465,31 @@ export interface PermissionMap {
 }
 ```
 
-### 5. Obsolete / Deprecated Properties
+### 5. Tuple Types
+
+**C#:**
+
+```csharp
+[TypeSharp]
+public class CreatePostCommand
+{
+    public List<(string Text, int? Index)>? PollOptions { get; set; }
+    public (string, int) Coordinates { get; set; }
+}
+```
+
+**Generated TypeScript:**
+
+```typescript
+export interface CreatePostCommand {
+  pollOptions: { text: string; index: number | null }[] | null;
+  coordinates: { item1: string; item2: number };
+}
+```
+
+Named tuple elements (`string Text`) become camelCased object fields. Unnamed elements (`string, int`) fall back to `item1`, `item2`, ... — matching C#'s own `ValueTuple` defaults. `ValueTuple<T1, T2>` generic syntax and tuples nested in `List<T>` or record parameters are supported too.
+
+### 6. Obsolete / Deprecated Properties
 
 **C#:**
 
@@ -496,7 +521,7 @@ export interface Employee {
 }
 ```
 
-### 6. Custom Type Name Override
+### 7. Custom Type Name Override
 
 ```csharp
 [TypeSharp("auth_response")]
@@ -514,7 +539,7 @@ export interface auth_response {
 }
 ```
 
-### 7. Multi-Project
+### 8. Multi-Project
 
 ```json
 {
@@ -527,7 +552,7 @@ export interface auth_response {
 }
 ```
 
-### 8. Single Output File
+### 9. Single Output File
 
 ```typescript
 const config: TypeSharpConfig = {
@@ -537,7 +562,7 @@ const config: TypeSharpConfig = {
 };
 ```
 
-### 9. Custom Naming Conventions
+### 10. Custom Naming Conventions
 
 ```typescript
 const config: TypeSharpConfig = {
@@ -568,6 +593,14 @@ const config: TypeSharpConfig = {
 | -------------------------------------------------------------------- | --------------- |
 | `List<T>`, `ICollection<T>`, `IEnumerable<T>`, `T[]`                 | `T[]`           |
 | `Dictionary<K, V>`, `IDictionary<K, V>`, `IReadOnlyDictionary<K, V>` | `Record<K, V>`  |
+
+### Tuples
+
+| C# Type                               | TypeScript Type                           |
+| ------------------------------------- | ----------------------------------------- |
+| `(string Text, int? Index)`           | `{ text: string; index: number \| null }` |
+| `(string, int)` (unnamed elements)    | `{ item1: string; item2: number }`        |
+| `ValueTuple<T1, T2>`, `Tuple<T1, T2>` | `{ item1: T1; item2: T2 }`                |
 
 ### ASP.NET / File Types
 

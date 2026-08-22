@@ -11,6 +11,14 @@ TypeSharp parses C# projects directly, targeting classes and enums decorated wit
 
 ---
 
+## v0.2.6 - 2026-08-22
+
+### Added
+
+- **Tuple type support** — named (`(string Text, int? Index)`) and unnamed (`(string, int)`) tuple literals, plus `ValueTuple<T1, T2>` / `Tuple<T1, T2>` generic syntax, now resolve to inline TS object types (`{ text: string; index: number | null }`, `{ item1: string; item2: number }`). Works nested inside `List<T>`, other generics, and positional record parameters.
+
+---
+
 ## v0.2.5 - 2026-07-29
 
 ### Fixed

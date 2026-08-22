@@ -17,7 +17,7 @@ export function parseProperties(classBody) {
     };
     let match;
     // Match property declarations with get/set/init accessors
-    const propertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*(?:get;\s*)?(?:set|init);\s*\}/g;
+    const propertyRegex = /public\s+([\w<>[\](), ?]+)\s+(\w+)\s*\{\s*(?:get;\s*)?(?:set|init);\s*\}/g;
     while ((match = propertyRegex.exec(classBody)) !== null) {
         const type = match[1];
         const name = match[2];
@@ -30,7 +30,7 @@ export function parseProperties(classBody) {
         properties.push({ ...parsePropertyType(resolvedName, resolvedType), ...obs, region: getRegion(match.index) });
     }
     // Also match computed/expression-bodied properties (with =>)
-    const computedPropertyRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*=>/g;
+    const computedPropertyRegex = /public\s+([\w<>[\](), ?]+)\s+(\w+)\s*=>/g;
     while ((match = computedPropertyRegex.exec(classBody)) !== null) {
         const type = match[1];
         const name = match[2];
@@ -43,7 +43,7 @@ export function parseProperties(classBody) {
         properties.push({ ...parsePropertyType(resolvedName, resolvedType), ...obs, region: getRegion(match.index) });
     }
     // { get { return ...; } }
-    const getBlockRegex = /public\s+([\w<>[\]?]+)\s+(\w+)\s*\{\s*get\s*\{[^}]*\}\s*\}/g;
+    const getBlockRegex = /public\s+([\w<>[\](), ?]+)\s+(\w+)\s*\{\s*get\s*\{[^}]*\}\s*\}/g;
     while ((match = getBlockRegex.exec(classBody)) !== null) {
         const type = match[1];
         const name = match[2];
@@ -203,11 +203,11 @@ function splitTopLevelParams(raw) {
     let buf = '';
     for (let i = 0; i < raw.length; i++) {
         const ch = raw[i];
-        if (ch === '<' || ch === '[') {
+        if (ch === '<' || ch === '[' || ch === '(') {
             depth++;
             buf += ch;
         }
-        else if (ch === '>' || ch === ']') {
+        else if (ch === '>' || ch === ']' || ch === ')') {
             depth--;
             buf += ch;
         }
@@ -235,9 +235,9 @@ function parseTypeAndName(s) {
     let splitAt = -1;
     // Find the last space at depth 0 — that separates type from name
     for (let i = 0; i < s.length; i++) {
-        if (s[i] === '<')
+        if (s[i] === '<' || s[i] === '(' || s[i] === '[')
             depth++;
-        else if (s[i] === '>')
+        else if (s[i] === '>' || s[i] === ')' || s[i] === ']')
             depth--;
         else if (s[i] === ' ' && depth === 0) {
             splitAt = i;
@@ -338,7 +338,49 @@ function parsePropertyType(name, csType) {
             const resolvedInner = resolveType(inner);
             return { tsType: resolvedInner.tsType, isArray: true };
         }
+        // Named/positional tuple literal syntax: (string Text, int? Index)
+        if (t.startsWith('(') && isBalancedParenWrap(t)) {
+            const inner = t.slice(1, -1);
+            return { tsType: resolveTupleType(inner), isArray: false };
+        }
+        // ValueTuple<...> / Tuple<...> generic form
+        const tupleGenericMatch = t.match(/^(?:System\.)?(?:ValueTuple|Tuple)\s*</);
+        if (tupleGenericMatch) {
+            const firstAngle = t.indexOf('<');
+            const lastAngle = findMatchingAngleBracket(t, firstAngle);
+            if (firstAngle !== -1 && lastAngle !== -1) {
+                const inner = t.slice(firstAngle + 1, lastAngle).trim();
+                const args = splitTopLevelGenericArgs(inner);
+                const members = args.map((argType, idx) => {
+                    const resolvedArg = resolveType(argType);
+                    const argTs = resolvedArg.isArray ? `${resolvedArg.tsType}[]` : resolvedArg.tsType;
+                    return `item${idx + 1}: ${argTs}`;
+                });
+                return { tsType: `{ ${members.join('; ')} }`, isArray: false };
+            }
+        }
         return { tsType: mapCSharpTypeToTypeScript(t), isArray: false };
+    }
+    /**
+     * Resolve the contents of a `(...)` tuple literal into an inline TS object type,
+     * e.g. `string Text, int? Index` -> `{ text: string; index: number | null }`.
+     * Unnamed elements (e.g. `string, int`) fall back to `item1`, `item2`, ... like
+     * C#'s ValueTuple default field names.
+     */
+    function resolveTupleType(inner) {
+        const elements = splitTupleElements(inner);
+        const members = elements.map((el, idx) => {
+            const { csType, name } = parseTupleElement(el);
+            const fieldName = name ? tupleFieldToCamelCase(name) : `item${idx + 1}`;
+            const fieldProp = parsePropertyType(fieldName, csType);
+            let fieldTs = fieldProp.type;
+            if (fieldProp.isArray)
+                fieldTs += '[]';
+            if (fieldProp.isNullable)
+                fieldTs += ' | null';
+            return `${fieldName}: ${fieldTs}`;
+        });
+        return `{ ${members.join('; ')} }`;
     }
     const resolved = resolveType(raw);
     return {
@@ -351,6 +393,90 @@ function parsePropertyType(name, csType) {
         isDeprecated: false,
         deprecationMessage: undefined,
     };
+}
+/**
+ * True if `s` starts with '(' and that opening paren's matching ')' is the
+ * final character — i.e. the whole string is one balanced parenthesized group,
+ * as opposed to something like "(string, int)[]" or two adjacent groups.
+ */
+function isBalancedParenWrap(s) {
+    if (!s.startsWith('(') || !s.endsWith(')'))
+        return false;
+    let depth = 0;
+    for (let i = 0; i < s.length; i++) {
+        if (s[i] === '(')
+            depth++;
+        else if (s[i] === ')') {
+            depth--;
+            if (depth === 0)
+                return i === s.length - 1;
+        }
+    }
+    return false;
+}
+/**
+ * Split the inside of a tuple literal on top-level commas
+ * (i.e. commas not nested inside <>, (), or [])
+ */
+function splitTupleElements(s) {
+    const parts = [];
+    let depth = 0;
+    let buf = '';
+    for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
+        if (ch === '<' || ch === '(' || ch === '[') {
+            depth++;
+            buf += ch;
+        }
+        else if (ch === '>' || ch === ')' || ch === ']') {
+            depth--;
+            buf += ch;
+        }
+        else if (ch === ',' && depth === 0) {
+            parts.push(buf);
+            buf = '';
+        }
+        else {
+            buf += ch;
+        }
+    }
+    if (buf.trim())
+        parts.push(buf);
+    return parts;
+}
+/**
+ * Parse a single tuple element, e.g. "int? Index" -> { csType: "int?", name: "Index" }.
+ * Elements may be unnamed, e.g. plain "string" in `(string, int)`.
+ */
+function parseTupleElement(el) {
+    const trimmed = el.trim();
+    let depth = 0;
+    let splitAt = -1;
+    for (let i = 0; i < trimmed.length; i++) {
+        const ch = trimmed[i];
+        if (ch === '<' || ch === '(' || ch === '[')
+            depth++;
+        else if (ch === '>' || ch === ')' || ch === ']')
+            depth--;
+        else if (ch === ' ' && depth === 0)
+            splitAt = i;
+    }
+    if (splitAt === -1)
+        return { csType: trimmed };
+    const csType = trimmed.slice(0, splitAt).trim();
+    const name = trimmed.slice(splitAt + 1).trim();
+    if (!csType || !name)
+        return { csType: trimmed };
+    return { csType, name };
+}
+/**
+ * camelCase a tuple field name (e.g. "Text" -> "text"). Kept local/minimal
+ * rather than importing the generator's naming-convention helpers, since the
+ * parser has no dependency on generator config at parse time.
+ */
+function tupleFieldToCamelCase(name) {
+    const pascal = name.replace(/[_-](.)/g, (_, c) => c.toUpperCase());
+    return pascal.charAt(0).toLowerCase() + pascal.slice(1);
 }
 function findMatchingAngleBracket(s, startIdx) {
     let depth = 0;

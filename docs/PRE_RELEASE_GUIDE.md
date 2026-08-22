@@ -112,7 +112,7 @@ Go through the whole README and ask for each section:
 - [✓] `npm test` — all tests pass
 - [✓] `dist/` is up to date — run `npm run build` one final time after all source edits
 - [✓] No `console.log` debug statements left in `src/parser` or `src/generator`
-- [✓] No commented-out code left unintentionally (e.g. the `autoPropertyRegex` block in `src/parser/index.ts` — decide: remove it or restore it)
+- [✓] No commented-out code left unintentionally
 - [✓] `package.json` `"files"` array is correct — only `bin/`, `dist/`, `README.md`, `LICENSE` are published; `src/`, `tests/`, `docs/` are excluded
 
 ---
